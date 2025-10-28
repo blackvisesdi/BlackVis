@@ -1,17 +1,11 @@
-// =========================================================
-//                  main.js - VERSÃO FINAL, RESPONSIVA E COM RÓTULOS CENTRALIZADOS
-// =========================================================
-
-// --- 1. CONFIGURAÇÃO GLOBAL E RESPONSIVIDADE (NOVO) ---
-// Usaremos VBOX_WIDTH/HEIGHT para o viewBox e responsividade.
 const VBOX_WIDTH = 950;
 const VBOX_HEIGHT = 500;
-const width = VBOX_WIDTH; // Mantém 'width' para compatibilidade interna
-const height = VBOX_HEIGHT; // Mantém 'height' para compatibilidade interna
+const width = VBOX_WIDTH; 
+const height = VBOX_HEIGHT; 
 
 const svg = d3
   .select("#grafico-d3")
-  // Remove width/height fixos e usa viewBox para responsividade
+  
   .attr("viewBox", `0 0 ${VBOX_WIDTH} ${VBOX_HEIGHT}`)
   .attr("preserveAspectRatio", "xMidYMid meet")
   .style("width", "100%")
@@ -130,7 +124,7 @@ function calculateNodeDegree(nodes, links) {
   return nodes;
 }
 
-// --- 4. FUNÇÕES DE INTERAÇÃO (DRAG, FOCUS, PERFIL) (AJUSTADO) ---
+// --- 4. FUNÇÕES DE INTERAÇÃO (DRAG, FOCUS, PERFIL) ---
 
 function drag(simulation) {
   function dragstarted(event, d) {
@@ -157,7 +151,6 @@ function drag(simulation) {
     .on("end", dragended);
 }
 
-// NOVO: Adiciona 'event' para evitar conflito com drag (necessário para layout lado a lado)
 function focusNode(event, d) {
   if (event) event.stopPropagation(); // Essencial
 
@@ -217,7 +210,7 @@ function focusNode(event, d) {
     d3.select("#perfil-container").style("display", "none");
   }
 
-  // Centraliza o nó um pouco à direita (para não esconder atrás do card)
+ 
   const offset = width * 0.2;
   d.fx = width / 2 + offset;
   d.fy = height / 2;
@@ -270,7 +263,7 @@ d3.select("#fechar-perfil").on("click", () => {
 });
 
 // ------------------------------------------------------------------
-// FUNÇÃO PRINCIPAL DO GRÁFICO (DESENHA E ATUALIZA)
+// FUNÇÃO PRINCIPAL DO GRÁFICO
 // ------------------------------------------------------------------
 
 function drawForceGraph(data) {
@@ -333,20 +326,18 @@ function drawForceGraph(data) {
       focusNode(event, d);
     });
 
-  // Padrão D3: Data Join para Rótulos (CORREÇÃO DE POSICIONAMENTO)
+  // Padrão D3: Data Join para Rótulos
   const labels = labelGroup
     .selectAll(".label")
     .data(graphData.nodes, (d) => d.id)
     .join("text")
     .attr("class", "label")
     .text((d) => {
-      // Se for uma categoria, usa o nome da área; se for pessoa, usa o nome dela.
       if (d.isCategory) return d.Nome;
-      // Tenta usar apenas o primeiro nome para caber na bolinha
+     
       return d.Nome ? d.Nome.split(" ")[0] : d.id.split(" ")[0];
     })
-    // AQUI ESTÁ A MUDANÇA: Removeu .attr("x", ...) e .attr("y", ...)
-    // Deixando o texto no centro do elemento <g> do nó.
+    
     .attr("text-anchor", "middle") // Centraliza horizontalmente
     .attr("dominant-baseline", "central") // Centraliza verticalmente
     .style("font-size", "6px") // Fonte menor para caber
@@ -384,7 +375,7 @@ function drawForceGraph(data) {
 }
 
 // ------------------------------------------------------------------
-// LÓGICA DE FILTRAGEM (CHAMADA PELO SLIDER)
+// LÓGICA DE FILTRAGEM
 // ------------------------------------------------------------------
 
 function filterGraphData(minYear, maxYear) {
