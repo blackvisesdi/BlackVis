@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testes 1.0</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="content-wrapper">
+
+        <div id="slider-container" class="filter-controls">
+            <div class="slider-label">
+                Filtrar por Ano de Nascimento:
+                <span id="value-min">1900</span> - <span id="value-max">2000</span>
+            </div>
+            <svg id="dual-slider"></svg>
+        </div>
+
+        <section>
+            <div class="grafico-container">
+                <svg id="grafico-d3"></svg>
+            </div>
+    
+            <div id="perfil-container" class="perfil-card">
+                <h2 id="perfil-nome">Selecione um Designer</h2>
+                <p><strong>Técnica:</strong> <span id="perfil-tecnica">Nenhuma</span></p>
+                <p id="perfil-descricao"></p>
+            
+                <button id="fechar-perfil">Fechar Perfil</button>
+            </div>
+        </section>
+    </div>
+
+
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="main.js"></script>
+
+</body>
+</html>
