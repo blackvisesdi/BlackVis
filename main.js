@@ -51,6 +51,7 @@ function preprocessGraphData(data) {
 
   const designerNodes = originalNodes.filter((d) => d["Área do design"]);
 
+  
   designerNodes.forEach((dNode) => {
     const areaData = dNode["Área do design"];
     let areasToLink = [];
@@ -98,6 +99,8 @@ function preprocessGraphData(data) {
     links: newLinks,
   };
 }
+
+// Conta quantas linhas estão conectadas a cada nó e faz bolinhas de tamanhos diferentes
 
 function calculateNodeDegree(nodes, links) {
   const degreeMap = new Map();
@@ -201,7 +204,7 @@ function focusNode(event, d) {
     .selectAll(".label")
     .attr("fill-opacity", (d_label) => (neighbors.has(d_label.id) ? 1.0 : 0.3));
 
-  // Exibição do Perfil (correção de bug anterior)
+  // Exibição do Perfil
   const hasProfileInfo = d["Área do design"] || d.isCategory;
 
   if (hasProfileInfo) {
@@ -236,7 +239,7 @@ function resetFocus(d) {
   focusedNode = null;
 }
 
-// Função para exibir o CARD de Perfil (correção de bug anterior)
+// Função para exibir o CARD de Perfil
 function exibirPerfil(designerData) {
   const container = d3.select("#perfil-container");
 
@@ -270,27 +273,34 @@ function drawForceGraph(data) {
   graphData.nodes = Array.isArray(data.nodes) ? data.nodes : [];
   graphData.links = Array.isArray(data.links) ? data.links : [];
 
+  // Para a simulação anterior
   if (simulation) {
     simulation.stop();
   }
 
   const allDegrees = graphData.nodes.map((d) => d.degree);
-  const minDegree = d3.min(allDegrees) || 1;
+  const minDegree = d3.min(allDegrees) || 1; 
   const maxDegree = d3.max(allDegrees) || 1;
   radiusScale.domain([minDegree, maxDegree]);
 
   // Inicializa a simulação
   simulation = d3
-    .forceSimulation(graphData.nodes)
+    .forceSimulation(graphData.nodes) 
     .force(
       "link",
       d3
         .forceLink(graphData.links)
         .id((d) => d.id)
+        
+        // Define a distancia um do outro
         .distance(50)
-    )
+  )
+    // Impede que todos se amontoem no centro
     .force("charge", d3.forceManyBody().strength(-100))
+
+    // "Gravidade"
     .force("center", d3.forceCenter(width / 2, height / 2).strength(1.0))
+
     // Colisão baseada no raio calculado
     .force(
       "collide",
@@ -321,7 +331,6 @@ function drawForceGraph(data) {
       d.isCategory ? "#a9a9a9" : color(d["Área do design"])
     )
     .call(drag(simulation))
-    // CHAMADA AJUSTADA: Passa 'event' e 'd'
     .on("click", (event, d) => {
       focusNode(event, d);
     });
@@ -334,10 +343,10 @@ function drawForceGraph(data) {
     .attr("class", "label")
     .text((d) => {
       if (d.isCategory) return d.Nome;
-     
+
       return d.Nome ? d.Nome.split(" ")[0] : d.id.split(" ")[0];
     })
-    
+
     .attr("text-anchor", "middle") // Centraliza horizontalmente
     .attr("dominant-baseline", "central") // Centraliza verticalmente
     .style("font-size", "6px") // Fonte menor para caber
@@ -346,7 +355,7 @@ function drawForceGraph(data) {
     .append("title")
     .text((d) => d.Nome || d.id); // Adiciona Tooltip para o nome completo
 
-  // Função TICK da simulação
+  // Função TICK da simulação (loop da animação)
   simulation.on("tick", () => {
     link
       .attr("x1", (d) => d.source.x)
@@ -389,14 +398,15 @@ function filterGraphData(minYear, maxYear) {
   const filteredNodeIds = new Set(filteredNodes.map((d) => d.id));
 
   const filteredLinks = allLinks.filter((link) => {
-    const sourceId =
-      typeof link.source === "object" ? link.source.id : link.source;
-    const targetId =
-      typeof link.target === "object" ? link.target.id : link.target;
+      const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+      const targetId = typeof link.target === "object" ? link.target.id : link.target;
     return filteredNodeIds.has(sourceId) && filteredNodeIds.has(targetId);
   });
 
-  const filteredGraph = { nodes: filteredNodes, links: filteredLinks };
+  const filteredGraph = {
+    nodes: filteredNodes,
+    links: filteredLinks
+  };
   drawForceGraph(filteredGraph);
 }
 
@@ -421,6 +431,7 @@ function initSlider(minYear, maxYear) {
     .attr("class", "track")
     .attr("x1", xSlider.range()[0])
     .attr("x2", xSlider.range()[1]);
+  
   const trackActive = g
     .append("line")
     .attr("class", "track-active")
@@ -458,6 +469,8 @@ function initSlider(minYear, maxYear) {
   function dragended(event) {
     d3.select(this).attr("r", 10).attr("stroke", "#e74c3c");
   }
+
+  // Função de "arrastar"
   function draggedMin(event) {
     let newX = event.x;
     let newValue = xSlider.invert(newX);
