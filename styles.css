@@ -1,0 +1,92 @@
+.content-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    
+    gap: 20px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+section{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.grafico-container {
+    width: 70%;
+
+    flex-grow: 1;
+}
+
+#perfil-container {
+    width: 20%;
+    
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 800px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+
+    #perfil-container {
+        width: 100%;
+    }
+
+    #grafico-container {
+        min-width: 100%;
+    }
+}
+
+/* --- SLIDER --- */
+
+#slider-container {
+    width: 750px;
+
+    margin: 20px auto;
+    padding: 10px 20px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+.slider-label {
+    font-size: 1em;
+    margin-bottom: 5px;
+    text-align: left;
+    /* color: #555; */
+}
+
+/* Estilos base do slider D3 */
+.track, .track-overlay {
+    stroke-linecap: round;
+}
+
+.track {
+    /* stroke: #ddd; */
+    stroke-width: 5px;
+}
+
+.track-active {
+    stroke: #e74c3c;
+    stroke-width: 5px;
+}
+
+.handle {
+    fill: #fff;
+    stroke: #e74c3c;
+    stroke-width: 2px;
+    
+    cursor: grab;
+    transition: r 0.1s;
+}
+
+.handle:hover {
+    r: 12;
+}
