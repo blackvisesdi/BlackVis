@@ -106,6 +106,14 @@ function drawForceGraph(data) {
     const stroke = getNodeStrokeColor(d);
 
     if (d.isTechnique) {
+      element
+        .append("circle")
+        .attr("r", r)
+        .attr("class", "node-background-circle")
+        .attr("fill", fill)
+        .attr("stroke", stroke)
+        .attr("stroke-width", 1.5);
+
       // TODO: TESTE | Pegar um svg de cada
       const svgSource = "../assets/Ilustração.svg";
       const size = r * 2;
