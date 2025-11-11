@@ -54,11 +54,6 @@ function buildColorMaps() {
       if (area && !inferredPersonArea.has(t)) inferredPersonArea.set(t, area);
     }
   });
-
-  // debug
-  // console.log("axisColorsNormalized:", axisColorsNormalized);
-  // console.log("nodeAreaMap:", Array.from(nodeAreaMap.entries()).slice(0, 20));
-  // console.log("inferredPersonArea:", Array.from(inferredPersonArea.entries()).slice(0, 20));
 }
 
 function getBaseColorForNode(node) {
