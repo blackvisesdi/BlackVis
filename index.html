@@ -6,30 +6,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Testes 1.0</title>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./styles/style.css">
 </head>
 <body>
     <div id="content-wrapper">
-
-        <div id="slider-container" class="filter-controls">
-            <div class="slider-label">
-                Filtrar por Ano de Nascimento:
-                <span id="value-min">1900</span> - <span id="value-max">2000</span>
-            </div>
-            <svg id="dual-slider"></svg>
-        </div>
-
         <section>
             <div class="grafico-container">
                 <svg id="grafico-d3"></svg>
             </div>
-    
-            <div id="perfil-container" class="perfil-card">
-                <h2 id="perfil-nome">Selecione um Designer</h2>
-                <p><strong>Técnica:</strong> <span id="perfil-tecnica">Nenhuma</span></p>
-                <p id="perfil-descricao"></p>
             
-                <button id="fechar-perfil">Fechar Perfil</button>
+            <div id="card" class="card">
+                <div class="corner top left"></div>
+                <div class="corner top right"></div>
+                <div class="corner bottom left"></div>
+                <div class="corner bottom right"></div>
+
+                <div id="slider-container" class="filter-controls">
+                    <h3>Filtros:</h3>
+                    <div class="slider-label">
+                        Por Ano de Nascimento:  </br>
+                        <span id="value-min"></span>
+                        <svg id="dual-slider"></svg>
+                        <span id="value-max"></span>
+                    </div>
+                    <div id="category-filter-group">
+                        <label for="category-select">Área do Design:</label>
+                        <select id="category-select" onchange="applyCategoryFilter(this.value)">
+                        </select>
+                    </div>
+                </div>
+                <hr class="card-divider">
+                <h2 id="perfil-nome">Selecione um Designer</h2>
+                <p> 
+                    <span id="card-info">Nenhuma</span>
+                </p>
+                <p id="perfil-descricao"></p>
+                <a id="btn-link-externo" class="btn"></a>
+                <!-- <button id="fechar-perfil">
+                    <span class="left"></span>
+                    <span class="right"></span>
+                    Fechar Perfil
+                </button> -->
             </div>
         </section>
     </div>
@@ -37,7 +54,14 @@
 
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="main.js"></script>
+    <script src="js/globals.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/colors.js"></script>
+    <script src="js/preprocess.js"></script>
+    <script src="js/interactions.js"></script>
+    <script src="js/draw.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/loader.js"></script>
 
 </body>
 </html>
