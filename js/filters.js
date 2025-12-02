@@ -8,47 +8,16 @@ const xSlider = d3
   .clamp(true);
 
 function applyCategoryFilter(categoryName) {
-  currentCategory = categoryName;
+  currentCategory = categoryName; ;
 
-  filterGraphData(currentMin, currentMax);
+  window.applyAllFilters();
 }
 
 function filterGraphData(minYear, maxYear) {
-  const nodesFilteredByYear = allNodes.filter(
-    (d) =>
-      d.isCategory ||
-      !d["Data de nascimento"] ||
-      (d["Data de nascimento"] >= minYear && d["Data de nascimento"] <= maxYear)
-  );
+  currentMin = minYear;
+  currentMax = maxYear; 
 
-  const filteredNodes = nodesFilteredByYear.filter((d) => {
-    if (currentCategory === "Todos") return true;
-
-    if (d.isCategory && d.Nome === currentCategory) return true;
-
-    if (!d.isCategory && d["Área do design"] === currentCategory) {
-      return true;
-    }
-
-    return false;
-  });
-
-  const filteredNodeIds = new Set(filteredNodes.map((d) => d.id));
-
-  const filteredLinks = allLinks.filter((link) => {
-    const sourceId =
-      typeof link.source === "object" ? link.source.id : link.source;
-    const targetId =
-      typeof link.target === "object" ? link.target.id : link.target;
-    return filteredNodeIds.has(sourceId) && filteredNodeIds.has(targetId);
-  });
-
-  const filteredGraph = {
-    nodes: filteredNodes,
-    links: filteredLinks,
-  };
-
-  drawForceGraph(filteredGraph);
+  window.applyAllFilters();
 }
 
 function initSlider(minYear, maxYear) {
@@ -105,33 +74,83 @@ function initSlider(minYear, maxYear) {
   }
   function dragended(event) {
     // d3.select(this).attr("r", 5).attr("stroke", "#e74c3c");
-  }
+  } // Função de "arrastar"
 
-  // Função de "arrastar"
   function draggedMin(event) {
     let newX = event.x;
     let newValue = xSlider.invert(newX);
     if (newValue < minYear) newValue = minYear;
-    if (newValue > currentMax - 1) newValue = currentMax - 1;
-    currentMin = Math.round(newValue);
-    d3.select(this).attr("cx", xSlider(currentMin));
+    if (newValue > window.currentMax - 1) newValue = window.currentMax - 1;
+    
+    window.currentMin = Math.round(newValue);
+    d3.select(this).attr("cx", xSlider(window.currentMin));
     updateVisuals();
-    filterGraphData(currentMin, currentMax);
+    
+    window.applyAllFilters();
   }
   function draggedMax(event) {
     let newX = event.x;
     let newValue = xSlider.invert(newX);
     if (newValue > maxYear) newValue = maxYear;
-    if (newValue < currentMin + 1) newValue = currentMin + 1;
-    currentMax = Math.round(newValue);
-    d3.select(this).attr("cx", xSlider(currentMax));
-    updateVisuals();
-    filterGraphData(currentMin, currentMax);
+    if (newValue < window.currentMin + 1) newValue = window.currentMin + 1;
+    
+    window.currentMax = Math.round(newValue);
+    d3.select(this).attr("cx", xSlider(window.currentMax));
+    updateVisuals(); 
+
+    window.applyAllFilters();
   }
   function updateVisuals() {
-    trackActive.attr("x1", xSlider(currentMin)).attr("x2", xSlider(currentMax));
-    d3.select("#value-min").text(currentMin);
-    d3.select("#value-max").text(currentMax);
+    trackActive.attr("x1", xSlider(window.currentMin)).attr("x2", xSlider(window.currentMax));
+    d3.select("#value-min").text(window.currentMin);
+    d3.select("#value-max").text(window.currentMax);
   }
   updateVisuals();
+
+  window.applyAllFilters();
+}
+
+function setupCategoryFilter(categories) {
+  // Seleciona o elemento dropdown
+  d3.select("#category-select").on("change", function () {
+    const selectedCategory = this.value;
+    
+    applyCategoryFilter(selectedCategory);
+  });
+
+  console.log("Listener de Categoria configurado.");
+}
+
+function setupYearInputListeners(minDataYear, maxDataYear) {
+  // 1. Inicializa o estado visual e global das caixas de texto
+  d3.select("#year-min-input").property("value", minDataYear);
+  d3.select("#year-max-input").property("value", maxDataYear);
+
+  d3.select("#year-min-input").on("change", function () {
+    let newMin = +this.value;
+    window.currentMin = newMin;
+    window.applyAllFilters();
+  });
+
+  d3.select("#year-max-input").on("change", function () {
+    let newMax = +this.value;
+
+    window.currentMax = newMax;
+    window.applyAllFilters();
+  });
+  console.log("Listeners de Input de Ano configurados.");
+}
+
+function setupDesignerSearch() {
+  d3.select("#designer-search-input").on("keyup", function () {
+    const searchTerm = this.value.toLowerCase().trim();
+
+    // 🚨 1. Atualiza o estado global
+    window.currentSearchTerm = searchTerm;
+
+    // 🚨 2. Chama a função mestra para refiltrar
+    window.applyAllFilters();
+  });
+
+  console.log("Listener de Pesquisa de Designer configurado.");
 }

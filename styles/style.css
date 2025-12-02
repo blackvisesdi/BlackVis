@@ -17,8 +17,8 @@ body {
   padding: 2rem;
   height: 100vh;
   color: #eeece7;
-  background-color: #141018;
-  background: radial-gradient(circle at 100% 0%, #211726, #141018);
+  background-color: black;
+  background: radial-gradient(circle at 100% 0%, black);
 }
 
 .content-wrapper {
@@ -71,8 +71,8 @@ section {
       -ms-flex-direction: column;
           flex-direction: column;
   position: relative;
-  width: 30%;
   padding: 15px;
+  width: 30%;
   border: 1px solid #edd7ab;
   /* Estilos base do slider D3 */
 }
@@ -156,29 +156,22 @@ section {
   border-bottom: 1px solid #edd7ab;
 }
 
-#card button {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  height: 2rem;
-  padding: 0 1rem;
-  margin: 0 2rem;
-  all: unset;
-  text-align: center;
-  border-top: 1px solid #edd7ab;
-  border-bottom: 1px solid #edd7ab;
-}
-
-#card #slider-container {
+#card #info-container {
   width: auto;
   padding: 5px;
   border-radius: 2px;
+}
+
+#card #info-container h2 {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 #card .slider-label {
@@ -188,9 +181,6 @@ section {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
   font-size: 1em;
   margin-bottom: 5px;
   text-align: left;

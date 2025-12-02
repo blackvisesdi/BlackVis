@@ -1,3 +1,5 @@
+
+
 // Multiplicadores de tamanho por tipo
 const MULT_CATEGORY = 1.6; // categorias — maiores
 const MULT_TECHNIQUE = 0.9; // técnicas — intermediárias
@@ -9,9 +11,9 @@ const MIN_RADIUS_PERSON = 4;
 
 const COLLISION_PADDING = 6;
 
+let activeNode = null;
 
 function nodeRadius(d) {
-
   const base = Math.max(radiusScale(d.degree || 1), 1);
 
   let r;
@@ -63,12 +65,13 @@ function drawForceGraph(data) {
     .force("center", d3.forceCenter(width / 2, height / 2).strength(1.0))
 
     // Colisão baseada no raio calculado
-    .force("collide",
+    .force(
+      "collide",
       d3
         .forceCollide()
-        .radius((d) => nodeRadius(d) + COLLISION_PADDING).strength(0.9)
+        .radius((d) => nodeRadius(d) + COLLISION_PADDING)
+        .strength(0.9)
     );
-
 
   // Padrão D3: Data Join para Links
   const link = linkGroup
@@ -84,7 +87,7 @@ function drawForceGraph(data) {
   const node = nodeGroup
     .selectAll(".node")
     .data(graphData.nodes, (d) => d.id)
-   
+
     .join("g")
     .attr("class", "node")
     .call(drag(simulation))
@@ -93,7 +96,11 @@ function drawForceGraph(data) {
         window.applyTechniqueFilter(d.Nome);
       }
       if (typeof focusNode === "function") {
-        focusNode(event, d);
+        if (activeNode && activeNode.id === d.id) {
+          focusNode(event, null);
+        } else {
+          focusNode(event, d);
+        }
       }
     });
 
@@ -153,32 +160,31 @@ function drawForceGraph(data) {
     .attr("dominant-baseline", "central") // Centraliza verticalmente
     .style("font-size", "6px") // Fonte menor para caber
     .style("pointer-events", "none")
-    .attr("fill", "#FFF")
+    // .attr("fill", "#FFF")
     .append("title")
     .text((d) => d.Nome || d.id); // Adiciona Tooltip para o nome completo
 
-  // Função TICK da simulação (loop da animação)
+  // Função TICK (coração da simulação de forças do D3.js)
   simulation.on("tick", () => {
-      link
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+    link
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y);
 
-      node
-        .each(function(d) {
-                  const r = nodeRadius(d); 
-                  d.x = Math.max(r, Math.min(width - r, d.x));
-                  d.y = Math.max(r, Math.min(height - r, d.y));
-              })
-              .attr("transform", (d) => `translate(${d.x},${d.y})`);
+    node
+      .each(function (d) {
+        const r = nodeRadius(d);
+        d.x = Math.max(r, Math.min(width - r, d.x));
+        d.y = Math.max(r, Math.min(height - r, d.y));
+      })
+      .attr("transform", (d) => `translate(${d.x},${d.y})`);
 
-          labels.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    });
+    labels.attr("transform", (d) => `translate(${d.x},${d.y})`);
+  });
 
   simulation.alpha(0.5).restart();
 }
-
 
 function getNodeFillColor(d) {
   const baseHex = getBaseColorForNode(d);
