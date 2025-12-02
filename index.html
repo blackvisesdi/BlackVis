@@ -21,10 +21,14 @@
                 <div class="corner bottom left"></div>
                 <div class="corner bottom right"></div>
 
-                <div id="slider-container" class="filter-controls">
+                <div id="info-container" class="filter-controls">
+                    <h2>BlackVis</h2>
+                    <!-- <input type="text" class="nomes">
+                        <button class="open-filter-btn">Filtros</button> -->
+                        
                     <h3>Filtros:</h3>
                     <div class="slider-label">
-                        Por Ano de Nascimento:  </br>
+                        Por Ano de Nascimento:
                         <span id="value-min"></span>
                         <svg id="dual-slider"></svg>
                         <span id="value-max"></span>
@@ -34,7 +38,16 @@
                         <select id="category-select" onchange="applyCategoryFilter(this.value)">
                         </select>
                     </div>
+                    <div id="designer-search-container">
+                        <label for="designer-search-input">Por nome:</label>
+                        <input type="text" id="designer-search-input" placeholder="Digite o nome..." />
+                    </div>
                 </div>
+
+                <!-- <button class="test-color-btn" onclick="cycleTestColorsSimple()">
+                    Teste de cor
+                </button> -->
+
                 <hr class="card-divider">
                 <h2 id="perfil-nome">Selecione um Designer</h2>
                 <p> 

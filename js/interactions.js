@@ -26,53 +26,66 @@ function drag(simulation) {
 function focusNode(event, d) {
   if (event) event.stopPropagation();
 
-  // Reseta o foco se clicar no mesmo nó
-  if (focusedNode && focusedNode.id === d.id) {
-    resetFocus(focusedNode);
-    focusedNode = null;
-    return;
+  // Lógica para liberar o nó anterior e atualizar o estado (activeNode)
+  if (activeNode && (!d || activeNode.id !== d.id)) {
+    activeNode.fx = null;
+    activeNode.fy = null;
   }
 
-  focusedNode = d;
+  const isFocado = !!d;
+  activeNode = isFocado ? d : null;
 
-  const neighbors = new Set();
-  const adjacentLinks = [];
-  neighbors.add(d.id);
+  if (isFocado) {
+    d.fx = width / 2;
+    d.fy = height / 2;
 
-  graphData.links.forEach((link) => {
-    if (link.source.id === d.id) {
-      neighbors.add(link.target.id);
-      adjacentLinks.push(link);
-    } else if (link.target.id === d.id) {
-      neighbors.add(link.source.id);
-      adjacentLinks.push(link);
+    const hasProfileInfo = d["Área do design"] || d.isCategory;
+
+    if (hasProfileInfo && typeof exibirPerfil === "function") {
+      exibirPerfil(d);
+      d3.select("#details-card").style("display", "block");
+    } else {
+      d3.select("#details-card").style("display", "none");
     }
-  });
 
-  // Efeitos visuais de foco
-  linkGroup
-    .selectAll(".link")
-    .attr("stroke-opacity", (l) => (adjacentLinks.includes(l) ? 1.0 : 0.3));
+    
+    const neighbors = new Set();
+    neighbors.add(d.id);
+    graphData.links.forEach((link) => {
+      if (link.source.id === d.id) neighbors.add(link.target.id);
+      else if (link.target.id === d.id) neighbors.add(link.source.id);
+    });
 
-  nodeGroup
-    .selectAll(".node")
-    .attr("fill-opacity", (d_node) => (neighbors.has(d_node.id) ? 1.0 : 0.3))
-    .attr("stroke-width", (d_node) => (d_node.id === d.id ? 3 : 1.5))
-    .attr("r", (d_node) =>
-      d_node.id === d.id ? nodeRadius(d) * 1.5 : nodeRadius(d_node)
-    );
+    nodeGroup
+      .selectAll(".node")
+      .transition()
+      .duration(300)
+      .style("opacity", (o) => (neighbors.has(o.id) ? 1 : 0.1));
 
-  labelGroup
-    .selectAll(".label")
-    .attr("fill-opacity", (d_label) => (neighbors.has(d_label.id) ? 1.0 : 0.3));
-
-  // Exibição do Perfil
-  const hasProfileInfo = d["Área do design"] || d.isCategory;
-
-  if (hasProfileInfo) {
-    exibirPerfil(d);
+    linkGroup
+      .selectAll(".link")
+      .transition()
+      .duration(300)
+      .style("opacity", (l) =>
+        l.source.id === d.id || l.target.id === d.id ? 1 : 0.05
+      );
   } else {
-    d3.select("#card").style("display", "none");
+    d3.select("#details-card").style("display", "none");
+
+    // Reseta a opacidade de todos os nós
+    nodeGroup.selectAll(".node").transition().duration(300).style("opacity", 1);
+
+    // Reseta a opacidade de todos os links
+    linkGroup
+      .selectAll(".link")
+      .transition()
+      .duration(300)
+      .style("opacity", 0.6);
+  }
+
+  // Reinicia a simulação
+  if (simulation) {
+    simulation.alpha(0.3).restart();
   }
 }
 
@@ -89,11 +102,10 @@ function resetFocus(d) {
     d.fx = null;
     d.fy = null;
   }
-  if (simulation) {
-    simulation.alphaTarget(0).restart();
-  }
+  if (simulation) simulation.alpha(0.3).restart();
+
   focusedNode = null;
-  d3.select("#card").style("display", "none");
+  activeNode = null;
 }
 
 // Função para exibir o CARD de Perfil
