@@ -13,6 +13,7 @@ const COLLISION_PADDING = 6;
 
 let activeNode = null;
 
+
 function nodeRadius(d) {
   const base = Math.max(radiusScale(d.degree || 1), 1);
 
@@ -56,13 +57,13 @@ function drawForceGraph(data) {
         .id((d) => d.id)
 
         // Define a distancia um do outro
-        .distance(50)
+        .distance(70)
     )
     // Impede que todos se amontoem no centro
     .force("charge", d3.forceManyBody().strength(-100))
 
     // "Gravidade"
-    .force("center", d3.forceCenter(width / 2, height / 2).strength(1.0))
+    .force("center", d3.forceCenter(width / 2, height / 2))
 
     // Colisão baseada no raio calculado
     .force(
@@ -70,7 +71,6 @@ function drawForceGraph(data) {
       d3
         .forceCollide()
         .radius((d) => nodeRadius(d) + COLLISION_PADDING)
-        .strength(0.9)
     );
 
   // Padrão D3: Data Join para Links
@@ -175,8 +175,8 @@ function drawForceGraph(data) {
     node
       .each(function (d) {
         const r = nodeRadius(d);
-        d.x = Math.max(r, Math.min(width - r, d.x));
-        d.y = Math.max(r, Math.min(height - r, d.y));
+        d.x = Math.max(r, Math.min(window.innerWidth - r, d.x));
+        d.y = Math.max(r, Math.min(window.innerHeight - r, d.y));
       })
       .attr("transform", (d) => `translate(${d.x},${d.y})`);
 

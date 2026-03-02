@@ -19,7 +19,7 @@ d3.json("data.json")
 
     window.currentMin = minDataYear;
     window.currentMax = maxDataYear;
-    window.currentCategory = "Todos";
+    window.currentCategory = "Todas";
 
     fillCategoryDropdown();
 
@@ -30,25 +30,61 @@ d3.json("data.json")
     setupCategoryFilter();
 
     window.applyAllFilters();
+
   })
   .catch((error) => {
     console.error("Erro fatal ao carregar data.json...", error);
   });
 
   function applyAllFilters() {
-    const categoryFilter = window.currentCategory || "Todos";
+    const categoryFilter = window.currentCategory;
+
     const minYear = window.currentMin;
     const maxYear = window.currentMax;
-    const searchTerm = window.currentSearchTerm;
 
     let filteredNodes = allNodes;
 
-    
+    // --- FILTRO DE PESQUISA POR NOME ---
+    const searchInput = document.getElementById("search-input");
+    const searchTerm = searchInput
+      ? searchInput.value.toLowerCase().trim()
+      : "";
+
+    if (searchTerm !== "") {
+      // Designers que batem com a busca
+      const matches = allNodes.filter((d) => {
+        if (d.isCategory) return false;
+        const nome = (d["Nome"] || "").toLowerCase();
+        return nome.includes(searchTerm);
+      });
+
+      // MENSAGEM DE ERRO: Se não encontrou ninguém, avisa e reseta
+      if (matches.length === 0) {
+        alert("Designer não encontrado!");
+        searchInput.value = "";
+      } else {
+        filteredNodes = filteredNodes.filter((d) => {
+          // Se for designer, vê se ele está na lista de achados
+          if (!d.isCategory) {
+            const nome = (d["Nome"] || "").toLowerCase();
+            return nome.includes(searchTerm);
+          }
+
+          // Mantem a categoria se ela for "pai" de algum dos designers encontrados
+          return matches.some((m) => {
+            const areas = String(m["Área do design"] || "")
+              .split(",")
+              .map((s) => s.trim());
+            return areas.includes(d.id);
+          });
+        });
+      }
+    }
+
     // --- FILTRO DE CATEGORIA ---
-    if (categoryFilter !== "Todos") {
+    if (categoryFilter !== "all" && categoryFilter !== "Todas") {
       filteredNodes = filteredNodes.filter((d) => {
-        if (d.isCategory && d.id === categoryFilter)
-          return true;
+        if (d.isCategory && d.id === categoryFilter) return true;
 
         if (!d.isCategory && d["Área do design"]) {
           const areas =
@@ -60,41 +96,41 @@ d3.json("data.json")
         }
         return false;
       });
-  }
-
-  // --- FILTRO DE DATA DE NASCIMENTO  ---
-  filteredNodes = filteredNodes.filter((d) => {
-    if (d.isCategory || !d["Data de nascimento"]) {
-      return true;
     }
 
-    const birthYear = +d["Data de nascimento"];
-    return birthYear >= minYear && birthYear <= maxYear;
-  });
+    // --- FILTRO DE DATA DE NASCIMENTO  ---
+    filteredNodes = filteredNodes.filter((d) => {
+      if (d.isCategory || !d["Data de nascimento"]) {
+        return true;
+      }
 
-  // --- FILTRAGEM DE LINKS ---
-  const filteredNodeIds = new Set(filteredNodes.map((d) => d.id));
-  const filteredLinks = allLinks.filter((link) => {
-    const sourceId =
-      typeof link.source === "object" ? link.source.id : link.source;
-    const targetId =
-      typeof link.target === "object" ? link.target.id : link.target;
-    return filteredNodeIds.has(sourceId) && filteredNodeIds.has(targetId);
-  });
+      const birthYear = +d["Data de nascimento"];
+      return birthYear >= minYear && birthYear <= maxYear;
+    });
 
-  // --- REDESENHO FINAL ---
-  drawForceGraph({ nodes: filteredNodes, links: filteredLinks });
-}
+    // --- FILTRAGEM DE LINKS ---
+    const filteredNodeIds = new Set(filteredNodes.map((d) => d.id));
+    const filteredLinks = allLinks.filter((link) => {
+      const sourceId =
+        typeof link.source === "object" ? link.source.id : link.source;
+      const targetId =
+        typeof link.target === "object" ? link.target.id : link.target;
+      return filteredNodeIds.has(sourceId) && filteredNodeIds.has(targetId);
+    });
+
+    // --- REDESENHO FINAL ---
+    drawForceGraph({ nodes: filteredNodes, links: filteredLinks });
+  }
 
   window.applyCategoryFilter = function (categoryName) {
     currentCategory = categoryName; // Atualiza o estado
-    applyAllFilters(); // Chama a mestra para aplicar todos os filtros
+    applyAllFilters()
   };
 
   window.applyYearFilter = function (minYear, maxYear) {
     currentMin = minYear; // Atualiza o estado
     currentMax = maxYear; // Atualiza o estado
-    applyAllFilters(); // Chama a mestra para aplicar todos os filtros
+    applyAllFilters();
   };
 
 function fillCategoryDropdown() {
@@ -103,41 +139,34 @@ function fillCategoryDropdown() {
       .filter((d) => !d.isCategory && d["Área do design"])
       .reduce((accumulator, d) => {
         const areaData = d["Área do design"];
-
         if (typeof areaData === "string") {
           const areas = areaData
             .split(",")
             .map((s) => s.trim())
-            .filter(Boolean); // Remove strings vazias
+            .filter(Boolean);
           return accumulator.concat(areas);
         }
-        if (Array.isArray(areaData)) {
-          return accumulator.concat(
-            areaData.map((s) => s.trim()).filter(Boolean)
-          );
-        }
-        if (typeof areaData === "string" && areaData.length > 0) {
-          return accumulator.concat([areaData.trim()]);
-        }
-
         return accumulator;
       }, [])
   );
 
-  const rawCategories = Array.from(uniqueCategories).filter(Boolean).sort();
-  const categories = ["Todas", ...rawCategories];
+  const rawCategories = Array.from(uniqueCategories)
+                             .filter(Boolean).sort();
+  const categories = [
+    { text: "Todas", value: "all" },
+    ...rawCategories.map((c) => ({ text: c, value: c })),
+  ];
 
-  const select = d3.select("#category-select");
+  const select = d3.select("#category-filter");
 
   select
     .selectAll("option")
     .data(categories)
     .join("option")
-    .attr("value", (d) => d)
-    .text((d) => d);
+    .attr("value", (d) => d.value)
+    .text((d) => d.text);
 
-  select.property("value", "Todas");
-  console.log("Filtro de Categoria preenchido:", categories);
+  select.property("value", "all");
 }
 
 // Niveis de saturação das cores

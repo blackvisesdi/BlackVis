@@ -6,10 +6,10 @@ const height = VBOX_HEIGHT;
 const svg = d3
   .select("#grafico-d3")
 
-  .attr("viewBox", `0 0 ${VBOX_WIDTH} ${VBOX_HEIGHT}`)
+  // .attr("viewBox", `0 0 ${VBOX_WIDTH} ${VBOX_HEIGHT}`)
   .attr("preserveAspectRatio", "xMidYMid meet")
   .style("width", "100%")
-  .style("height", "auto");
+  .style("height", "height");
 
 const linkGroup = svg.append("g").attr("class", "links");
 const nodeGroup = svg.append("g").attr("class", "nodes");
