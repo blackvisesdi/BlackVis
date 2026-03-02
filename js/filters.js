@@ -1,5 +1,5 @@
 const sliderMargin = { top: 10, right: 10, bottom: 0, left: 10 };
-const sliderWidth = 50;
+const sliderWidth = 100;
 
 const xSlider = d3
   .scaleLinear()
@@ -28,9 +28,9 @@ function initSlider(minYear, maxYear) {
   const sliderSvg = d3
     .select("#dual-slider")
     .attr("width", sliderWidth + sliderMargin.left + sliderMargin.right)
-    .attr("height", 40)
+    .attr("height", 5)
     .append("g")
-    .attr("transform", `translate(${sliderMargin.left}, 20)`);
+    .attr("transform", `translate(${sliderMargin.left}, 25)`);
 
   const g = sliderSvg.append("g").attr("class", "slider");
   g.append("line")
@@ -43,7 +43,8 @@ function initSlider(minYear, maxYear) {
     .attr("class", "track-active")
     .attr("x1", xSlider(currentMin))
     .attr("x2", xSlider(currentMax));
-
+  
+  // Bolinha esquerda
   const handleMin = g
     .append("circle")
     .attr("class", "handle handle-min")
@@ -56,6 +57,7 @@ function initSlider(minYear, maxYear) {
         .on("drag", draggedMin)
         .on("end", dragended)
     );
+  // Bolinha direita
   const handleMax = g
     .append("circle")
     .attr("class", "handle handle-max")
@@ -81,11 +83,11 @@ function initSlider(minYear, maxYear) {
     let newValue = xSlider.invert(newX);
     if (newValue < minYear) newValue = minYear;
     if (newValue > window.currentMax - 1) newValue = window.currentMax - 1;
-    
+
     window.currentMin = Math.round(newValue);
     d3.select(this).attr("cx", xSlider(window.currentMin));
     updateVisuals();
-    
+
     window.applyAllFilters();
   }
   function draggedMax(event) {
@@ -93,15 +95,17 @@ function initSlider(minYear, maxYear) {
     let newValue = xSlider.invert(newX);
     if (newValue > maxYear) newValue = maxYear;
     if (newValue < window.currentMin + 1) newValue = window.currentMin + 1;
-    
+
     window.currentMax = Math.round(newValue);
     d3.select(this).attr("cx", xSlider(window.currentMax));
-    updateVisuals(); 
+    updateVisuals();
 
     window.applyAllFilters();
   }
   function updateVisuals() {
-    trackActive.attr("x1", xSlider(window.currentMin)).attr("x2", xSlider(window.currentMax));
+    trackActive
+      .attr("x1", xSlider(window.currentMin))
+      .attr("x2", xSlider(window.currentMax));
     d3.select("#value-min").text(window.currentMin);
     d3.select("#value-max").text(window.currentMax);
   }
@@ -112,7 +116,7 @@ function initSlider(minYear, maxYear) {
 
 function setupCategoryFilter(categories) {
   // Seleciona o elemento dropdown
-  d3.select("#category-select").on("change", function () {
+  d3.select("#category-filter").on("change", function () {
     const selectedCategory = this.value;
     
     applyCategoryFilter(selectedCategory);
@@ -145,10 +149,8 @@ function setupDesignerSearch() {
   d3.select("#designer-search-input").on("keyup", function () {
     const searchTerm = this.value.toLowerCase().trim();
 
-    // 🚨 1. Atualiza o estado global
     window.currentSearchTerm = searchTerm;
 
-    // 🚨 2. Chama a função mestra para refiltrar
     window.applyAllFilters();
   });
 
