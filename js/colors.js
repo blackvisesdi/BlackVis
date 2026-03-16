@@ -18,13 +18,13 @@ const SATURATION_PALETTE = {
     7: "#FBECD3",
   },
   ROSA: {
-    1: "#E241BE",
-    2: "#E37C5C",
-    3: "#E8B5C8",
-    4: "#E9D022",
-    5: "#E5DA0B",
-    6: "#F0B00F",
-    7: "#FAC0E5",
+    1: "#C0157A",
+    2: "#D1299A",
+    3: "#DF4DB4",
+    4: "#E872C4",
+    5: "#EF96D3",
+    6: "#F5B8E2",
+    7: "#FAD9F0",
   },
   AMARELO: {
     1: "#FFDE4C",
@@ -79,11 +79,10 @@ let inferredPersonArea = new Map();
 
 
 function buildColorMaps(nodes, links) {
-  // limpa
   nodeAreaMap = new Map();
   inferredPersonArea = new Map();
-
-  allNodes.forEach((n) => {
+ 
+  nodes.forEach((n) => {
     if (n.isCategory) {
       nodeAreaMap.set(n.id, n.id);
     } else if (n.isTechnique && n["Área do design"]) {
@@ -92,14 +91,14 @@ function buildColorMaps(nodes, links) {
       nodeAreaMap.set(n.id, n["Área do design"]);
     }
   });
-
-  allLinks.forEach((l) => {
+ 
+  links.forEach((l) => {
     const s = getId(l.source);
     const t = getId(l.target);
-
-    const nodeS = allNodes.find((n) => n.id === s);
-    const nodeT = allNodes.find((n) => n.id === t);
-
+ 
+    const nodeS = nodes.find((n) => n.id === s);
+    const nodeT = nodes.find((n) => n.id === t);
+ 
     if (nodeAreaMap.has(t) && !(nodeS && nodeS.isCategory)) {
       const area = nodeAreaMap.get(t);
       if (area && !inferredPersonArea.has(s)) inferredPersonArea.set(s, area);
@@ -110,13 +109,10 @@ function buildColorMaps(nodes, links) {
     }
   });
 }
-
+ 
 function getBaseColorForNode(node) {
-  // 1. Encontra a Área/Categoria Principal 
-
-  let areaKey = null; // Armazenará a chave normalizada da área
-  let areaName = null; // Armazenará o nome da área (ex: "Serviço")
-
+  let areaName = null;
+ 
   if (node.isCategory) {
     areaName = node.id;
   } else {
@@ -125,31 +121,24 @@ function getBaseColorForNode(node) {
       inferredPersonArea.get(node.id) ||
       nodeAreaMap.get(node.id);
   }
-
-  if (areaName) {
-    areaKey = normalizeKey(areaName) || FALLBACK_COLOR;
-  }
-
-  // 2. Se for uma Categoria, use a cor mais escura/saturada (nível 1)
+ 
   if (node.isCategory) {
     const paletteName = CATEGORY_PALETTE_MAP[areaName];
     if (paletteName && SATURATION_PALETTE[paletteName]) {
-      return SATURATION_PALETTE[paletteName][1]; // Nível 1 é a cor base mais escura
+      return SATURATION_PALETTE[paletteName][1];
     }
     return FALLBACK_COLOR;
   }
+ 
   const paletteName = CATEGORY_PALETTE_MAP[areaName];
-
   const saturationLevel = node.saturationLevel || 4;
-
+ 
   if (paletteName && SATURATION_PALETTE[paletteName]) {
-    // Note que Math.max e Math.min estão na mesma linha do return
     return (
-      SATURATION_PALETTE[paletteName][
-        Math.max(1, Math.min(7, saturationLevel))
-      ] || FALLBACK_COLOR
+      SATURATION_PALETTE[paletteName][Math.max(1, Math.min(7, saturationLevel))] ||
+      FALLBACK_COLOR
     );
   }
-
+ 
   return FALLBACK_COLOR;
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testes 1.0</title>
+    <title>Testes 1.6</title>
 
     <link rel="stylesheet" href="./styles/style.css">
 </head>
@@ -30,11 +30,29 @@
                             <option value="all">Todas</option>
                         </select>
                     </div>
-                
+
+                    <div class="control-item">
+                        <label>NACIONALIDADE:</label>
+                        <select id="nationality-filter" onchange="window.applyAllFilters()">
+                            <option value="all">Todos</option>
+                            <option value="Brasileira">Brasileiros</option>
+                            <option value="Estrangeira">Estrangeiros</option>
+                        </select>
+                    </div>
+
+                    <div class="control-item">
+                        <label>PERÍODO:</label>
+                        <select id="period-filter" onchange="window.applyAllFilters()">
+                            <option value="all">Todos</option>
+                            <option value="Clássico - antes de 1970">Clássico</option>
+                            <option value="Contemporâneo  - após de 1970">Contemporâneo</option>
+                        </select>
+                    </div>
+                    
                     <div class="control-item">
                         <label>POR NOME:</label>
                         <input type="text" id="search-input" placeholder="Digite o nome..."
-                               onkeypress="if(event.key === 'Enter') applyAllFilters()">
+                        onkeypress="if(event.key === 'Enter') applyAllFilters()">
                     </div>
                 </div>
             </div>
@@ -72,6 +90,7 @@
     <script src="js/draw.js"></script>
     <script src="js/filters.js"></script>
     <script src="js/loader.js"></script>
+    <script src="js/icons.js"></script>
 
 </body>
 </html>
