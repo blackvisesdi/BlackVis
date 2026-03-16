@@ -1,4 +1,4 @@
-d3.json("../data/data.json")
+d3.json("data/data.json")
   .then((data) => {
     let processedData = preprocessGraphData(data);
     processedData.nodes = calculateNodeDegree(
