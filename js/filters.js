@@ -1,36 +1,60 @@
-const sliderMargin = { top: 10, right: 10, bottom: 0, left: 10 };
-const sliderWidth = 100;
+// ===== CONFIGURAÇÃO DO SLIDER =====
 
-const xSlider = d3
+const sliderMarginConfig = { top: 10, right: 10, bottom: 0, left: 10 };
+const sliderWidthConfig = 100;
+
+let xSlider = d3
   .scaleLinear()
   .domain([YEAR_MIN_DEFAULT, YEAR_MAX_DEFAULT])
-  .range([0, sliderWidth])
+  .range([0, sliderWidthConfig])
   .clamp(true);
 
-function applyCategoryFilter(categoryName) {
-  currentCategory = categoryName; ;
+// ===== FILTROS DE CATEGORIA =====
 
+function applyCategoryFilter(categoryName) {
+  currentCategory = categoryName;
   window.applyAllFilters();
 }
+
+// ===== FILTROS DE NACIONALIDADE =====
+
+function applyNationalityFilter(nationality) {
+  window.currentNationality = nationality;
+  window.applyAllFilters();
+}
+
+// ===== FILTROS DE PERÍODO =====
+
+function applyPeriodFilter(period) {
+  window.currentPeriod = period;
+  window.applyAllFilters();
+}
+
+// ===== FILTROS DE ANOS =====
 
 function filterGraphData(minYear, maxYear) {
-  currentMin = minYear;
-  currentMax = maxYear; 
+  window.currentMin = minYear;
+  window.currentMax = maxYear;
 
   window.applyAllFilters();
 }
+
+// ===== INICIALIZAR SLIDER =====
 
 function initSlider(minYear, maxYear) {
   xSlider.domain([minYear, maxYear]);
-  currentMin = minYear;
-  currentMax = maxYear;
+  window.currentMin = minYear;
+  window.currentMax = maxYear;
 
   const sliderSvg = d3
     .select("#dual-slider")
-    .attr("width", sliderWidth + sliderMargin.left + sliderMargin.right)
+    .attr(
+      "width",
+      sliderWidthConfig + sliderMarginConfig.left + sliderMarginConfig.right
+    )
     .attr("height", 5)
     .append("g")
-    .attr("transform", `translate(${sliderMargin.left}, 25)`);
+    .attr("transform", `translate(${sliderMarginConfig.left}, 25)`);
 
   const g = sliderSvg.append("g").attr("class", "slider");
   g.append("line")
@@ -41,15 +65,15 @@ function initSlider(minYear, maxYear) {
   const trackActive = g
     .append("line")
     .attr("class", "track-active")
-    .attr("x1", xSlider(currentMin))
-    .attr("x2", xSlider(currentMax));
-  
+    .attr("x1", xSlider(window.currentMin))
+    .attr("x2", xSlider(window.currentMax));
+
   // Bolinha esquerda
   const handleMin = g
     .append("circle")
     .attr("class", "handle handle-min")
     .attr("r", 5)
-    .attr("cx", xSlider(currentMin))
+    .attr("cx", xSlider(window.currentMin))
     .call(
       d3
         .drag()
@@ -62,7 +86,7 @@ function initSlider(minYear, maxYear) {
     .append("circle")
     .attr("class", "handle handle-max")
     .attr("r", 5)
-    .attr("cx", xSlider(currentMax))
+    .attr("cx", xSlider(window.currentMax))
     .call(
       d3
         .drag()
@@ -71,37 +95,32 @@ function initSlider(minYear, maxYear) {
         .on("end", dragended)
     );
 
+  function dragended() {
+    d3.select(this).attr("stroke", null);
+  }
+
   function dragstarted(event) {
     d3.select(this).attr("r", 5).attr("stroke", "darkred");
   }
-  function dragended(event) {
-    // d3.select(this).attr("r", 5).attr("stroke", "#e74c3c");
-  } // Função de "arrastar"
 
   function draggedMin(event) {
-    let newX = event.x;
-    let newValue = xSlider.invert(newX);
-    if (newValue < minYear) newValue = minYear;
-    if (newValue > window.currentMax - 1) newValue = window.currentMax - 1;
-
+    let newValue = xSlider.invert(event.x);
+    newValue = Math.max(minYear, Math.min(window.currentMax - 1, newValue));
     window.currentMin = Math.round(newValue);
     d3.select(this).attr("cx", xSlider(window.currentMin));
     updateVisuals();
-
     window.applyAllFilters();
   }
-  function draggedMax(event) {
-    let newX = event.x;
-    let newValue = xSlider.invert(newX);
-    if (newValue > maxYear) newValue = maxYear;
-    if (newValue < window.currentMin + 1) newValue = window.currentMin + 1;
 
+  function draggedMax(event) {
+    let newValue = xSlider.invert(event.x);
+    newValue = Math.min(maxYear, Math.max(window.currentMin + 1, newValue));
     window.currentMax = Math.round(newValue);
     d3.select(this).attr("cx", xSlider(window.currentMax));
     updateVisuals();
-
     window.applyAllFilters();
   }
+
   function updateVisuals() {
     trackActive
       .attr("x1", xSlider(window.currentMin))
@@ -114,45 +133,71 @@ function initSlider(minYear, maxYear) {
   window.applyAllFilters();
 }
 
+// ===== SETUP DE LISTENERS =====
+
 function setupCategoryFilter(categories) {
   // Seleciona o elemento dropdown
   d3.select("#category-filter").on("change", function () {
     const selectedCategory = this.value;
-    
+
     applyCategoryFilter(selectedCategory);
   });
 
-  console.log("Listener de Categoria configurado.");
+  if (DEBUG) console.log("Listener de categoria configurado.");
+}
+
+function setupNationalityFilter() {
+  // Seleciona o elemento dropdown de nacionalidade
+  d3.select("#nationality-filter").on("change", function () {
+    const selectedNationality = this.value;
+
+    applyNationalityFilter(selectedNationality);
+  });
+
+  if (DEBUG) console.log("Listener de nacionalidade configurado.");
+}
+
+function setupPeriodFilter() {
+  // Seleciona o elemento dropdown de período
+  d3.select("#period-filter").on("change", function () {
+    const selectedPeriod = this.value;
+
+    applyPeriodFilter(selectedPeriod);
+  });
+
+  if (DEBUG) console.log("Listener de período configurado.");
 }
 
 function setupYearInputListeners(minDataYear, maxDataYear) {
-  // 1. Inicializa o estado visual e global das caixas de texto
-  d3.select("#year-min-input").property("value", minDataYear);
-  d3.select("#year-max-input").property("value", maxDataYear);
+  const minEl = document.getElementById("year-min-input");
+  const maxEl = document.getElementById("year-max-input");
 
-  d3.select("#year-min-input").on("change", function () {
-    let newMin = +this.value;
-    window.currentMin = newMin;
-    window.applyAllFilters();
-  });
+  if (minEl) {
+    minEl.value = minDataYear;
+    d3.select("#year-min-input").on("change", function () {
+      window.currentMin = +this.value;
+      window.applyAllFilters();
+    });
+  }
 
-  d3.select("#year-max-input").on("change", function () {
-    let newMax = +this.value;
+  if (maxEl) {
+    maxEl.value = maxDataYear;
+    d3.select("#year-max-input").on("change", function () {
+      window.currentMax = +this.value;
+      window.applyAllFilters();
+    });
+  }
 
-    window.currentMax = newMax;
-    window.applyAllFilters();
-  });
-  console.log("Listeners de Input de Ano configurados.");
+  if (DEBUG) console.log("Listeners de input de ano configurados.");
 }
 
 function setupDesignerSearch() {
-  d3.select("#designer-search-input").on("keyup", function () {
-    const searchTerm = this.value.toLowerCase().trim();
+  const searchEl = document.getElementById("search-input");
+  if (!searchEl) return;
 
-    window.currentSearchTerm = searchTerm;
-
+  d3.select("#search-input").on("keyup", function () {
     window.applyAllFilters();
   });
 
-  console.log("Listener de Pesquisa de Designer configurado.");
+  if (DEBUG) console.log("Listener de pesquisa configurado.");
 }

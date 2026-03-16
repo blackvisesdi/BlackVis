@@ -1,18 +1,15 @@
-
-
 // Multiplicadores de tamanho por tipo
-const MULT_CATEGORY = 1.6; // categorias — maiores
-const MULT_TECHNIQUE = 0.9; // técnicas — intermediárias
-const MULT_PERSON = 0.45; // pessoas — bem menores
+const MULT_CATEGORY = 2.2; // categorias — maiores (era 1.6)
+const MULT_TECHNIQUE = 1.3; // técnicas — intermediárias (era 0.9)
+const MULT_PERSON = 0.65; // pessoas — bem menores (era 0.45)
 
-const MIN_RADIUS_CATEGORY = 18;
-const MIN_RADIUS_TECHNIQUE = 8;
-const MIN_RADIUS_PERSON = 4;
+const MIN_RADIUS_CATEGORY = 28; // era 18
+const MIN_RADIUS_TECHNIQUE = 14; // era 8
+const MIN_RADIUS_PERSON = 7; // era 4
 
 const COLLISION_PADDING = 6;
 
 let activeNode = null;
-
 
 function nodeRadius(d) {
   const base = Math.max(radiusScale(d.degree || 1), 1);
@@ -42,12 +39,26 @@ function drawForceGraph(data) {
     simulation.stop();
   }
 
+  // Recalcular dimensões baseado no tamanho da tela com LIMITE MÁXIMO
+  const maxContainerWidth = 2000; // Aumentado para 2000px
+  const maxContainerHeight = 1200; // Aumentado para 1200px
+
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight - 100; // Espaço para filtros
+
+  // Usar o menor entre o tamanho da tela e o máximo permitido
+  const currentWidth = Math.min(screenWidth, maxContainerWidth);
+  const currentHeight = Math.min(screenHeight, maxContainerHeight);
+
+  // Atualizar viewBox do SVG
+  svg.attr("viewBox", `0 0 ${currentWidth} ${currentHeight}`);
+
   const allDegrees = graphData.nodes.map((d) => d.degree);
   const minDegree = d3.min(allDegrees) || 1;
   const maxDegree = d3.max(allDegrees) || 1;
   radiusScale.domain([minDegree, maxDegree]);
 
-  // Inicializa a simulação
+  // Inicializa a simulação com dimensões limitadas
   simulation = d3
     .forceSimulation(graphData.nodes)
     .force(
@@ -56,21 +67,19 @@ function drawForceGraph(data) {
         .forceLink(graphData.links)
         .id((d) => d.id)
 
-        // Define a distancia um do outro
-        .distance(70)
+        // Define a distancia um do outro (aumentado para mais espaço)
+        .distance(120)
     )
-    // Impede que todos se amontoem no centro
-    .force("charge", d3.forceManyBody().strength(-100))
+    // Impede que todos se amontoem no centro (aumentado para mais repulsão)
+    .force("charge", d3.forceManyBody().strength(-300))
 
-    // "Gravidade"
-    .force("center", d3.forceCenter(width / 2, height / 2))
+    // "Gravidade" - usar dimensões limitadas
+    .force("center", d3.forceCenter(currentWidth / 2, currentHeight / 2))
 
     // Colisão baseada no raio calculado
     .force(
       "collide",
-      d3
-        .forceCollide()
-        .radius((d) => nodeRadius(d) + COLLISION_PADDING)
+      d3.forceCollide().radius((d) => nodeRadius(d) + COLLISION_PADDING)
     );
 
   // Padrão D3: Data Join para Links
@@ -121,13 +130,13 @@ function drawForceGraph(data) {
         .attr("stroke", stroke)
         .attr("stroke-width", 1.5);
 
-      // TODO: TESTE | Pegar um svg de cada
-      const svgSource = "../assets/Ilustração.svg";
+      const iconPath = window.getIconPath(d.Nome);
+      const svgSource = iconPath || "../assets/icons/default.svg";
       const size = r * 2;
 
       element
         .append("image")
-        .attr("xlink:href", svgSource)
+        .attr("href", svgSource)
         .attr("class", "node-shape technique-image")
         .attr("width", size)
         .attr("height", size)
@@ -160,7 +169,6 @@ function drawForceGraph(data) {
     .attr("dominant-baseline", "central") // Centraliza verticalmente
     .style("font-size", "6px") // Fonte menor para caber
     .style("pointer-events", "none")
-    // .attr("fill", "#FFF")
     .append("title")
     .text((d) => d.Nome || d.id); // Adiciona Tooltip para o nome completo
 
@@ -175,8 +183,8 @@ function drawForceGraph(data) {
     node
       .each(function (d) {
         const r = nodeRadius(d);
-        d.x = Math.max(r, Math.min(window.innerWidth - r, d.x));
-        d.y = Math.max(r, Math.min(window.innerHeight - r, d.y));
+        d.x = Math.max(r, Math.min(currentWidth - r, d.x));
+        d.y = Math.max(r, Math.min(currentHeight - r, d.y));
       })
       .attr("transform", (d) => `translate(${d.x},${d.y})`);
 
@@ -188,20 +196,10 @@ function drawForceGraph(data) {
 
 function getNodeFillColor(d) {
   const baseHex = getBaseColorForNode(d);
-
-  if (d.isCategory) {
-    return baseHex;
-  }
-  if (d.isTechnique) {
-    try {
-      return d3.rgb(baseHex).brighter(TECHNIQUE_BRIGHTNESS).toString();
-    } catch (e) {
-      return baseHex;
-    }
-  }
-  // Pessoa
+  if (d.isCategory) return baseHex;
   try {
-    return d3.rgb(baseHex).brighter(PERSON_BRIGHTNESS).toString();
+    const brightness = d.isTechnique ? TECHNIQUE_BRIGHTNESS : PERSON_BRIGHTNESS;
+    return d3.rgb(baseHex).brighter(brightness).toString();
   } catch (e) {
     return baseHex;
   }

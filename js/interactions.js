@@ -30,6 +30,25 @@ function focusNode(event, d) {
   if (activeNode && (!d || activeNode.id !== d.id)) {
     activeNode.fx = null;
     activeNode.fy = null;
+    // Retornar ao tamanho normal
+    d3.selectAll(".node")
+      .selectAll("circle")
+      .transition()
+      .duration(300)
+      .attr("r", (node) => nodeRadius(node));
+    d3.selectAll(".node")
+      .selectAll(".technique-image")
+      .transition()
+      .duration(300)
+      .attr("width", (node) => nodeRadius(node) * 2)
+      .attr("height", (node) => nodeRadius(node) * 2)
+      .attr("x", (node) => -nodeRadius(node))
+      .attr("y", (node) => -nodeRadius(node));
+    d3.selectAll(".label")
+      .transition()
+      .duration(300)
+      .style("font-size", "6px")
+      .style("text-transform", "none");
   }
 
   const isFocado = !!d;
@@ -38,6 +57,68 @@ function focusNode(event, d) {
   if (isFocado) {
     d.fx = width / 2;
     d.fy = height / 2;
+
+    // ✨ NOVA FEATURE: Aumentar bolinha ao clicar
+    const r = nodeRadius(d);
+    const enlargedRadius = r * 2.5; // 2.5x maior
+
+    d3.selectAll(".node")
+      .selectAll("circle")
+      .transition()
+      .duration(300)
+      .attr("r", (node) => {
+        if (node.id === d.id) {
+          return enlargedRadius;
+        }
+        return nodeRadius(node);
+      });
+
+    // ✨ AUMENTAR SVG DA TÉCNICA também
+    d3.selectAll(".node")
+      .selectAll(".technique-image")
+      .transition()
+      .duration(300)
+      .attr("width", (node) => {
+        if (node.id === d.id) {
+          return enlargedRadius * 2; // SVG também 2.5x maior
+        }
+        return nodeRadius(node) * 2;
+      })
+      .attr("height", (node) => {
+        if (node.id === d.id) {
+          return enlargedRadius * 2;
+        }
+        return nodeRadius(node) * 2;
+      })
+      .attr("x", (node) => {
+        if (node.id === d.id) {
+          return -enlargedRadius;
+        }
+        return -nodeRadius(node);
+      })
+      .attr("y", (node) => {
+        if (node.id === d.id) {
+          return -enlargedRadius;
+        }
+        return -nodeRadius(node);
+      });
+
+    // ✨ AUMENTAR FONTE E COLOCAR EM CAPS LOCK
+    d3.selectAll(".label")
+      .transition()
+      .duration(300)
+      .style("font-size", (node) => {
+        if (node.id === d.id) {
+          return "14px"; // Letra maior!
+        }
+        return "6px";
+      })
+      .style("text-transform", (node) => {
+        if (node.id === d.id) {
+          return "uppercase"; // CAPS LOCK!
+        }
+        return "none";
+      });
 
     const hasProfileInfo = d["Área do design"] || d.isCategory;
 
@@ -48,7 +129,6 @@ function focusNode(event, d) {
       d3.select("#details-card").style("display", "none");
     }
 
-    
     const neighbors = new Set();
     neighbors.add(d.id);
     graphData.links.forEach((link) => {
@@ -71,6 +151,31 @@ function focusNode(event, d) {
       );
   } else {
     d3.select("#details-card").style("display", "none");
+
+    // Reseta o tamanho de todos os nós
+    nodeGroup
+      .selectAll(".node")
+      .selectAll("circle")
+      .transition()
+      .duration(300)
+      .attr("r", (node) => nodeRadius(node));
+
+    // Reseta tamanho do SVG
+    d3.selectAll(".node")
+      .selectAll(".technique-image")
+      .transition()
+      .duration(300)
+      .attr("width", (node) => nodeRadius(node) * 2)
+      .attr("height", (node) => nodeRadius(node) * 2)
+      .attr("x", (node) => -nodeRadius(node))
+      .attr("y", (node) => -nodeRadius(node));
+
+    // Reseta fonte e remove CAPS
+    d3.selectAll(".label")
+      .transition()
+      .duration(300)
+      .style("font-size", "6px")
+      .style("text-transform", "none");
 
     // Reseta a opacidade de todos os nós
     nodeGroup.selectAll(".node").transition().duration(300).style("opacity", 1);
@@ -110,63 +215,86 @@ function resetFocus(d) {
 
 // Função para exibir o CARD de Perfil
 function exibirPerfil(designerData) {
-  const container = d3.select("#card");
-
   const nome = designerData.Nome || designerData.id;
   const areaDesign = designerData["Área do design"];
-
-  
   const nasc = designerData["Data de nascimento"];
   const morte = designerData["Data de falecimento (se houver)"];
   const linkExterno = designerData["Links extras"];
+  const minibio = designerData.Minibio;
+
+  // Localização: Cidade > Estado > Local de nascimento (com trim para remover espaços)
   const localNascimento =
-    designerData.Cidade ||
-    designerData.Estado ||
-    designerData["Local de nascimento"] ||
-    "Não informado";
-  const minibio =
-    designerData.Minibio ||
-    (designerData.isCategory
-      ? "Agrupa designers da área: " + designerData.id
-      : "Sem descrição disponível.");
+    (designerData.Cidade && designerData.Cidade.trim()) ||
+    (designerData.Estado && designerData.Estado.trim()) ||
+    (designerData["Local de nascimento"] &&
+      designerData["Local de nascimento"].trim());
 
-  const currentYear = new Date().getFullYear();
-
-  // Formatação do Período de Vida (NASCIMENTO - MORTE (IDADE)) ---
-  let anosVida;
-
-  if (nasc && !isNaN(nasc)) {
-    const anoNascimento = Math.floor(nasc);
-    let idade;
-
-    if (morte && !isNaN(nasc)) {
-      // Caso MORTO: Exemplo: 1989 - 2000 (X anos)
-      const anoMorte = Math.floor(morte);
-      idade = anoMorte - anoNascimento;
-      anosVida = `${anoNascimento} - ${anoMorte} (${idade} anos)`;
-    } else {
-      // Caso VIVO: Exemplo: 1989 (X anos)
-      idade = currentYear - anoNascimento;
-      anosVida = `${anoNascimento} (${idade} anos)`;
-    }
-  } else {
-    // Caso não tenha Data de Nascimento
-    anosVida = "Indisponível";
-  }
-  
+  // Mostrar o nome
   d3.select("#perfil-nome").text(nome);
 
-  // d3.select("#perfil-tecnica").text(tecnicas);
-  d3.select("#card-info").html(`
-    <p><strong>Área(s):</strong> ${areaDesign}</p>
-    <p><strong>Local:</strong> ${localNascimento}</p>
-    <p><strong>Vida:</strong> ${anosVida}</p>
-  `);
+  // Montar card com informações disponíveis desta pessoa específica
+  const cardInfo = document.getElementById("card-info");
+  if (cardInfo) {
+    cardInfo.innerHTML = ""; // limpa o anterior
 
-  d3.select("#perfil-descricao").html(minibio);
+    // Adicionar Área se existir
+    if (areaDesign && areaDesign.trim() !== "") {
+      const pArea = document.createElement("p");
+      const strongArea = document.createElement("strong");
+      strongArea.textContent = "Área(s): ";
+      pArea.appendChild(strongArea);
+      pArea.appendChild(document.createTextNode(areaDesign.trim()));
+      cardInfo.appendChild(pArea);
+    }
 
+    // Adicionar Local se existir
+    if (localNascimento && localNascimento !== "") {
+      const pLocal = document.createElement("p");
+      const strongLocal = document.createElement("strong");
+      strongLocal.textContent = "Local: ";
+      pLocal.appendChild(strongLocal);
+      pLocal.appendChild(document.createTextNode(localNascimento));
+      cardInfo.appendChild(pLocal);
+    }
+
+    // Adicionar Vida se tiver data de nascimento
+    if (nasc && !isNaN(nasc)) {
+      const anoNascimento = Math.floor(nasc);
+      const currentYear = new Date().getFullYear();
+
+      let anosVida;
+      if (morte && !isNaN(morte)) {
+        const anoMorte = Math.floor(morte);
+        anosVida = `${anoNascimento} - ${anoMorte} (${
+          anoMorte - anoNascimento
+        } anos)`;
+      } else {
+        anosVida = `${anoNascimento} (${currentYear - anoNascimento} anos)`;
+      }
+
+      const pVida = document.createElement("p");
+      const strongVida = document.createElement("strong");
+      strongVida.textContent = "Vida: ";
+      pVida.appendChild(strongVida);
+      pVida.appendChild(document.createTextNode(anosVida));
+      cardInfo.appendChild(pVida);
+    }
+  }
+
+  // Mostrar descrição apenas se existir
+  const descEl = document.getElementById("perfil-descricao");
+  if (descEl) {
+    if (minibio && minibio.trim() !== "") {
+      descEl.textContent = minibio;
+      descEl.style.display = "block";
+    } else {
+      descEl.innerHTML = ""; // limpa mas não esconde
+      descEl.style.display = "none";
+    }
+  }
+
+  // Mostrar botão apenas se houver link válido
   const btnLink = d3.select("#btn-link-externo");
-
   if (linkExterno && linkExterno.startsWith("http")) {
     btnLink
       .attr("href", linkExterno)
@@ -177,10 +305,3 @@ function exibirPerfil(designerData) {
     btnLink.style("display", "none");
   }
 }
-
-// d3.select("#fechar-perfil").on("click", () => {
-//   d3.select("#card").style("display", "none");
-//   if (focusedNode) {
-//     resetFocus(focusedNode);
-//   }
-// });

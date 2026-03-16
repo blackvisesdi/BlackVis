@@ -7,7 +7,7 @@ function preprocessGraphData(data) {
   const newLinks = [...originalLinks];
 
   const DESIGN_AREA_KEY = "Área do design";
-  const TECHNIQUES_KEY = "Técnicas";
+  const TECHNIQUES_KEY = "Técnicas atualizadas";
 
   const designerNodes = originalNodes.filter(
     (d) => d[DESIGN_AREA_KEY] || d[TECHNIQUES_KEY]
@@ -58,7 +58,8 @@ function preprocessGraphData(data) {
         type: "person-technique-link",
       });
 
-      // Técnica -> Categoria
+      // Técnica -> Categoria (APENAS as categorias específicas deste designer)
+      // Não linkar com TODAS as categorias, apenas com as que foram nomeadas para este designer
       if (areas.length > 0) {
         areas.forEach((subArea) => {
           const categoryId = subArea;
@@ -72,6 +73,7 @@ function preprocessGraphData(data) {
             });
           }
 
+          // Chave única para evitar duplicatas
           const linkKey = `${techniqueId}-${categoryId}`;
           if (!newLinks.some((l) => l.linkKey === linkKey)) {
             newLinks.push({
