@@ -4,7 +4,7 @@ Visualização interativa de designers negros brasileiros e suas áreas de atua�
 
 ## O que é
 
-BlackVis exibe um grafo de força interativo onde cada nó representa um designer, uma técnica ou uma área do design. Os nós se conectam por afinidade e área, e o usuário pode filtrar por ano de nascimento, área do design ou nome.
+BlackVis exibe um grafo de força interativo onde cada nó representa um designer, uma técnica ou uma área do design. Os nós se conectam por afinidade e área, e o usuário pode filtrar por ano de nascimento, área do design, nacionalidade, período ou nome.
 
 ## Como rodar
 
@@ -16,33 +16,25 @@ npx serve .
 
 # Python
 python -m http.server 8080
-
-# PHP
-php -S localhost:8080
 ```
 
-Acesse `http://localhost:3000` (ou a porta indicada).
+Acesse `http://localhost:8080` (ou a porta indicada pelo servidor).
 
 ## Estrutura de arquivos
 
 ```
-/
+BlackVis/
 ├── index.html
-├── data/
-│   └── data.json
+├── data.json                  (dados dos designers)
 ├── js/
-│   ├── globals.js       — constantes, SVG principal, AppState
-│   ├── utils.js         — normalizeKey, getId, showToast
-│   ├── colors.js        — paletas e mapeamento de cores por área
-│   ├── preprocess.js    — monta nós de categoria/técnica e links
-│   ├── interactions.js  — drag, foco de nó, card de perfil
-│   ├── draw.js          — renderização do grafo D3
-│   ├── filters.js       — slider de ano, dropdown de categoria, busca
-│   ├── loader.js        — carrega data.json e orquestra os filtros
-│   └── icons.js         — mapa de ícones por nome de técnica
-└── styles/
-    ├── style.scss        — fonte principal de estilos
-    └── style.css         — CSS compilado (não editar diretamente)
+│   ├── globals.js             (estado global, utilitários, sistema de cores)
+│   ├── draw.js                (renderização D3, simulação de forças, ícones)
+│   ├── interactions.js        (drag, foco de nó, card de perfil)
+│   └── data.js                (carregamento, pré-processamento, filtros)
+├── styles/
+│   ├── style.scss             (source)
+│   └── style.css              (CSS compilado)
+└── assets/icons/              (SVGs das técnicas)
 ```
 
 ## Schema do data.json
@@ -57,29 +49,31 @@ Acesse `http://localhost:3000` (ou a porta indicada).
       "Técnicas atualizadas": "Design gráfico, Tipografia",
       "Data de nascimento": 1985,
       "Data de falecimento (se houver)": null,
+      "Nacionalidade": "Brasileira",
+      "Período": "Contemporâneo",
       "Cidade": "São Paulo",
       "Estado": "SP",
       "Minibio": "Breve descrição do designer.",
       "Links extras": "https://portfolio.com"
     }
   ],
-  "links": [
-    { "source": "designer-001", "target": "designer-002" }
-  ]
+  "links": []
 }
 ```
 
 ## Áreas do design suportadas
 
-- Comunicação
-- Produto
-- Interação
-- Serviço
-- Teórico
+| Área | Cor |
+|------|-----|
+| Comunicação | Azul |
+| Produto | Amarelo |
+| Interação | Rosa |
+| Serviço | Laranja |
+| Teórico | Verde |
 
 ## Dependências
 
-- [D3.js v7](https://d3js.org/) — via CDN, sem instalação necessária
+- [D3.js v7](https://d3js.org/) — via CDN com SRI, sem instalação necessária
 
 ## Compilar o SCSS
 

@@ -1,19 +1,31 @@
+// ============================================================
+// INTERACTIONS.JS — Drag, Foco e Card de Perfil
+// ============================================================
+
+// ===== DRAG BEHAVIOR =====
+
 function drag(simulation) {
+  let wasDragged = false;
+
   function dragstarted(event, d) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
+    wasDragged = false;
     d.fx = d.x;
     d.fy = d.y;
+    d3.select(this).raise();
   }
 
   function dragged(event, d) {
+    if (!wasDragged) {
+      wasDragged = true;
+      simulation.alphaTarget(0.3).restart();
+    }
     d.fx = event.x;
     d.fy = event.y;
   }
 
   function dragended(event, d) {
     if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
+    // nó fica fixo onde foi solto
   }
 
   return d3
@@ -23,8 +35,9 @@ function drag(simulation) {
     .on("end", dragended);
 }
 
+// ===== FOCUS =====
+
 function focusNode(event, d) {
-  if (event) event.stopPropagation();
 
   // Lógica para liberar o nó anterior e atualizar o estado (activeNode)
   if (activeNode && (!d || activeNode.id !== d.id)) {
@@ -55,143 +68,88 @@ function focusNode(event, d) {
   activeNode = isFocado ? d : null;
 
   if (isFocado) {
-    d.fx = width / 2;
-    d.fy = height / 2;
+    nodeGroup.selectAll(".node")
+      .filter((o) => o.id === d.id)
+      .raise();
 
-    // ✨ NOVA FEATURE: Aumentar bolinha ao clicar
+    const vb = svg.attr("viewBox").split(" ");
+    const centerX = (+vb[2] || window.innerWidth)  / 2;
+    const centerY = (+vb[3] || window.innerHeight) / 2;
+    d.fx = centerX;
+    d.fy = centerY;
+    d.x  = centerX; // move imediatamente sem esperar a física
+    d.y  = centerY;
+
     const r = nodeRadius(d);
-    const enlargedRadius = r * 2.5; // 2.5x maior
+    const enlargedRadius = r * 2.5; 
 
     d3.selectAll(".node")
       .selectAll("circle")
       .transition()
       .duration(300)
-      .attr("r", (node) => {
-        if (node.id === d.id) {
-          return enlargedRadius;
-        }
-        return nodeRadius(node);
-      });
+      .attr("r", (node) => (node.id === d.id ? enlargedRadius : nodeRadius(node)));
 
-    // ✨ AUMENTAR SVG DA TÉCNICA também
     d3.selectAll(".node")
       .selectAll(".technique-image")
       .transition()
       .duration(300)
-      .attr("width", (node) => {
-        if (node.id === d.id) {
-          return enlargedRadius * 2; // SVG também 2.5x maior
-        }
-        return nodeRadius(node) * 2;
-      })
-      .attr("height", (node) => {
-        if (node.id === d.id) {
-          return enlargedRadius * 2;
-        }
-        return nodeRadius(node) * 2;
-      })
-      .attr("x", (node) => {
-        if (node.id === d.id) {
-          return -enlargedRadius;
-        }
-        return -nodeRadius(node);
-      })
-      .attr("y", (node) => {
-        if (node.id === d.id) {
-          return -enlargedRadius;
-        }
-        return -nodeRadius(node);
-      });
+      .attr("width",  (node) => (node.id === d.id ? enlargedRadius * 2 : nodeRadius(node) * 2))
+      .attr("height", (node) => (node.id === d.id ? enlargedRadius * 2 : nodeRadius(node) * 2))
+      .attr("x",      (node) => (node.id === d.id ? -enlargedRadius    : -nodeRadius(node)))
+      .attr("y",      (node) => (node.id === d.id ? -enlargedRadius    : -nodeRadius(node)));
 
-    // ✨ AUMENTAR FONTE E COLOCAR EM CAPS LOCK
     d3.selectAll(".label")
       .transition()
       .duration(300)
-      .style("font-size", (node) => {
-        if (node.id === d.id) {
-          return "14px"; // Letra maior!
-        }
-        return "6px";
-      })
-      .style("text-transform", (node) => {
-        if (node.id === d.id) {
-          return "uppercase"; // CAPS LOCK!
-        }
-        return "none";
-      });
+      .style("font-size",      (node) => (node.id === d.id ? "14px"      : "6px"))
+      .style("text-transform", (node) => (node.id === d.id ? "uppercase" : "none"));
 
     const hasProfileInfo = d["Área do design"] || d.isCategory;
-
     if (hasProfileInfo && typeof exibirPerfil === "function") {
       exibirPerfil(d);
-      d3.select("#details-card").style("display", "block");
+      d3.select("#card").style("display", "flex");
     } else {
-      d3.select("#details-card").style("display", "none");
+      d3.select("#card").style("display", "none");
     }
 
-    const neighbors = new Set();
-    neighbors.add(d.id);
+    const neighbors = new Set([d.id]);
     graphData.links.forEach((link) => {
       if (link.source.id === d.id) neighbors.add(link.target.id);
       else if (link.target.id === d.id) neighbors.add(link.source.id);
     });
 
-    nodeGroup
-      .selectAll(".node")
-      .transition()
-      .duration(300)
+    nodeGroup.selectAll(".node")
+      .transition().duration(300)
       .style("opacity", (o) => (neighbors.has(o.id) ? 1 : 0.1));
 
-    linkGroup
-      .selectAll(".link")
-      .transition()
-      .duration(300)
-      .style("opacity", (l) =>
-        l.source.id === d.id || l.target.id === d.id ? 1 : 0.05
-      );
-  } else {
-    d3.select("#details-card").style("display", "none");
+    linkGroup.selectAll(".link")
+      .transition().duration(300)
+      .style("opacity", (l) => (l.source.id === d.id || l.target.id === d.id ? 1 : 0.05));
 
-    // Reseta o tamanho de todos os nós
-    nodeGroup
-      .selectAll(".node")
-      .selectAll("circle")
-      .transition()
-      .duration(300)
+  } else {
+    d3.select("#card").style("display", "none");
+
+    nodeGroup.selectAll(".node").selectAll("circle")
+      .transition().duration(300)
       .attr("r", (node) => nodeRadius(node));
 
-    // Reseta tamanho do SVG
-    d3.selectAll(".node")
-      .selectAll(".technique-image")
-      .transition()
-      .duration(300)
-      .attr("width", (node) => nodeRadius(node) * 2)
+    d3.selectAll(".node").selectAll(".technique-image")
+      .transition().duration(300)
+      .attr("width",  (node) => nodeRadius(node) * 2)
       .attr("height", (node) => nodeRadius(node) * 2)
-      .attr("x", (node) => -nodeRadius(node))
-      .attr("y", (node) => -nodeRadius(node));
+      .attr("x",      (node) => -nodeRadius(node))
+      .attr("y",      (node) => -nodeRadius(node));
 
-    // Reseta fonte e remove CAPS
     d3.selectAll(".label")
-      .transition()
-      .duration(300)
+      .transition().duration(300)
       .style("font-size", "6px")
       .style("text-transform", "none");
 
-    // Reseta a opacidade de todos os nós
     nodeGroup.selectAll(".node").transition().duration(300).style("opacity", 1);
-
-    // Reseta a opacidade de todos os links
-    linkGroup
-      .selectAll(".link")
-      .transition()
-      .duration(300)
-      .style("opacity", 0.6);
+    linkGroup.selectAll(".link").transition().duration(300).style("opacity", 0.6);
   }
 
-  // Reinicia a simulação
-  if (simulation) {
-    simulation.alpha(0.3).restart();
-  }
+  if (simulation) simulation.alpha(0.5).restart();
 }
 
 function resetFocus(d) {
@@ -213,7 +171,8 @@ function resetFocus(d) {
   activeNode = null;
 }
 
-// Função para exibir o CARD de Perfil
+// ===== CARD DE PERFIL =====
+
 function exibirPerfil(designerData) {
   const nome = designerData.Nome || designerData.id;
   const areaDesign = designerData["Área do design"];
@@ -222,22 +181,18 @@ function exibirPerfil(designerData) {
   const linkExterno = designerData["Links extras"];
   const minibio = designerData.Minibio;
 
-  // Localização: Cidade > Estado > Local de nascimento (com trim para remover espaços)
+  // Localização: Cidade > Estado > Local de nascimento
   const localNascimento =
     (designerData.Cidade && designerData.Cidade.trim()) ||
     (designerData.Estado && designerData.Estado.trim()) ||
-    (designerData["Local de nascimento"] &&
-      designerData["Local de nascimento"].trim());
+    (designerData["Local de nascimento"] && designerData["Local de nascimento"].trim());
 
-  // Mostrar o nome
   d3.select("#perfil-nome").text(nome);
 
-  // Montar card com informações disponíveis desta pessoa específica
   const cardInfo = document.getElementById("card-info");
   if (cardInfo) {
-    cardInfo.innerHTML = ""; // limpa o anterior
+    cardInfo.innerHTML = "";
 
-    // Adicionar Área se existir
     if (areaDesign && areaDesign.trim() !== "") {
       const pArea = document.createElement("p");
       const strongArea = document.createElement("strong");
@@ -247,7 +202,6 @@ function exibirPerfil(designerData) {
       cardInfo.appendChild(pArea);
     }
 
-    // Adicionar Local se existir
     if (localNascimento && localNascimento !== "") {
       const pLocal = document.createElement("p");
       const strongLocal = document.createElement("strong");
@@ -257,7 +211,6 @@ function exibirPerfil(designerData) {
       cardInfo.appendChild(pLocal);
     }
 
-    // Adicionar Vida se tiver data de nascimento
     if (nasc && !isNaN(nasc)) {
       const anoNascimento = Math.floor(nasc);
       const currentYear = new Date().getFullYear();
@@ -265,9 +218,7 @@ function exibirPerfil(designerData) {
       let anosVida;
       if (morte && !isNaN(morte)) {
         const anoMorte = Math.floor(morte);
-        anosVida = `${anoNascimento} - ${anoMorte} (${
-          anoMorte - anoNascimento
-        } anos)`;
+        anosVida = `${anoNascimento} - ${anoMorte} (${anoMorte - anoNascimento} anos)`;
       } else {
         anosVida = `${anoNascimento} (${currentYear - anoNascimento} anos)`;
       }
@@ -281,24 +232,23 @@ function exibirPerfil(designerData) {
     }
   }
 
-  // Mostrar descrição apenas se existir
   const descEl = document.getElementById("perfil-descricao");
   if (descEl) {
     if (minibio && minibio.trim() !== "") {
       descEl.textContent = minibio;
       descEl.style.display = "block";
     } else {
-      descEl.innerHTML = ""; // limpa mas não esconde
+      descEl.innerHTML = "";
       descEl.style.display = "none";
     }
   }
 
-  // Mostrar botão apenas se houver link válido
   const btnLink = d3.select("#btn-link-externo");
   if (linkExterno && linkExterno.startsWith("http")) {
     btnLink
       .attr("href", linkExterno)
       .attr("target", "_blank")
+      .attr("rel", "noopener noreferrer")
       .text("Acessar Portfólio")
       .style("display", "inline-block");
   } else {
