@@ -71,9 +71,19 @@ section {
   }
 
   .nav-center {
+    overflow: hidden;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     img {
       width: 36px;
       height: 36px;
+      display: block;
+      max-width: 36px;
+      max-height: 36px;
     }
   }
 }
