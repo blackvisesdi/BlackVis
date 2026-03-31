@@ -1,6 +1,6 @@
 # BlackVis
 
-Visualização interativa de designers negros brasileiros e suas áreas de atuação, construída com D3.js v7.
+Visualização interativa de designers negros e suas áreas de atuação, construída com D3.js v7.
 
 ## O que é
 
