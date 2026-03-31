@@ -6,9 +6,7 @@ $text: hsl(43, 16%, 92%);
 $button: #e2b05b;
 $button-hover: #ba924e;
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -17,7 +15,7 @@ body {
   width: 100vw;
   color: $text;
   background-color: $background;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 #content-wrapper {
@@ -34,8 +32,7 @@ section {
 
 .grafico-container {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: 100vw;
   height: 100vh;
   z-index: 1;
@@ -52,177 +49,184 @@ section {
   }
 }
 
-/* Bloco de Filtros */
-#info-container.filter-controls {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10;
-    
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    padding: 15px 40px;
-    box-sizing: border-box;
+/* === TOP NAV === */
+.top-nav {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  pointer-events: none;
+
+  .nav-link {
+    pointer-events: all;
+    color: $text;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: default;
+  }
+
+  .nav-center {
+    img {
+      width: 36px;
+      height: 36px;
+    }
+  }
 }
 
-.logo {
-    font-size: 24px;
-    color: #e2b05b;
-    font-weight: bold;
-    text-transform: uppercase;
+/* === BOTTOM BAR === */
+.bottom-bar {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px 30px;
+  gap: 24px;
+  pointer-events: none;
+
+  > * { pointer-events: all; }
 }
 
-.filters-group {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-}
+.bb-left {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 16px;
+  max-width: 320px;
 
-.control-item {
+  .bb-description {
+    font-size: 10px;
+    color: #aaa;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 160px;
+  }
+
+  .nationality-filters {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .nat-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: $text;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+
+    .nat-icon {
+      width: 22px;
+      height: 22px;
+      border: 1px solid $border;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    &.active .nat-icon {
+      background-color: $button;
+      color: #000;
+      border-color: $button;
+    }
+  }
 }
 
-.control-item label {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: #888;
+.bb-center {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+
+  .category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    padding: 0;
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+
+    span {
+      font-size: 10px;
+      color: $text;
+      text-transform: lowercase;
+    }
+
+    &:hover { opacity: 1; }
+
+    &.active {
+      opacity: 1;
+      span { color: var(--cat-color); }
+    }
+  }
 }
 
-/* Card */
-#card.card {
-  position: absolute;
-  bottom: 110px; 
-  right: 30px;
-  width: 320px;
-  max-height: calc(100vh - 140px);
-  z-index: 50;
-
+.bb-right {
   display: flex;
   flex-direction: column;
-  background-color: rgba($background, 0.60);
-  backdrop-filter: blur(5px);
-  border: 1px solid $border;
-  padding: 20px;
-  overflow-y: auto;
-  overflow: visible;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 200px;
 
-  /* Cantinhos (Corner) */@import url("https://fonts.googleapis.com/css2?family=Poiret+One&family=Viaoda+Libre&display=swap");
+  #search-input {
+    background: transparent;
+    border: 1px solid $border;
+    color: $text;
+    padding: 6px 12px;
+    font-size: 12px;
+    width: 200px;
+    outline: none;
 
-$background: hsl(0, 0%, 0%);
-$border: hsl(40, 65%, 80%);
-$text: hsl(43, 16%, 92%);
-$button: #e2b05b;
-$button-hover: #ba924e;
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-  color: $text;
-  background-color: $background;
-  overflow: hidden; 
-}
-
-#content-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-section {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.grafico-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  overflow: hidden;
-  max-width: 100%;
-
-  #grafico-d3 {
-    width: 100%;
-    height: 100%;
-    max-width: 2000px;
-    max-height: 1200px;
-    margin: 0 auto;
-    display: block;
+    &::placeholder { color: #666; }
   }
-}
 
-/* Bloco de Filtros */
-#info-container.filter-controls {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10;
-    
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    padding: 15px 40px;
-    box-sizing: border-box;
-}
-
-.logo {
-    font-size: 24px;
-    color: #e2b05b;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.filters-group {
+  #year-slider {
     display: flex;
     align-items: center;
-    gap: 40px;
-}
-
-.control-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.control-item label {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: #888;
+    gap: 6px;
+    font-size: 11px;
+  }
 }
 
 /* Card */
 #card.card {
   position: absolute;
-  bottom: 110px; 
+  bottom: 120px;
   right: 30px;
   width: 320px;
-  max-height: calc(100vh - 140px);
+  max-height: calc(100vh - 150px);
   z-index: 50;
-
-  display: flex;  /* SEMPRE VISÍVEL */
+  display: none;
   flex-direction: column;
   background-color: rgba($background, 0.85);
   backdrop-filter: blur(15px);
   border: 1px solid $border;
   padding: 20px;
   overflow-y: auto;
-  overflow: visible;
 
-  /* Cantinhos (Corner) */
   .corner {
     width: 0.5rem;
     height: 0.5rem;
@@ -263,14 +267,6 @@ section {
   #perfil-nome {
     margin-top: 0;
     color: $border;
-  }
-
-  .card-divider {
-    height: 1px;
-    margin: 15px 0;
-    opacity: 0.7;
-    border: none;
-    background-color: $border;
   }
 }
 
@@ -283,125 +279,7 @@ section {
 .track-active { stroke: $border; stroke-width: 2px; }
 .handle { stroke: $border; stroke-width: 1px; fill: $background; }
 
-#btn-link-externo{
-  background-color: $button;
-  color: #000;
-  padding: 12px 24px;
-  border-radius: 6px;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 15px;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid $button;
-
-  &:hover {
-    background-color: $button-hover;
-    border-color: $button-hover;
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(178, 146, 78, 0.3);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-/* --- Responsividade --- */
-@media (max-width: 768px) {
-  #info-container.filter-controls {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10px 16px;
-  }
-
-  .filters-group {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-
-  #card.card {
-    bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
-    border-radius: 12px 12px 0 0;
-    max-height: 50vh;
-  }
-}
-  .corner {
-    width: 0.5rem;
-    height: 0.5rem;
-    position: absolute;
-    pointer-events: none;
-
-    &::after, &::before {
-      content: "";
-      position: absolute;
-      background: transparent;
-    }
-
-    &::after { width: 2rem; height: calc(1rem - 1px); }
-    &::before { width: calc(1rem - 1px); height: 2rem; }
-
-    &.left {
-      left: -0.5rem;
-      &::after { left: calc(-2px + 1rem); border-left: 1px solid $border; }
-      &::before { left: -1px; border-left: 1px solid $border; }
-    }
-    &.right {
-      right: -0.5rem;
-      &::after { right: calc(-2px + 1rem); border-right: 1px solid $border; }
-      &::before { right: -1px; border-right: 1px solid $border; }
-    }
-    &.top {
-      top: -0.5rem;
-      &::after { top: -1px; border-top: 1px solid $border; }
-      &::before { top: calc(-2px + 1rem); border-top: 1px solid $border; }
-    }
-    &.bottom {
-      bottom: -0.5rem;
-      &::after { bottom: -1px; border-bottom: 1px solid $border; }
-      &::before { bottom: calc(-2px + 1rem); border-bottom: 1px solid $border; }
-    }
-  }
-
-  #perfil-nome {
-    margin-top: 0;
-    color: $border;
-  }
-
-  // .card-divider {
-  //   height: 1px;
-  //   margin: 15px 0;
-  //   opacity: 0.7;
-  //   border: none;
-  //   background-color: $border;
-  // }
-}
-
-/* Slider D3 Visual */
-#dual-slider {
-  height: 30px;
-  width: 120px;
-}
-
-.track-active { 
-  stroke: $border; 
-  stroke-width: 2px; 
-}
-.handle { 
-  stroke: $border; 
-  stroke-width: 1px; 
-  fill: $background; 
-}
-
-#btn-link-externo{
+#btn-link-externo {
   background-color: $button;
   color: #000;
   padding: 10px 14px;
@@ -421,31 +299,5 @@ section {
     box-shadow: 0 4px 12px rgba(178, 146, 78, 0.3);
   }
 
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-/* --- Responsividade --- */
-@media (max-width: 768px) {
-  #info-container.filter-controls {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10px 16px;
-  }
-
-  .filters-group {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-
-  #card.card {
-    bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
-    border-radius: 12px 12px 0 0;
-    max-height: 50vh;
-  }
+  &:active { transform: scale(0.98); }
 }

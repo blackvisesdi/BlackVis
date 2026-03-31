@@ -4,64 +4,26 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testes 1.8</title>
+    <title>Teste BlackVIS</title>
 
     <link rel="stylesheet" href="./styles/style.css">
 </head>
 <body>
     <div id="content-wrapper">
-        <section class="filters">
-            <div id="info-container" class="filter-controls">
-                <h2 class="logo">BlackVis</h2>
-                
-                <div class="filters-group">
-                    <div class="control-item">
-                        <label>Por Ano de Nascimento:</label>
-                        <div id="year-slider">
-                            <span id="value-min"></span>
-                            <svg id="dual-slider"></svg>
-                            <span id="value-max"></span>
-                        </div>
-                    </div>
-                
-                    <div class="control-item">
-                        <label>ÁREA DO DESIGN:</label>
-                        <select id="category-filter" onchange="window.applyAllFilters()">
-                            <option value="all">Todas</option>
-                        </select>
-                    </div>
 
-                    <div class="control-item">
-                        <label>NACIONALIDADE:</label>
-                        <select id="nationality-filter" onchange="window.applyAllFilters()">
-                            <option value="all">Todos</option>
-                            <option value="Brasileira">Brasileiros</option>
-                            <option value="Estrangeira">Estrangeiros</option>
-                        </select>
-                    </div>
-
-                    <div class="control-item">
-                        <label>PERÍODO:</label>
-                        <select id="period-filter" onchange="window.applyAllFilters()">
-                            <option value="all">Todos</option>
-                            <option value="Clássico - antes de 1970">Clássico</option>
-                            <option value="Contemporâneo  - após de 1970">Contemporâneo</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-item">
-                        <label>POR NOME:</label>
-                        <input type="text" id="search-input" placeholder="Digite o nome..."
-                        onkeypress="if(event.key === 'Enter') applyAllFilters()">
-                    </div>
-                </div>
+        <nav class="top-nav">
+            <span class="nav-link">Home</span>
+            <div class="nav-center">
+                <img src="assets/Adinkra-01.png" alt="BlackVIS">
             </div>
-        </section>
+            <span class="nav-link">Sobre</span>
+        </nav>
+
         <section class="cards">
             <div class="grafico-container">
-                <svg id="grafico-d3"></svg> 
+                <svg id="grafico-d3"></svg>
             </div>
-            
+
             <div id="card" class="card">
                 <div class="corner top left"></div>
                 <div class="corner top right"></div>
@@ -69,16 +31,66 @@
                 <div class="corner bottom right"></div>
 
                 <h2 id="perfil-nome">Selecione um Designer</h2>
-                <p> 
+                <p>
                     <span id="card-info">Nenhuma</span>
                 </p>
                 <p id="perfil-descricao"></p>
                 <a id="btn-link-externo" class="btn"></a>
             </div>
         </section>
+
+        <div class="bottom-bar">
+
+            <div class="bb-left">
+                <p class="bb-description">BlackVIS é uma visualização de designers negros brasileiros e estrangeiros, conectando pessoas, técnicas e áreas do design gráfico.</p>
+                <div class="nationality-filters">
+                    <button class="nat-btn" data-value="Brasileira">
+                        <span class="nat-icon">?</span>
+                        <span>Brasileiro</span>
+                    </button>
+                    <button class="nat-btn" data-value="Estrangeira">
+                        <span class="nat-icon">?</span>
+                        <span>Estrangeiro</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bb-center">
+                <button class="category-btn" data-value="Comunicação" style="--cat-color: #0511F2">
+                    <img src="assets/icons/comunica/Adinkra_Comunicação.png" alt="comunicação">
+                    <span>comunicação</span>
+                </button>
+                <button class="category-btn" data-value="Produto" style="--cat-color: #FFD417">
+                    <img src="assets/icons/produ/Adinkra-05.png" alt="produto">
+                    <span>produto</span>
+                </button>
+                <button class="category-btn" data-value="Teórico" style="--cat-color: #22CC1D">
+                    <img src="assets/icons/teori/Adinkra_Teórico.png" alt="teórico">
+                    <span>teórico</span>
+                </button>
+                <button class="category-btn" data-value="Interação" style="--cat-color: #D930AC">
+                    <img src="assets/icons/intera/Adinkra_Interação.png" alt="interação">
+                    <span>interação</span>
+                </button>
+                <button class="category-btn" data-value="Serviço" style="--cat-color: #F14505">
+                    <img src="assets/icons/servi/Adinkra_Serviço.png" alt="serviço">
+                    <span>serviço</span>
+                </button>
+            </div>
+
+            <div class="bb-right">
+                <input type="text" id="search-input" placeholder="Buscar designer..."
+                       onkeypress="if(event.key === 'Enter') applyAllFilters()">
+                <div id="year-slider">
+                    <span id="value-min"></span>
+                    <svg id="dual-slider"></svg>
+                    <span id="value-max"></span>
+                </div>
+            </div>
+
+        </div>
+
     </div>
-
-
 
     <script src="https://d3js.org/d3.v7.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
     <script src="js/globals.js?v=5"></script>
