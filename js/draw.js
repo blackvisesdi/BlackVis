@@ -58,15 +58,52 @@ function drawForceGraph(data, centerNodes = false) {
     });
   }
 
+  // Mapa id→nó para resolver cores dos links
+  const nodeById = new Map(graphData.nodes.map((n) => [n.id, n]));
+
+  // Pré-computa cor + importância para cada link (evita recalcular por attr)
+  const nodeAreas = (n) =>
+    String(n?.["Área do design"] || "").split(",").map((s) => s.trim()).filter(Boolean);
+
+  const linkMeta = new Map();
+  graphData.links.forEach((l) => {
+    const srcId = typeof l.source === "object" ? l.source.id : l.source;
+    const tgtId = typeof l.target === "object" ? l.target.id : l.target;
+    const src = nodeById.get(srcId);
+    const tgt = nodeById.get(tgtId);
+
+    // Cor: determinada pelo destino (técnica ou categoria) — assim todas as
+    // linhas que chegam a um eixo têm a cor daquele eixo, independente da origem
+    const color = tgt ? getBaseColorForNode(tgt) : "#999";
+
+    // Importância: links da área primária da pessoa são mais evidentes
+    let isPrimary = true;
+    const isPersonLink = l.type === "person-technique-link" || l.type === "person-category-fallback-link";
+    if (isPersonLink) {
+      const person = (src && !src.isCategory && !src.isTechnique) ? src : tgt;
+      const other  = person === src ? tgt : src;
+      if (person && other) {
+        const areas = nodeAreas(person);
+        if (areas.length > 1) {
+          // área do nó conectado (categoria usa o próprio id como área)
+          const otherArea = other.isCategory ? other.id : nodeAreas(other)[0];
+          isPrimary = otherArea === areas[0];
+        }
+      }
+    }
+
+    linkMeta.set(l, { color, isPrimary });
+  });
+
   // Links
   const link = linkGroup
     .selectAll(".link")
     .data(graphData.links, (d) => d.source.id + "-" + d.target.id)
     .join("line")
     .attr("class", "link")
-    .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6)
-    .attr("stroke-width", 2);
+    .attr("stroke",         (d) => linkMeta.get(d)?.color   ?? "#999")
+    .attr("stroke-opacity", (d) => linkMeta.get(d)?.isPrimary ? 0.55 : 0.18)
+    .attr("stroke-width",   (d) => linkMeta.get(d)?.isPrimary ? 1.5  : 0.8);
 
   // Nós
   const node = nodeGroup

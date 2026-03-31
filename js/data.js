@@ -185,27 +185,39 @@ function initSlider(minYear, maxYear) {
 // ===== SETUP DE LISTENERS =====
 
 function setupCategoryFilter() {
-  d3.select("#category-filter").on("change", function () {
-    window.currentCategory = this.value;
-    window.applyAllFilters();
+  document.querySelectorAll(".category-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const val = btn.dataset.value;
+      if (window.currentCategory === val) {
+        window.currentCategory = "all";
+        btn.classList.remove("active");
+      } else {
+        document.querySelectorAll(".category-btn").forEach((b) => b.classList.remove("active"));
+        window.currentCategory = val;
+        btn.classList.add("active");
+      }
+      window.applyAllFilters();
+    });
   });
   if (DEBUG) console.log("Listener de categoria configurado.");
 }
 
 function setupNationalityFilter() {
-  d3.select("#nationality-filter").on("change", function () {
-    window.currentNationality = this.value;
-    window.applyAllFilters();
+  document.querySelectorAll(".nat-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const val = btn.dataset.value;
+      if (window.currentNationality === val) {
+        window.currentNationality = "all";
+        btn.classList.remove("active");
+      } else {
+        document.querySelectorAll(".nat-btn").forEach((b) => b.classList.remove("active"));
+        window.currentNationality = val;
+        btn.classList.add("active");
+      }
+      window.applyAllFilters();
+    });
   });
   if (DEBUG) console.log("Listener de nacionalidade configurado.");
-}
-
-function setupPeriodFilter() {
-  d3.select("#period-filter").on("change", function () {
-    window.currentPeriod = this.value;
-    window.applyAllFilters();
-  });
-  if (DEBUG) console.log("Listener de período configurado.");
 }
 
 function setupYearInputListeners(minDataYear, maxDataYear) {
@@ -252,13 +264,12 @@ d3.json("data.json")
     window.currentMax = maxDataYear;
     window.currentCategory = "all";
     window.currentNationality = "all";
+    window.currentPeriod = "all";
 
-    fillCategoryDropdown();
     initSlider(minDataYear, maxDataYear);
     setupYearInputListeners(minDataYear, maxDataYear);
     setupCategoryFilter();
     setupNationalityFilter();
-    setupPeriodFilter();
     setupDesignerSearch();
 
     window.applyAllFilters();
@@ -307,10 +318,20 @@ function applyAllFilters() {
 
       // Filtro de categoria
       if (categoryFilter !== "all" && categoryFilter !== "Todas") {
+        // Técnicas que têm link direto para a categoria (technique-category-link)
+        const techsInCategory = new Set(
+          allLinks
+            .filter((l) => {
+              const t = typeof l.target === "object" ? l.target.id : l.target;
+              return t === categoryFilter && l.type === "technique-category-link";
+            })
+            .map((l) => (typeof l.source === "object" ? l.source.id : l.source))
+        );
+
         filteredNodes = filteredNodes.filter((d) => {
           switch (true) {
             case d.isCategory:  return d.id === categoryFilter;
-            case d.isTechnique: return d["Área do design"] === categoryFilter;
+            case d.isTechnique: return techsInCategory.has(d.id);
             default: {
               const areas = String(d["Área do design"] || "").split(",").map((s) => s.trim());
               return areas.includes(categoryFilter);
@@ -375,8 +396,16 @@ function applyAllFilters() {
         .map((d) => d.id)
     );
 
+    // Quando há filtro de categoria, designers que passaram no filtro são mantidos
+    // mesmo sem conexões (as técnicas deles podem ser de outra área)
+    const keptByCategory = new Set(
+      window.currentCategory !== "all" && window.currentCategory !== "Todas"
+        ? filteredNodes.filter((d) => !d.isCategory && !d.isTechnique).map((d) => d.id)
+        : []
+    );
+
     filteredNodes = filteredNodes.filter(
-      (d) => connectedIds.has(d.id) || neverConnected.has(d.id)
+      (d) => connectedIds.has(d.id) || neverConnected.has(d.id) || keptByCategory.has(d.id)
     );
   }
 
