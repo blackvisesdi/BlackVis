@@ -8,17 +8,26 @@ BlackVis exibe um grafo de força interativo onde cada nó representa um designe
 
 ## Como rodar
 
-O projeto usa `fetch` para carregar o `data.json`, então precisa de um servidor local (não funciona abrindo `index.html` diretamente pelo sistema de arquivos):
+O projeto usa `fetch` para carregar o `data.json`, então precisa de um servidor local (não funciona abrindo `index.html` diretamente pelo sistema de arquivos).
+
+**Recomendado — live-server com hot reload:**
 
 ```bash
-# Node.js
-npx serve .
-
-# Python
-python -m http.server 8080
+npm install
+npm run dev
 ```
 
-Acesse `http://localhost:8080` (ou a porta indicada pelo servidor).
+Abre automaticamente em `http://localhost:5500`.
+
+**Alternativas:**
+
+```bash
+# npx sem instalar
+npx live-server --port=5500
+
+# Python
+python -m http.server 5500
+```
 
 ## Estrutura de arquivos
 

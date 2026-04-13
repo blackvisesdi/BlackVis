@@ -2,18 +2,33 @@
 // DATA.JS — Pré-processamento, Filtros e Carregamento
 // ============================================================
 
+// Categorias válidas (Arte não aparece na visualização)
+const VALID_CATEGORIES = ["Comunicação", "Produto", "Teórico", "Interação", "Serviço"];
+// Técnicas sem SVG que não devem ser exibidas
+const HIDDEN_TECHNIQUES = ["Colagem"];
+
 // ===== PRÉ-PROCESSAMENTO =====
 
 function preprocessGraphData(data) {
-  const originalNodes = Array.isArray(data.nodes) ? data.nodes : [];
-  const originalLinks = Array.isArray(data.links) ? data.links : [];
+  // Aceita array plano OU {nodes, links}
+  const originalNodes = Array.isArray(data)
+    ? data
+    : (Array.isArray(data.nodes) ? data.nodes : []);
+  const originalLinks = Array.isArray(data)
+    ? []
+    : (Array.isArray(data.links) ? data.links : []);
+
+  // Garante que cada nó tem campo id (usa Nome como fallback)
+  originalNodes.forEach((n) => {
+    if (!n.id) n.id = n.Nome || String(Math.random());
+  });
 
   const categoryNodes = new Map();
   const techniqueNodes = new Map();
   const newLinks = [...originalLinks];
 
   const DESIGN_AREA_KEY = "Área do design";
-  const TECHNIQUES_KEY = "Técnicas atualizadas";
+  const TECHNIQUES_KEY  = "Técnicas";
 
   const designerNodes = originalNodes.filter(
     (d) => d[DESIGN_AREA_KEY] || d[TECHNIQUES_KEY]
@@ -23,13 +38,19 @@ function preprocessGraphData(data) {
     const areaData = dNode[DESIGN_AREA_KEY];
     let areas = [];
     if (typeof areaData === "string") {
-      areas = areaData.split(",").map((a) => a.trim()).filter((a) => a.length > 0);
+      areas = areaData
+        .split(",")
+        .map((a) => a.trim())
+        .filter((a) => a.length > 0 && VALID_CATEGORIES.includes(a));
     }
 
     const tecnicasData = dNode[TECHNIQUES_KEY];
     let tecnicas = [];
     if (typeof tecnicasData === "string") {
-      tecnicas = tecnicasData.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+      tecnicas = tecnicasData
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0 && !HIDDEN_TECHNIQUES.includes(t));
     }
 
     let isLinkedViaTechnique = false;
@@ -136,22 +157,49 @@ function initSlider(minYear, maxYear) {
   window.currentMin = minYear;
   window.currentMax = maxYear;
 
-  const sliderSvg = d3.select("#dual-slider")
+  // Limpa slider anterior se existir
+  d3.select("#dual-slider").selectAll("*").remove();
+
+  const sliderSvgEl = d3.select("#dual-slider")
     .attr("width", sliderWidthConfig + sliderMarginConfig.left + sliderMarginConfig.right)
-    .attr("height", 5)
+    .attr("height", 30);
+
+  // Gradiente clássico (esquerda) → contemporâneo (direita)
+  const defs = sliderSvgEl.append("defs");
+  const grad = defs.append("linearGradient")
+    .attr("id", "slider-track-gradient")
+    .attr("x1", "0%").attr("y1", "0%")
+    .attr("x2", "100%").attr("y2", "0%");
+  grad.append("stop").attr("offset", "0%")
+    .attr("stop-color", "#3a2e1e").attr("stop-opacity", 1);
+  grad.append("stop").attr("offset", "100%")
+    .attr("stop-color", "#edd7ab").attr("stop-opacity", 1);
+
+  const sliderSvg = sliderSvgEl
     .append("g")
-    .attr("transform", `translate(${sliderMarginConfig.left}, 25)`);
+    .attr("transform", `translate(${sliderMarginConfig.left}, 16)`);
 
   const g = sliderSvg.append("g").attr("class", "slider");
+
+  // Track com gradiente (rect em vez de line)
+  g.append("rect")
+    .attr("class", "track-gradient-bg")
+    .attr("x", xSlider.range()[0])
+    .attr("y", -1)
+    .attr("width", xSlider.range()[1] - xSlider.range()[0])
+    .attr("height", 2)
+    .attr("fill", "url(#slider-track-gradient)")
+    .attr("rx", 1);
+
   g.append("line").attr("class", "track").attr("x1", xSlider.range()[0]).attr("x2", xSlider.range()[1]);
 
   const trackActive = g.append("line").attr("class", "track-active")
     .attr("x1", xSlider(window.currentMin)).attr("x2", xSlider(window.currentMax));
 
-  g.append("circle").attr("class", "handle handle-min").attr("r", 5).attr("cx", xSlider(window.currentMin))
+  const handleMin = g.append("circle").attr("class", "handle handle-min").attr("r", 5).attr("cx", xSlider(window.currentMin)).attr("cy", 0)
     .call(d3.drag().on("start", dragstarted).on("drag", draggedMin).on("end", dragendedSlider));
 
-  g.append("circle").attr("class", "handle handle-max").attr("r", 5).attr("cx", xSlider(window.currentMax))
+  const handleMax = g.append("circle").attr("class", "handle handle-max").attr("r", 5).attr("cx", xSlider(window.currentMax)).attr("cy", 0)
     .call(d3.drag().on("start", dragstarted).on("drag", draggedMax).on("end", dragendedSlider));
 
   function dragendedSlider() { d3.select(this).attr("stroke", null); }
@@ -179,6 +227,16 @@ function initSlider(minYear, maxYear) {
     d3.select("#value-max").text(window.currentMax);
   }
   updateVisuals();
+
+  // Expõe função de reset do slider para uso externo
+  window._sliderReset = function () {
+    window.currentMin = minYear;
+    window.currentMax = maxYear;
+    handleMin.attr("cx", xSlider(minYear));
+    handleMax.attr("cx", xSlider(maxYear));
+    updateVisuals();
+  };
+
   window.applyAllFilters();
 }
 
@@ -220,33 +278,41 @@ function setupNationalityFilter() {
   if (DEBUG) console.log("Listener de nacionalidade configurado.");
 }
 
-function setupYearInputListeners(minDataYear, maxDataYear) {
-  const minEl = document.getElementById("year-min-input");
-  const maxEl = document.getElementById("year-max-input");
-  if (minEl) {
-    minEl.value = minDataYear;
-    d3.select("#year-min-input").on("change", function () { window.currentMin = +this.value; window.applyAllFilters(); });
-  }
-  if (maxEl) {
-    maxEl.value = maxDataYear;
-    d3.select("#year-max-input").on("change", function () { window.currentMax = +this.value; window.applyAllFilters(); });
-  }
-  if (DEBUG) console.log("Listeners de input de ano configurados.");
-}
 
 function setupDesignerSearch() {
   const searchEl = document.getElementById("search-input");
   if (!searchEl) return;
-  // "input" dispara a cada caractere digitado (inclusive paste/delete)
   d3.select("#search-input").on("input", function () {
     window.applyAllFilters();
   });
   if (DEBUG) console.log("Listener de pesquisa configurado.");
 }
 
+function setupLogoReset() {
+  const navCenter = document.querySelector(".nav-center");
+  if (!navCenter) return;
+  navCenter.style.cursor = "pointer";
+  navCenter.style.pointerEvents = "all";
+  navCenter.addEventListener("click", () => {
+    // Reseta filtros
+    window.currentCategory = "all";
+    window.currentNationality = "all";
+    document.querySelectorAll(".category-btn, .nat-btn").forEach((b) => b.classList.remove("active"));
+    // Limpa busca
+    const searchEl = document.getElementById("search-input");
+    if (searchEl) searchEl.value = "";
+    // Reseta slider
+    if (window._sliderReset) window._sliderReset();
+    // Fecha card
+    if (typeof focusNode === "function") focusNode(null, null);
+    // Redesenha
+    window.applyAllFilters(true);
+  });
+}
+
 // ===== CARREGAMENTO DOS DADOS =====
 
-d3.json("data.json")
+d3.json("data/data.json")
   .then((data) => {
     let processedData = preprocessGraphData(data);
     processedData.nodes = calculateNodeDegree(processedData.nodes, processedData.links);
@@ -267,10 +333,10 @@ d3.json("data.json")
     window.currentPeriod = "all";
 
     initSlider(minDataYear, maxDataYear);
-    setupYearInputListeners(minDataYear, maxDataYear);
     setupCategoryFilter();
     setupNationalityFilter();
     setupDesignerSearch();
+    setupLogoReset();
 
     window.applyAllFilters();
   })
@@ -281,7 +347,7 @@ d3.json("data.json")
 
 // ===== APPLY ALL FILTERS =====
 
-function applyAllFilters() {
+function applyAllFilters(centerNodes = false) {
   const searchTerm = normalizeKey(document.getElementById("search-input")?.value || "");
   const isNameSearch = searchTerm !== "";
 
@@ -293,7 +359,6 @@ function applyAllFilters() {
     case isNameSearch: {
       const matched = allNodes.filter((d) => {
         if (d.isCategory || d.isTechnique) return false;
-        // bate se qualquer parte do nome (primeiro, meio ou sobrenome) começa com as letras digitadas
         return normalizeKey(d.Nome || "").split(" ").some((part) => part.startsWith(searchTerm));
       });
 
@@ -310,15 +375,14 @@ function applyAllFilters() {
     default: {
       filteredNodes = [...allNodes];
 
-      const categoryFilter  = window.currentCategory;
+      const categoryFilter    = window.currentCategory;
       const nationalityFilter = window.currentNationality;
-      const periodFilter    = window.currentPeriod;
-      const minYear         = window.currentMin;
-      const maxYear         = window.currentMax;
+      const periodFilter      = window.currentPeriod;
+      const minYear           = window.currentMin;
+      const maxYear           = window.currentMax;
 
       // Filtro de categoria
       if (categoryFilter !== "all" && categoryFilter !== "Todas") {
-        // Técnicas que têm link direto para a categoria (technique-category-link)
         const techsInCategory = new Set(
           allLinks
             .filter((l) => {
@@ -384,7 +448,6 @@ function applyAllFilters() {
       connectedIds.add(typeof l.target === "object" ? l.target.id : l.target);
     });
 
-    // Pessoas que nunca tiveram conexão no grafo completo são mantidas
     const neverConnected = new Set(
       allNodes
         .filter((d) => !d.isCategory && !d.isTechnique)
@@ -396,8 +459,6 @@ function applyAllFilters() {
         .map((d) => d.id)
     );
 
-    // Quando há filtro de categoria, designers que passaram no filtro são mantidos
-    // mesmo sem conexões (as técnicas deles podem ser de outra área)
     const keptByCategory = new Set(
       window.currentCategory !== "all" && window.currentCategory !== "Todas"
         ? filteredNodes.filter((d) => !d.isCategory && !d.isTechnique).map((d) => d.id)
@@ -409,54 +470,8 @@ function applyAllFilters() {
     );
   }
 
-  drawForceGraph({ nodes: filteredNodes, links: filteredLinks }, isNameSearch);
+  drawForceGraph({ nodes: filteredNodes, links: filteredLinks }, isNameSearch || centerNodes);
 }
 
 window.applyAllFilters = applyAllFilters;
 
-window.applyTechniqueFilter = function (techniqueName) {
-  // filtra por técnica específica — mantém pessoas ligadas a ela
-  filteredNodes = allNodes.filter((d) => {
-    if (d.isTechnique) return d.Nome === techniqueName;
-    if (d.isCategory) return false;
-    const tecnicas = String(d["Técnicas atualizadas"] || "").split(",").map((s) => s.trim());
-    return tecnicas.includes(techniqueName);
-  });
-  const ids = new Set(filteredNodes.map((d) => d.id));
-  const links = allLinks.filter((l) => {
-    const s = typeof l.source === "object" ? l.source.id : l.source;
-    const t = typeof l.target === "object" ? l.target.id : l.target;
-    return ids.has(s) && ids.has(t);
-  });
-  drawForceGraph({ nodes: filteredNodes, links }, false);
-};
-
-// ===== DROPDOWN DE CATEGORIAS =====
-
-function fillCategoryDropdown() {
-  const uniqueCategories = new Set(
-    allNodes
-      .filter((d) => !d.isCategory && d["Área do design"])
-      .reduce((acc, d) => {
-        const areaData = d["Área do design"];
-        if (typeof areaData === "string") {
-          return acc.concat(areaData.split(",").map((s) => s.trim()).filter(Boolean));
-        }
-        return acc;
-      }, [])
-  );
-
-  const categories = [
-    { text: "Todas", value: "all" },
-    ...Array.from(uniqueCategories).filter(Boolean).sort().map((c) => ({ text: c, value: c })),
-  ];
-
-  d3.select("#category-filter")
-    .selectAll("option")
-    .data(categories)
-    .join("option")
-    .attr("value", (d) => d.value)
-    .text((d) => d.text);
-
-  d3.select("#category-filter").property("value", "all");
-}
