@@ -1,0 +1,87 @@
+[
+  {
+    "area": "Comunicação",
+    "adinkra": {
+      "nome": "Funtumfunefu Denkyemfunefu",
+      "descricao": "Crocodilos siameses. Um símbolo de unidade na diversidade que dá um destino comum; compartilhamento; do provérbio, \"Funtumfrafu denkyemfrafu, wowo yafunu koro nanso wonya biribi a wofom efiri se aduane no de no yete no wo menetwitwie mu\", a saber, Funtumfrafu e Denkyemfrafu compartilham um estômago, mas quando conseguem algo (comida), eles se esforçam por isso porque a doçura da comida é sentida quando ela passa pela garganta.",
+      "fonte": "https://www.adinkrasymbols.org"
+    },
+    "tecnicas": [
+      { "nome": "Design gráfico",    "descricao": "Prática de combinar tipografia, fotografia, ilustração e layout para comunicação visual." },
+      { "nome": "Ilustração",        "descricao": "Criação de representações visuais para identificar, decorar ou complementar um conceito." },
+      { "nome": "Tipografia",        "descricao": "Criação de famílias e experimentos tipográficos." },
+      { "nome": "Direção de arte",   "descricao": "Supervisão criativa do estilo visual e das imagens em projetos de mídia e publicidade." },
+      { "nome": "Produção audiovisual", "descricao": "Criação de imagens em movimento, incluindo filmes, vídeos." },
+      { "nome": "Fotografia",        "descricao": "Arte e prática de criar imagens através do registro da luz." },
+      { "nome": "Videografismo",     "descricao": "Criação de imagens em movimento: motion design, efeitos especiais e animação." },
+      { "nome": "Design editorial",  "descricao": "Estruturar conteúdo para publicação." },
+      { "nome": "Identidade visual", "descricao": "Criação de marcas e suas aplicações." },
+      { "nome": "Design de superfície", "descricao": "Desenho de padronagens e estampas corridas e aplicadas." },
+      { "nome": "Arte urbana",       "descricao": "Expressão artística no espaço urbano — grafite, murais e intervenções públicas." }
+    ]
+  },
+  {
+    "area": "Produto",
+    "adinkra": {
+      "nome": "Kokuromotie",
+      "descricao": "Polegar. Símbolo de cooperação, participação, trabalho em equipe, indispensabilidade e harmonia. Do provérbio \"Yensiane yokokuromotie ho mmo po\", que significa \"Não se ignora o polegar para dar um no\". Qualquer pessoa que tente o exercício de dar um no sem os polegares rapidamente entenderá este provérbio.",
+      "fonte": "https://www.adinkrasymbols.org"
+    },
+    "tecnicas": [
+      { "nome": "Design de objetos industriais", "descricao": "Projeto de bens de consumo para produção em massa." },
+      { "nome": "Design de mobiliário",          "descricao": "Projeto de móveis." },
+      { "nome": "Moda e têxtil",                 "descricao": "Projeto de tecidos, padronagens, roupas e figurinos." },
+      { "nome": "Escultura",                     "descricao": "Criação de formas de arte tridimensionais manuais." },
+      { "nome": "Prática 3D",                    "descricao": "Criação de arte tridimensional digital." },
+      { "nome": "Design de interiores",          "descricao": "Organização de espaços internos." },
+      { "nome": "Design de adereços",            "descricao": "Design de adornos como bolsas, sapatos, joias." },
+      { "nome": "Embalagem",                     "descricao": "Estrutura tridimensional da embalagem com escolha de materiais e a ergonomia." }
+    ]
+  },
+  {
+    "area": "Interação",
+    "adinkra": {
+      "nome": "Ese ne Tekrema",
+      "descricao": "Dentes e língua. Símbolo de aperfeiçoamento, progresso, crescimento, necessidade de amizade e interdependência.",
+      "fonte": "https://www.adinkrasymbols.org"
+    },
+    "tecnicas": [
+      { "nome": "UI Design de interface",    "descricao": "Design da interface gráfica de produtos digitais." },
+      { "nome": "Programação",              "descricao": "Implementação técnica de projetos digitais usando linguagens de programação." },
+      { "nome": "Instalações interativas",  "descricao": "Criação de ambientes que respondem à interação do usuário." },
+      { "nome": "Arte digital",             "descricao": "Criação de obras que respondem à interação do usuário." },
+      { "nome": "UX Experiência do usuário","descricao": "Projetos de pesquisa, análise e conceituação de produtos digitais." },
+      { "nome": "Realidades mistas",        "descricao": "Projetos em realidade virtual e aumentada." }
+    ]
+  },
+  {
+    "area": "Serviço",
+    "adinkra": {
+      "nome": "Owo Fôrum Adobe",
+      "descricao": "Uma cobra sobe em uma palmeira de ráfia. Um símbolo de engenhosidade, excelência, desempenho e realização do incomum ou impossível.",
+      "fonte": "https://www.adinkrasymbols.org"
+    },
+    "tecnicas": [
+      { "nome": "CX Experiência do Cliente",  "descricao": "Planejamento das percepções e sentimentos de uma cliente em suas interações com uma empresa." },
+      { "nome": "Design para impacto social", "descricao": "Aplicação do design para resolver problemas sociais e serviços públicos complexos na promoção do bem-estar cívico." },
+      { "nome": "Branding",                   "descricao": "Gestão estratégica da identidade de uma marca." },
+      { "nome": "Curadoria",                  "descricao": "Experiência de visitação em projetos expográficos." },
+      { "nome": "Economia criativa",          "descricao": "Se utiliza da criatividade para conceber novos modelos, oferecer soluções, proporcionar rentabilidade e lucro social." }
+    ]
+  },
+  {
+    "area": "Teórico",
+    "adinkra": {
+      "nome": "Sankofa",
+      "descricao": "Este coração estilizado com espirais é uma representação alternativa do símbolo Sankofa. As espirais representam o retorno ao passado, às raízes, para extrair lições para o presente e o futuro.",
+      "fonte": "https://www.adinkrasymbols.org/symbols/sankofa"
+    },
+    "tecnicas": [
+      { "nome": "Educação",               "descricao": "Formação da próxima geração de designers e de instituições acadêmicas." },
+      { "nome": "Escrita e publicação",   "descricao": "Autoria de textos críticos, histórico e teórico do design." },
+      { "nome": "Ativismo e justiça social", "descricao": "Uso do design como ferramenta para advocacy e mudança social." },
+      { "nome": "Relações étnico-raciais","descricao": "Questionamento e desmantelamento das fundações eurocêntricas do design." },
+      { "nome": "Design e gênero",        "descricao": "Ampliar as narrativas e questionar as hegemonias presentes no design." }
+    ]
+  }
+]

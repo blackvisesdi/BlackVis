@@ -9,94 +9,127 @@
     <link rel="stylesheet" href="./styles/style.css">
 </head>
 <body>
+
+    <nav class="top-nav">
+        <span class="nav-link">Home</span>
+        <div class="nav-center">
+            <img src="assets/Adinkra-01.png" alt="BlackVIS" width="36" height="36" style="display:block">
+        </div>
+        <span class="nav-link">Sobre</span>
+    </nav>
+
     <div id="content-wrapper">
 
-        <nav class="top-nav">
-            <span class="nav-link">Home</span>
-            <div class="nav-center">
-                <img src="assets/Adinkra-01.png" alt="BlackVIS" width="36" height="36" style="display:block">
-            </div>
-            <span class="nav-link">Sobre</span>
-        </nav>
-
-        <section class="cards">
+        <!-- Área do grafo -->
+        <div class="graph-area">
             <div class="grafico-container">
                 <svg id="grafico-d3"></svg>
             </div>
+        </div>
 
+        <!-- Painel de informações — 30% -->
+        <div class="info-panel">
             <div id="card" class="card">
-                <div class="corner top left"></div>
-                <div class="corner top right"></div>
-                <div class="corner bottom left"></div>
-                <div class="corner bottom right"></div>
 
-                <h2 id="perfil-nome">Selecione um Designer</h2>
-                <p>
-                    <span id="card-info">Nenhuma</span>
-                </p>
-                <p id="perfil-descricao"></p>
-                <a id="btn-link-externo" class="btn"></a>
-            </div>
-        </section>
+                <!-- Conteúdo: técnica ou área de design -->
+                <div id="card-tec-area" style="display:none"></div>
 
-        <div class="bottom-bar">
-
-            <div class="bb-left">
-                <p class="bb-description">BlackVIS é uma visualização de designers negros brasileiros e estrangeiros, conectando pessoas, técnicas e áreas do design gráfico.</p>
-                <div class="nationality-filters">
-                    <button class="nat-btn" data-value="Brasileira">
-                        <span class="nat-icon">?</span>
-                        <span>Brasileiro</span>
-                    </button>
-                    <button class="nat-btn" data-value="Estrangeira">
-                        <span class="nat-icon">?</span>
-                        <span>Estrangeiro</span>
-                    </button>
+                <!-- Conteúdo: perfil de pessoa -->
+                <div id="card-pessoa" style="display:none">
+                    <h2 id="card-p-nome"></h2>
+                    <div class="card-p-top">
+                        <div class="card-p-foto"></div>
+                        <div class="card-p-campos">
+                            <p class="card-campo">
+                                <span class="campo-label">Nascimento</span>
+                                <span id="card-p-nasc" class="campo-valor"></span>
+                            </p>
+                            <p class="card-campo" id="card-p-idade-campo">
+                                <span class="campo-label">Idade</span>
+                                <span id="card-p-idade" class="campo-valor"></span>
+                            </p>
+                            <p class="card-campo">
+                                <span class="campo-label">Local</span>
+                                <span id="card-p-local" class="campo-valor"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="card-p-tecnicas"></div>
+                    <p id="card-p-bio"></p>
+                    <a id="btn-link-externo" class="btn" style="display:none"></a>
                 </div>
-            </div>
 
-            <div class="bb-center">
-                <button class="category-btn" data-value="Comunicação" style="--cat-color: #0511F2">
-                    <img src="assets/icons/comunica/Adinkra_Comunicação.png" alt="comunicação">
-                    <span>comunicação</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-bar">
+
+        <div class="bb-left">
+            <p class="bb-description">BlackVIS é uma visualização de designers negros brasileiros e estrangeiros, conectando pessoas, técnicas e áreas do design.</p>
+            <div class="nationality-filters">
+                <button class="nat-btn" data-value="Brasileira">
+                    <span class="nat-icon">?</span>
+                    <span>Brasileiro</span>
                 </button>
-                <button class="category-btn" data-value="Produto" style="--cat-color: #FFD417">
-                    <img src="assets/icons/produ/Adinkra-05.png" alt="produto">
-                    <span>produto</span>
-                </button>
-                <button class="category-btn" data-value="Teórico" style="--cat-color: #22CC1D">
-                    <img src="assets/icons/teori/Adinkra_Teórico.png" alt="teórico">
-                    <span>teórico</span>
-                </button>
-                <button class="category-btn" data-value="Interação" style="--cat-color: #D930AC">
-                    <img src="assets/icons/intera/Adinkra_Interação.png" alt="interação">
-                    <span>interação</span>
-                </button>
-                <button class="category-btn" data-value="Serviço" style="--cat-color: #F14505">
-                    <img src="assets/icons/servi/Adinkra_Serviço.png" alt="serviço">
-                    <span>serviço</span>
+                <button class="nat-btn" data-value="Estrangeira">
+                    <span class="nat-icon">?</span>
+                    <span>Estrangeiro</span>
                 </button>
             </div>
+        </div>
 
-            <div class="bb-right">
-                <input type="text" id="search-input" placeholder="Buscar designer..."
+        <div class="bb-center">
+            <button class="category-btn" data-value="Comunicação" style="--cat-color: #0511F2">
+                <img src="assets/icons/comunica/Adinkra_Comunicação.png" alt="comunicação">
+                <span>comunicação</span>
+            </button>
+            <button class="category-btn" data-value="Produto" style="--cat-color: #FFD417">
+                <img src="assets/icons/produ/Adinkra-05.png" alt="produto">
+                <span>produto</span>
+            </button>
+            <button class="category-btn" data-value="Teórico" style="--cat-color: #22CC1D">
+                <img src="assets/icons/teori/Adinkra_Teórico.png" alt="teórico">
+                <span>teórico</span>
+            </button>
+            <button class="category-btn" data-value="Interação" style="--cat-color: #D930AC">
+                <img src="assets/icons/intera/Adinkra_Interação.png" alt="interação">
+                <span>interação</span>
+            </button>
+            <button class="category-btn" data-value="Serviço" style="--cat-color: #F14505">
+                <img src="assets/icons/servi/Adinkra_Serviço.png" alt="serviço">
+                <span>serviço</span>
+            </button>
+        </div>
+
+        <div class="bb-right">
+            <div class="search-wrapper">
+                <svg class="search-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none">
+                    <circle cx="11" cy="11" r="7" stroke="rgba(0,0,0,0.4)" stroke-width="2"/>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="rgba(0,0,0,0.4)" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>
+                <input type="text" id="search-input" placeholder=""
                        onkeypress="if(event.key === 'Enter') applyAllFilters()">
-                <div id="year-slider">
-                    <span id="value-min"></span>
-                    <svg id="dual-slider"></svg>
-                    <span id="value-max"></span>
-                </div>
             </div>
-
+            <div id="year-slider">
+                <span id="value-min"></span>
+                <svg id="dual-slider"></svg>
+                <span id="value-max"></span>
+            </div>
+            <div class="period-labels">
+                <span>clássico</span>
+                <span>contemporâneo</span>
+            </div>
         </div>
 
     </div>
 
     <script src="https://d3js.org/d3.v7.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
-    <script src="js/globals.js?v=5"></script>
-    <script src="js/interactions.js?v=5"></script>
-    <script src="js/draw.js?v=5"></script>
-    <script src="js/data.js?v=5"></script>
+    <script src="js/globals.js?v=37"></script>
+    <script src="js/interactions.js?v=37"></script>
+    <script src="js/draw.js?v=37"></script>
+    <script src="js/data.js?v=37"></script>
 
 </body>
 </html>

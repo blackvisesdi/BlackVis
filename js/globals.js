@@ -1,7 +1,5 @@
 const VBOX_WIDTH = 950;
 const VBOX_HEIGHT = 500;
-const width = VBOX_WIDTH;
-const height = VBOX_HEIGHT;
 
 // --- CONFIGURAÇÃO DO SLIDER DE INTERVALO ---
 const YEAR_MIN_DEFAULT = 1900;
@@ -38,7 +36,6 @@ let simulation;
 let graphData = { nodes: [], links: [] };
 let allNodes = [];
 let allLinks = [];
-let focusedNode = null;
 let activeNode = null;
 
 let radiusScale = d3.scaleSqrt().range([8, 30]);
@@ -150,6 +147,88 @@ const CATEGORY_PALETTE_MAP = {
 
 const TECHNIQUE_BRIGHTNESS = 0.6;
 const PERSON_BRIGHTNESS = 1.2;
+
+// ============================================================
+// DESCRIÇÕES DE TÉCNICAS E ÁREAS
+// ============================================================
+const TECNICA_DESCRICOES = {
+  "Design gráfico":               "Prática de combinar tipografia, fotografia, ilustração e layout para comunicação visual.",
+  "Ilustração":                   "Criação de representações visuais para identificar, decorar ou complementar um conceito.",
+  "Tipografia":                   "Criação de famílias e experimentos tipográficos.",
+  "Direção de arte":              "Supervisão criativa do estilo visual e das imagens em projetos de mídia e publicidade.",
+  "Produção audiovisual":         "Criação de imagens em movimento, incluindo filmes, vídeos.",
+  "Fotografia":                   "Arte e prática de criar imagens através do registro da luz.",
+  "Videografismo":                "Criação de imagens em movimento: motion design, efeitos especiais e animação.",
+  "Design editorial":             "Estruturar conteúdo para publicação.",
+  "Identidade visual":            "Criação de marcas e suas aplicações.",
+  "Design de superfície":         "Desenho de padronagens e estampas corridas e aplicadas.",
+  "Arte urbana":                  "Expressão artística no espaço urbano — grafite, murais e intervenções públicas.",
+  "Design de objetos industriais":"Projeto de bens de consumo para produção em massa.",
+  "Design de mobiliário":         "Projeto de móveis.",
+  "Moda e têxtil":                "Projeto de tecidos, padronagens, roupas e figurinos.",
+  "Escultura":                    "Criação de formas de arte tridimensionais manuais.",
+  "Prática 3D":                   "Criação de arte tridimensional digital.",
+  "Design de interiores":         "Organização de espaços internos.",
+  "Design de adereços":           "Design de adornos como bolsas, sapatos, joias.",
+  "Embalagem":                    "Estrutura tridimensional da embalagem com escolha de materiais e a ergonomia.",
+  "UI Design de interface":       "Design da interface gráfica de produtos digitais.",
+  "Programação":                  "Implementação técnica de projetos digitais usando linguagens de programação.",
+  "Instalações interativas":      "Criação de ambientes que respondem à interação do usuário.",
+  "Arte digital":                 "Criação de obras que respondem à interação do usuário.",
+  "UX Experiência do usuário":    "Projetos de pesquisa, análise e conceituação de produtos digitais.",
+  "Realidades mistas":            "Projetos em realidade virtual e aumentada.",
+  "CX Experiência do Cliente":    "Planejamento das percepções e sentimentos de uma cliente em suas interações com uma empresa.",
+  "Design para impacto social":   "Aplicação do design para resolver problemas sociais e serviços públicos complexos na promoção do bem-estar cívico.",
+  "Branding":                     "Gestão estratégica da identidade de uma marca.",
+  "Curadoria":                    "Experiência de visitação em projetos expográficos.",
+  "Economia criativa":            "Se utiliza da criatividade para conceber novos modelos, oferecer soluções, proporcionar rentabilidade e lucro social.",
+  "Educação":                     "Formação da próxima geração de designers e de instituições acadêmicas.",
+  "Escrita e publicação":         "Autoria de textos críticos, histórico e teórico do design.",
+  "Ativismo e justiça social":    "Uso do design como ferramenta para advocacy e mudança social.",
+  "Relações étnico-raciais":      "Questionamento e desmantelamento das fundações eurocêntricas do design.",
+  "Design e gênero":              "Ampliar as narrativas e questionar as hegemonias presentes no design.",
+};
+
+const AREA_DESCRICOES = {
+  "Comunicação": "Área que reúne práticas visuais orientadas à transmissão de mensagens — design gráfico, tipografia, fotografia e produção audiovisual.",
+  "Produto":     "Área focada na criação de objetos, vestuário e espaços físicos que unem função e estética.",
+  "Interação":   "Área dedicada à criação de experiências digitais e interfaces entre pessoas e tecnologias.",
+  "Serviço":     "Área que projeta experiências e sistemas orientados ao relacionamento entre pessoas e organizações.",
+  "Teórico":     "Área que desenvolve conhecimento crítico, histórico e pedagógico sobre design e cultura visual.",
+};
+
+// Informações sobre os adinkras de cada área
+const ADINKRA_INFO = {
+  "Comunicação": {
+    nome: "Funtumfunefu Denkyemfunefu",
+    descricao: "Crocodilos siameses. Um símbolo de unidade na diversidade que dá um destino comum; compartilhamento; do provérbio, \"Funtumfrafu denkyemfrafu, wowo yafunu koro nanso wonya biribi a wofom efiri se aduane no de no yete no wo menetwitwie mu\", a saber, Funtumfrafu e Denkyemfrafu compartilham um estômago, mas quando conseguem algo (comida), eles se esforçam por isso porque a doçura da comida é sentida quando ela passa pela garganta.",
+  },
+  "Produto": {
+    nome: "Kokuromotie",
+    descricao: "Polegar. Símbolo de cooperação, participação, trabalho em equipe, indispensabilidade e harmonia. Do provérbio \"Yensiane yokokuromotie ho mmo po\", que significa \"Não se ignora o polegar para dar um no\". Qualquer pessoa que tente o exercício de dar um no sem os polegares rapidamente entenderá este provérbio.",
+  },
+  "Interação": {
+    nome: "Ese ne Tekrema",
+    descricao: "Dentes e língua. Símbolo de aperfeiçoamento, progresso, crescimento, necessidade de amizade e interdependência.",
+  },
+  "Serviço": {
+    nome: "Owo Fôrum Adobe",
+    descricao: "Uma cobra sobe em uma palmeira de ráfia. Um símbolo de engenhosidade, excelência, desempenho e realização do incomum ou impossível.",
+  },
+  "Teórico": {
+    nome: "Sankofa",
+    descricao: "Este coração estilizado com espirais é uma representação alternativa do símbolo Sankofa. As espirais representam o retorno ao passado, às raízes, para extrair lições para o presente e o futuro.",
+  },
+};
+
+// Ícones das categorias (usados no filtro e nos nós do grafo)
+const CATEGORY_ICON_PATH = {
+  "Comunicação": "./assets/icons/comunica/Adinkra_Comunicação.png",
+  "Produto":     "./assets/icons/produ/Adinkra-05.png",
+  "Teórico":     "./assets/icons/teori/Adinkra_Teórico.png",
+  "Interação":   "./assets/icons/intera/Adinkra_Interação.png",
+  "Serviço":     "./assets/icons/servi/Adinkra_Serviço.png",
+};
 
 const color = d3.scaleOrdinal(d3.schemeCategory10);
 

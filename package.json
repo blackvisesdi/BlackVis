@@ -1,0 +1,11 @@
+{
+  "name": "blackvis",
+  "version": "1.0.0",
+  "description": "Visualização interativa de designers negros com D3.js",
+  "scripts": {
+    "dev": "npx live-server --port=5500 --open=index.html"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
