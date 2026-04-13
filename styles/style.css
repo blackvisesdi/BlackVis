@@ -1,6 +1,4 @@
-@charset "UTF-8";
 @import url("https://fonts.googleapis.com/css2?family=Poiret+One&family=Viaoda+Libre&family=Inter:wght@400&display=swap");
-
 * {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
@@ -16,7 +14,6 @@ body {
   overflow: hidden;
 }
 
-/* === LAYOUT — push 70/30 com transição === */
 #content-wrapper {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -38,36 +35,50 @@ body {
   height: 100%;
   overflow: hidden;
   -webkit-transition: -webkit-flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: -webkit-flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transition: flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), -webkit-flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), -ms-flex-preferred-size 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .info-panel {
-  -ms-flex: 0 0 0px;
-      flex: 0 0 0px;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 0px;
+          flex: 0 0 0px;
   width: 0;
   overflow: hidden;
   position: relative;
   height: 100%;
-  background: rgba(5,5,10,0.97);
-  -webkit-transition: -webkit-flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: rgba(5, 5, 10, 0.97);
+  -webkit-transition: -webkit-box-flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: -webkit-box-flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transition: flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), -webkit-box-flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), -ms-flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.1) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .info-panel.is-open {
-  -ms-flex: 0 0 30%;
-      flex: 0 0 30%;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 30%;
+          flex: 0 0 30%;
   min-width: 280px;
   max-width: 400px;
   overflow-y: auto;
 }
 
-.info-panel::-webkit-scrollbar       { width: 3px; }
-.info-panel::-webkit-scrollbar-track { background: transparent; }
-.info-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+.info-panel::-webkit-scrollbar {
+  width: 3px;
+}
 
-/* === GRAFICO CONTAINER === */
+.info-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.info-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
 .grafico-container {
   position: absolute;
   top: 0;
@@ -78,7 +89,12 @@ body {
   overflow: hidden;
 }
 
-/* Card fills the panel */
+.grafico-container #grafico-d3 {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 #card.card {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -94,14 +110,6 @@ body {
   border: none;
 }
 
-
-.grafico-container #grafico-d3 {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* === TOP NAV === */
 .top-nav {
   position: fixed;
   top: 0;
@@ -161,7 +169,6 @@ body {
   opacity: 0.7;
 }
 
-/* === BOTTOM BAR === */
 .bottom-bar {
   position: fixed;
   bottom: 0;
@@ -307,9 +314,17 @@ body {
   text-transform: lowercase;
 }
 
-.bb-center .category-btn:hover { opacity: 1; }
-.bb-center .category-btn.active { opacity: 1; }
-.bb-center .category-btn.active span { color: var(--cat-color); }
+.bb-center .category-btn:hover {
+  opacity: 1;
+}
+
+.bb-center .category-btn.active {
+  opacity: 1;
+}
+
+.bb-center .category-btn.active span {
+  color: var(--cat-color);
+}
 
 .bb-right {
   display: -webkit-box;
@@ -326,7 +341,6 @@ body {
   min-width: 180px;
 }
 
-/* === SEARCH === */
 .search-wrapper {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -335,8 +349,8 @@ body {
       -ms-flex-align: center;
           align-items: center;
   gap: 7px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 20px;
   padding: 5px 12px;
   width: 180px;
@@ -356,12 +370,22 @@ body {
   outline: none;
 }
 
-#search-input::-webkit-input-placeholder { color: #aaa; }
-#search-input::-moz-placeholder          { color: #aaa; }
-#search-input:-ms-input-placeholder      { color: #aaa; }
-#search-input::placeholder               { color: #aaa; }
+#search-input::-webkit-input-placeholder {
+  color: #aaa;
+}
 
-/* === YEAR SLIDER === */
+#search-input:-ms-input-placeholder {
+  color: #aaa;
+}
+
+#search-input::-ms-input-placeholder {
+  color: #aaa;
+}
+
+#search-input::placeholder {
+  color: #aaa;
+}
+
 .bb-right #year-slider {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -373,7 +397,6 @@ body {
   font-size: 11px;
 }
 
-/* Clássico / Contemporâneo labels */
 .period-labels {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -381,12 +404,25 @@ body {
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
-  width: 120px; /* matches slider width */
+  position: relative;
+  width: 120px;
   font-size: 8px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.6px;
   padding: 0 2px;
   margin-top: -4px;
+}
+
+.period-labels::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  width: 1px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.55);
 }
 
 #dual-slider {
@@ -400,19 +436,17 @@ body {
 }
 
 .track-active {
-  stroke: rgba(255,255,255,0.35);
+  stroke: rgba(255, 255, 255, 0.35);
   stroke-width: 2px;
 }
 
 .handle {
-  stroke: rgba(255,255,255,0.6);
+  stroke: rgba(255, 255, 255, 0.6);
   stroke-width: 1px;
-  fill: #ffffff;
+  fill: #fff;
   cursor: ew-resize;
 }
 
-
-/* --- Card: adinkra section --- */
 .card-adinkra-section {
   margin-bottom: 20px;
   padding-bottom: 16px;
@@ -420,7 +454,7 @@ body {
 
 .sobre-adinkra-label {
   font-size: 10px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.35);
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin: 0 0 6px 0;
@@ -440,16 +474,15 @@ body {
 }
 
 .adinkra-nome {
-  font-family: "Bellucci", "Poiret One", sans-serif;
+  font-family: "Poiret One", sans-serif;
   font-size: 24px;
   font-weight: 400;
   color: #edd7ab;
   margin: 0 0 8px 0;
 }
 
-/* --- Card: técnica/área --- */
 .card-ta-nome {
-  font-family: "Bellucci", "Poiret One", sans-serif;
+  font-family: "Poiret One", sans-serif;
   font-size: 24px;
   font-weight: 400;
   color: #eeece7;
@@ -468,7 +501,7 @@ body {
 .nao-exibir-btn {
   background: none;
   border: none;
-  color: rgba(200,200,200,0.45);
+  color: rgba(200, 200, 200, 0.45);
   font-size: 11px;
   padding: 0;
   cursor: pointer;
@@ -480,12 +513,15 @@ body {
   transition: color 0.15s;
 }
 
-.nao-exibir-btn:hover { color: rgba(237,215,171,0.7); }
+.nao-exibir-btn:hover {
+  color: rgba(237, 215, 171, 0.7);
+}
 
-/* Grid de nomes */
 .names-grid {
+  display: -ms-grid;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  -ms-grid-columns: (1fr)[2];
+      grid-template-columns: repeat(2, 1fr);
   gap: 4px 12px;
 }
 
@@ -498,11 +534,12 @@ body {
   transition: color 0.15s;
 }
 
-.names-grid-item:hover { color: #edd7ab; }
+.names-grid-item:hover {
+  color: #edd7ab;
+}
 
-/* --- Card: perfil pessoa --- */
 #card-p-nome {
-  font-family: "Bellucci", "Poiret One", sans-serif;
+  font-family: "Poiret One", sans-serif;
   font-size: 24px;
   font-weight: 400;
   color: #edd7ab;
@@ -523,8 +560,8 @@ body {
   height: 80px;
   -ms-flex-negative: 0;
       flex-shrink: 0;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .card-p-campos {
@@ -553,10 +590,19 @@ body {
   gap: 6px;
 }
 
-.campo-label { color: #555; -ms-flex-negative: 0; flex-shrink: 0; }
-.campo-valor { color: #ccc; }
+.campo-label {
+  color: #555;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+}
 
-#card-p-tecnicas { margin-bottom: 14px; }
+.campo-valor {
+  color: #ccc;
+}
+
+#card-p-tecnicas {
+  margin-bottom: 14px;
+}
 
 .tec-row {
   display: -webkit-box;
@@ -577,7 +623,12 @@ body {
   opacity: 0.85;
 }
 
-.tec-names { font-family: "Inter", sans-serif; font-size: 12px; font-weight: 400; color: #bbb; }
+.tec-names {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #bbb;
+}
 
 #card-p-bio {
   font-family: "Inter", sans-serif;
@@ -603,4 +654,7 @@ body {
   display: inline-block;
 }
 
-#btn-link-externo:hover { background-color: #ba924e; }
+#btn-link-externo:hover {
+  background-color: #ba924e;
+}
+/*# sourceMappingURL=style.css.map */

@@ -171,9 +171,11 @@ function initSlider(minYear, maxYear) {
     .attr("x1", "0%").attr("y1", "0%")
     .attr("x2", "100%").attr("y2", "0%");
   grad.append("stop").attr("offset", "0%")
-    .attr("stop-color", "#3a2e1e").attr("stop-opacity", 1);
+    .attr("stop-color", "#0d0700").attr("stop-opacity", 1);
+  grad.append("stop").attr("offset", "50%")
+    .attr("stop-color", "#6b4c1e").attr("stop-opacity", 1);
   grad.append("stop").attr("offset", "100%")
-    .attr("stop-color", "#edd7ab").attr("stop-opacity", 1);
+    .attr("stop-color", "#f5d07a").attr("stop-opacity", 1);
 
   const sliderSvg = sliderSvgEl
     .append("g")

@@ -179,8 +179,8 @@ function focusNode(event, d) {
     _restoreNodeSizes();
     nodeGroup.selectAll(".node").transition().duration(700).style("opacity", 1);
     labelGroup.selectAll(".label").transition().duration(700)
-      .style("visibility", (o) => o.isTechnique ? "visible" : "hidden")
-      .style("pointer-events", (o) => o.isTechnique ? "all" : "none")
+      .style("visibility", "hidden")
+      .style("pointer-events", "none")
       .style("font-size", (o) => o.isTechnique ? "10px" : (o.isCategory ? "8px" : "6px"))
       .attr("dy", (o) => o.isTechnique ? (nodeRadius(o) + 12) + "px" : "0")
       .text((o) => {

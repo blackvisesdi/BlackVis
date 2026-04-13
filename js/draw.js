@@ -4,10 +4,12 @@
 
 // ===== SIZING CONSTANTS =====
 
+let _graphFirstDraw = true;
+
 const FIXED_RADIUS_CATEGORY  = 38;
 const FIXED_RADIUS_TECHNIQUE = 24;
-const MULT_PERSON    = 0.20;
-const MIN_RADIUS_PERSON    = 3;
+const MULT_PERSON    = 0.45;
+const MIN_RADIUS_PERSON    = 6;
 const COLLISION_PADDING = 2;
 
 // Posições fixas iniciais das categorias — baseadas na referência visual
@@ -136,8 +138,12 @@ function drawForceGraph(data, centerNodes = false) {
       d3.forceLink(graphData.links)
         .id((d) => d.id)
         .distance((l) => {
-          if (l.type === "technique-category-link") return 130;
-          if (l.type === "person-technique-link")   return 70;
+          if (l.type === "technique-category-link") {
+            const id = typeof l.source === "object" ? l.source.id : l.source;
+            const h = id.split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) & 0xffff, 0);
+            return 90 + (h % 100); // 90–189px por técnica
+          }
+          if (l.type === "person-technique-link") return 70;
           return 100;
         })
         .strength((l) => {
@@ -369,31 +375,36 @@ function drawForceGraph(data, centerNodes = false) {
     }
   });
 
-  // Entrada dos nós — fade-in de opacidade + grow do shape interno
-  node
-    .style("opacity", 0)
-    .transition()
-    .duration(900)
-    .delay((d, i) => Math.min(i * 8, 600))
-    .ease(d3.easeCubicOut)
-    .style("opacity", 1);
+  // Entrada dos nós — animação apenas no primeiro carregamento
+  if (_graphFirstDraw) {
+    _graphFirstDraw = false;
+    node
+      .style("opacity", 0)
+      .transition()
+      .duration(900)
+      .delay((d, i) => Math.min(i * 8, 600))
+      .ease(d3.easeCubicOut)
+      .style("opacity", 1);
 
-  node.each(function(d, i) {
-    const el    = d3.select(this);
-    const delay = Math.min(i * 8, 600);
-    const r     = nodeRadius(d);
-    el.selectAll("circle.node-shape, circle.node-hitarea, circle.person-circle")
-      .attr("r", 0)
-      .transition().duration(800).delay(delay)
-      .ease(d3.easeBackOut.overshoot(1.4))
-      .attr("r", r);
-    el.selectAll(".node-icon-img")
-      .attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0)
-      .transition().duration(800).delay(delay)
-      .ease(d3.easeBackOut.overshoot(1.2))
-      .attr("width", r * 2).attr("height", r * 2)
-      .attr("x", -r).attr("y", -r);
-  });
+    node.each(function(d, i) {
+      const el    = d3.select(this);
+      const delay = Math.min(i * 8, 600);
+      const r     = nodeRadius(d);
+      el.selectAll("circle.node-shape, circle.node-hitarea, circle.person-circle")
+        .attr("r", 0)
+        .transition().duration(800).delay(delay)
+        .ease(d3.easeBackOut.overshoot(1.4))
+        .attr("r", r);
+      el.selectAll(".node-icon-img")
+        .attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0)
+        .transition().duration(800).delay(delay)
+        .ease(d3.easeBackOut.overshoot(1.2))
+        .attr("width", r * 2).attr("height", r * 2)
+        .attr("x", -r).attr("y", -r);
+    });
+  } else {
+    node.style("opacity", 1);
+  }
 
   // Rótulos — todos os nós no labelGroup
   const labels = labelGroup
@@ -412,7 +423,7 @@ function drawForceGraph(data, centerNodes = false) {
     .attr("dy", (d) => d.isTechnique ? (nodeRadius(d) + 12) + "px" : "0")
     .style("font-size", (d) => d.isTechnique ? "10px" : (d.isCategory ? "8px" : "6px"))
     .style("fill", (d) => d.isTechnique ? "#e8dcc8" : "rgba(255,255,255,0.6)")
-    .style("visibility", (d) => d.isTechnique ? "visible" : "hidden")
+    .style("visibility", "hidden")
     .style("pointer-events", (d) => d.isTechnique ? "all" : "none")
     .style("stroke", "transparent")
     .style("stroke-width", "18px")
