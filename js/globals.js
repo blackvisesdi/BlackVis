@@ -294,3 +294,172 @@ function getBaseColorForNode(node) {
   }
   return FALLBACK_COLOR;
 }
+
+// ============================================================
+// DEBUG PANEL — campo de teste para o designer
+// ============================================================
+window.DBG_TECH_RADIUS_MULT = 1.0;
+window.DBG_LINK_WIDTH_MULT  = 2.0;  // padrão mais espesso
+
+window.DBG_TECH_RADIUS_MULT = window.DBG_TECH_RADIUS_MULT || 1.0;
+window.DBG_AREA_RADIUS_MULT = window.DBG_AREA_RADIUS_MULT || 1.0;
+window.DBG_LINK_WIDTH_MULT = window.DBG_LINK_WIDTH_MULT || 1.6;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const TECH_BASE_PX = 24;   // FIXED_RADIUS_TECHNIQUE
+  const LINE_BASE_PX = 1.1;  // largura base da linha primária
+
+  const panel = document.createElement("div");
+  panel.id = "debug-panel";
+  panel.innerHTML = `
+    <div class="dbg-header">
+      <span class="dbg-title">Tamanhos</span>
+      <button class="dbg-toggle" id="dbg-toggle">−</button>
+    </div>
+    <div class="dbg-body">
+      <label>Técnicas <span id="dbg-tech-val">${TECH_BASE_PX}px</span>
+        <input type="range" id="dbg-tech-slider" min="0.5" max="3" step="0.1" value="1">
+      </label>
+      <label>Linhas <span id="dbg-line-val">${(LINE_BASE_PX * 2.0).toFixed(1)}px</span>
+        <input type="range" id="dbg-line-slider" min="0.5" max="8" step="0.1" value="2">
+      </label>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  let collapsed = false;
+  document.getElementById("dbg-toggle").addEventListener("click", () => {
+    collapsed = !collapsed;
+    document.getElementById("dbg-toggle").textContent = collapsed ? "+" : "−";
+    panel.classList.toggle("collapsed", collapsed);
+  });
+
+  document.getElementById("dbg-tech-slider").addEventListener("input", function () {
+    window.DBG_TECH_RADIUS_MULT = parseFloat(this.value);
+    const px = Math.round(TECH_BASE_PX * parseFloat(this.value));
+    document.getElementById("dbg-tech-val").textContent = `${px}px`;
+    if (window.applyAllFilters) window.applyAllFilters();
+  });
+
+  document.getElementById("dbg-line-slider").addEventListener("input", function () {
+    window.DBG_LINK_WIDTH_MULT = parseFloat(this.value);
+    const px = (LINE_BASE_PX * parseFloat(this.value)).toFixed(1);
+    document.getElementById("dbg-line-val").textContent = `${px}px`;
+    if (window.applyAllFilters) window.applyAllFilters();
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const panelBody = document.querySelector("#debug-panel .dbg-body");
+  if (!panelBody || document.getElementById("dbg-area-slider")) return;
+
+  const areaBasePx = 38;
+  const areaLabel = document.createElement("label");
+  areaLabel.innerHTML = `Areas <span id="dbg-area-val">${areaBasePx}px</span>
+    <input type="range" id="dbg-area-slider" min="0.5" max="2.5" step="0.1" value="1">`;
+  panelBody.insertBefore(areaLabel, panelBody.children[1] || null);
+
+  const lineSlider = document.getElementById("dbg-line-slider");
+  const lineValue = document.getElementById("dbg-line-val");
+  if (lineSlider && lineValue) {
+    lineSlider.value = String(window.DBG_LINK_WIDTH_MULT);
+    lineValue.textContent = `${(1.1 * window.DBG_LINK_WIDTH_MULT).toFixed(1)}px`;
+  }
+
+  document.getElementById("dbg-area-slider").addEventListener("input", function() {
+    window.DBG_AREA_RADIUS_MULT = parseFloat(this.value);
+    document.getElementById("dbg-area-val").textContent = `${Math.round(areaBasePx * parseFloat(this.value))}px`;
+    if (window.applyAllFilters) window.applyAllFilters();
+  });
+});
+
+window.DBG_TECH_RADIUS_MULT = 1.0;
+window.DBG_AREA_RADIUS_MULT = window.DBG_AREA_RADIUS_MULT || 1.0;
+window.DBG_LINK_WIDTH_MULT = 1.6;
+window.DBG_HOVER_NAMES = true;
+window.DBG_PERSON_NAME_SIZE = 10;
+window.DBG_ALL_NAMES_VISIBLE = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const oldPanel = document.getElementById("debug-panel");
+  if (oldPanel) oldPanel.remove();
+
+  const TECH_BASE_PX = 24;
+  const AREA_BASE_PX = 38;
+  const LINE_BASE_PX = 1.1;
+
+  const panel = document.createElement("div");
+  panel.id = "debug-panel";
+  panel.innerHTML = `
+    <div class="dbg-header">
+      <span class="dbg-title">Tamanhos</span>
+      <button class="dbg-toggle" id="dbg-toggle">-</button>
+    </div>
+    <div class="dbg-body">
+      <label>Tecnicas <span id="dbg-tech-val">${TECH_BASE_PX}px</span>
+        <input type="range" id="dbg-tech-slider" min="0.5" max="3" step="0.1" value="1">
+      </label>
+      <label>Areas <span id="dbg-area-val">${AREA_BASE_PX}px</span>
+        <input type="range" id="dbg-area-slider" min="0.5" max="2.5" step="0.1" value="1">
+      </label>
+      <label>Linhas <span id="dbg-line-val">${(LINE_BASE_PX * window.DBG_LINK_WIDTH_MULT).toFixed(1)}px</span>
+        <input type="range" id="dbg-line-slider" min="0.5" max="8" step="0.1" value="${window.DBG_LINK_WIDTH_MULT}">
+      </label>
+      <div class="dbg-section-divider">Pessoas</div>
+      <label class="dbg-checkbox-label">
+        <input type="checkbox" id="dbg-hover-names" checked>
+        Hover → nome
+      </label>
+      <label>Tamanho nomes <span id="dbg-name-size-val">10px</span>
+        <input type="range" id="dbg-name-size-slider" min="7" max="20" step="0.5" value="10">
+      </label>
+      <button id="dbg-show-all-names" class="dbg-names-btn">Exibir todos os nomes</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  let collapsed = false;
+  document.getElementById("dbg-toggle").addEventListener("click", () => {
+    collapsed = !collapsed;
+    document.getElementById("dbg-toggle").textContent = collapsed ? "+" : "-";
+    panel.classList.toggle("collapsed", collapsed);
+  });
+
+  document.getElementById("dbg-tech-slider").addEventListener("input", function() {
+    window.DBG_TECH_RADIUS_MULT = parseFloat(this.value);
+    document.getElementById("dbg-tech-val").textContent = `${Math.round(TECH_BASE_PX * parseFloat(this.value))}px`;
+    if (window.applyAllFilters) window.applyAllFilters();
+  });
+
+  document.getElementById("dbg-area-slider").addEventListener("input", function() {
+    window.DBG_AREA_RADIUS_MULT = parseFloat(this.value);
+    document.getElementById("dbg-area-val").textContent = `${Math.round(AREA_BASE_PX * parseFloat(this.value))}px`;
+    if (window.applyAllFilters) window.applyAllFilters();
+  });
+
+  document.getElementById("dbg-line-slider").addEventListener("input", function() {
+    window.DBG_LINK_WIDTH_MULT = parseFloat(this.value);
+    document.getElementById("dbg-line-val").textContent = `${(LINE_BASE_PX * parseFloat(this.value)).toFixed(1)}px`;
+    if (window.applyAllFilters) window.applyAllFilters();
+  });
+
+  document.getElementById("dbg-hover-names").addEventListener("change", function() {
+    window.DBG_HOVER_NAMES = this.checked;
+  });
+
+  document.getElementById("dbg-name-size-slider").addEventListener("input", function() {
+    window.DBG_PERSON_NAME_SIZE = parseFloat(this.value);
+    document.getElementById("dbg-name-size-val").textContent = `${parseFloat(this.value)}px`;
+    // Atualiza nomes já visíveis em tempo real
+    if (window.DBG_ALL_NAMES_VISIBLE && window._setAllNamesVisible) {
+      window._setAllNamesVisible(true);
+    }
+  });
+
+  document.getElementById("dbg-show-all-names").addEventListener("click", function() {
+    const next = !window.DBG_ALL_NAMES_VISIBLE;
+    this.textContent = next ? "Ocultar nomes" : "Exibir todos os nomes";
+    this.classList.toggle("active", next);
+    if (window._setAllNamesVisible) window._setAllNamesVisible(next);
+  });
+});
