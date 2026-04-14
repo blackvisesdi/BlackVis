@@ -59,34 +59,37 @@ function preprocessGraphData(data) {
       isLinkedViaTechnique = true;
       const techniqueId = `TEC_${tecnicaName}`;
 
+      // Área canônica da técnica (de areas.json tem prioridade)
+      const canonicalArea = (window._techniqueAreaMap && window._techniqueAreaMap.get(tecnicaName))
+        || areas[0] || "Geral";
+
       if (!techniqueNodes.has(tecnicaName)) {
         techniqueNodes.set(tecnicaName, {
           id: techniqueId,
           Nome: tecnicaName,
           type: "technique",
           isTechnique: true,
-          "Área do design": areas[0] || "Geral",
+          "Área do design": canonicalArea,
         });
       }
 
       newLinks.push({ source: dNode.id, target: techniqueId, type: "person-technique-link" });
 
-      if (areas.length > 0) {
-        areas.forEach((subArea) => {
-          const categoryId = subArea;
-          if (!categoryNodes.has(categoryId)) {
-            categoryNodes.set(categoryId, {
-              id: categoryId,
-              Nome: categoryId,
-              type: "category",
-              isCategory: true,
-            });
-          }
-          const linkKey = `${techniqueId}-${categoryId}`;
-          if (!newLinks.some((l) => l.linkKey === linkKey)) {
-            newLinks.push({ source: techniqueId, target: categoryId, type: "technique-category-link", linkKey });
-          }
-        });
+      // Cada técnica conecta apenas à sua área canônica
+      if (VALID_CATEGORIES.includes(canonicalArea)) {
+        const categoryId = canonicalArea;
+        if (!categoryNodes.has(categoryId)) {
+          categoryNodes.set(categoryId, {
+            id: categoryId,
+            Nome: categoryId,
+            type: "category",
+            isCategory: true,
+          });
+        }
+        const linkKey = `${techniqueId}-${categoryId}`;
+        if (!newLinks.some((l) => l.linkKey === linkKey)) {
+          newLinks.push({ source: techniqueId, target: categoryId, type: "technique-category-link", linkKey });
+        }
       }
     });
 
@@ -183,15 +186,26 @@ function initSlider(minYear, maxYear) {
 
   const g = sliderSvg.append("g").attr("class", "slider");
 
+  const midpointYear = Math.max(minYear, Math.min(1970, maxYear));
+
   // Track com gradiente (rect em vez de line)
   g.append("rect")
     .attr("class", "track-gradient-bg")
     .attr("x", xSlider.range()[0])
-    .attr("y", -1)
+    .attr("y", -2.5)
     .attr("width", xSlider.range()[1] - xSlider.range()[0])
-    .attr("height", 2)
+    .attr("height", 5)
     .attr("fill", "url(#slider-track-gradient)")
-    .attr("rx", 1);
+    .attr("rx", 3);
+
+  g.selectAll(".track-division")
+    .data([midpointYear])
+    .join("line")
+    .attr("class", "track-division")
+    .attr("x1", (d) => xSlider(d))
+    .attr("x2", (d) => xSlider(d))
+    .attr("y1", -7)
+    .attr("y2", 7);
 
   g.append("line").attr("class", "track").attr("x1", xSlider.range()[0]).attr("x2", xSlider.range()[1]);
 
@@ -204,8 +218,8 @@ function initSlider(minYear, maxYear) {
   const handleMax = g.append("circle").attr("class", "handle handle-max").attr("r", 5).attr("cx", xSlider(window.currentMax)).attr("cy", 0)
     .call(d3.drag().on("start", dragstarted).on("drag", draggedMax).on("end", dragendedSlider));
 
-  function dragendedSlider() { d3.select(this).attr("stroke", null); }
-  function dragstarted() { d3.select(this).attr("r", 5).attr("stroke", "darkred"); }
+  function dragendedSlider() { d3.select(this).attr("stroke", "#2b1403").attr("r", 5); }
+  function dragstarted() { d3.select(this).attr("r", 6).attr("stroke", "#fff3cf"); }
 
   function draggedMin(event) {
     let v = Math.max(minYear, Math.min(window.currentMax - 1, xSlider.invert(event.x)));
@@ -247,16 +261,7 @@ function initSlider(minYear, maxYear) {
 function setupCategoryFilter() {
   document.querySelectorAll(".category-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const val = btn.dataset.value;
-      if (window.currentCategory === val) {
-        window.currentCategory = "all";
-        btn.classList.remove("active");
-      } else {
-        document.querySelectorAll(".category-btn").forEach((b) => b.classList.remove("active"));
-        window.currentCategory = val;
-        btn.classList.add("active");
-      }
-      window.applyAllFilters();
+      window.selectCategoryFilter(btn.dataset.value, true);
     });
   });
   if (DEBUG) console.log("Listener de categoria configurado.");
@@ -280,6 +285,28 @@ function setupNationalityFilter() {
   if (DEBUG) console.log("Listener de nacionalidade configurado.");
 }
 
+window.selectCategoryFilter = function(categoryValue, openCard = true) {
+  // Filtro via botão: limpa multi-seleção de highlights (modos distintos)
+  if (window.selectedCategoryHighlights) window.selectedCategoryHighlights.clear();
+
+  const isSameCategory = window.currentCategory === categoryValue;
+
+  document.querySelectorAll(".category-btn").forEach((button) => {
+    button.classList.toggle("active", !isSameCategory && button.dataset.value === categoryValue);
+  });
+
+  if (isSameCategory) {
+    window.currentCategory = "all";
+    window._pendingAreaCard = null;
+    if (typeof focusNode === "function") focusNode(null, null);
+  } else {
+    window.currentCategory = categoryValue;
+    window._pendingAreaCard = openCard ? categoryValue : null;
+  }
+
+  window.applyAllFilters();
+};
+
 
 function setupDesignerSearch() {
   const searchEl = document.getElementById("search-input");
@@ -301,12 +328,13 @@ function setupLogoReset() {
     window.currentNationality = "all";
     document.querySelectorAll(".category-btn, .nat-btn").forEach((b) => b.classList.remove("active"));
     // Limpa busca
-    const searchEl = document.getElementById("search-input");
-    if (searchEl) searchEl.value = "";
-    // Reseta slider
-    if (window._sliderReset) window._sliderReset();
-    // Fecha card
-    if (typeof focusNode === "function") focusNode(null, null);
+  const searchEl = document.getElementById("search-input");
+  if (searchEl) searchEl.value = "";
+  // Reseta slider
+  if (window._sliderReset) window._sliderReset();
+  window._pendingAreaCard = null;
+  // Fecha card
+  if (typeof focusNode === "function") focusNode(null, null);
     // Redesenha
     window.applyAllFilters(true);
   });
@@ -314,36 +342,48 @@ function setupLogoReset() {
 
 // ===== CARREGAMENTO DOS DADOS =====
 
-d3.json("data/data.json")
-  .then((data) => {
-    let processedData = preprocessGraphData(data);
-    processedData.nodes = calculateNodeDegree(processedData.nodes, processedData.links);
-    processedData.nodes = calculateSaturationLevel(processedData.nodes);
-    allNodes = processedData.nodes;
-    allLinks = processedData.links;
+Promise.all([
+  d3.json("data/areas.json"),
+  d3.json("data/data.json"),
+]).then(([areasData, data]) => {
+  // Constrói mapa técnica → área canônica a partir de areas.json
+  const techniqueAreaMap = new Map();
+  const areaTechniqueOrder = new Map();
+  areasData.forEach((areaEntry) => {
+    areaTechniqueOrder.set(areaEntry.area, areaEntry.tecnicas.map((tec) => tec.nome));
+    areaEntry.tecnicas.forEach((tec) => techniqueAreaMap.set(tec.nome, areaEntry.area));
+  });
+  window._techniqueAreaMap = techniqueAreaMap;
+  window._areaTechniqueOrder = areaTechniqueOrder;
 
-    buildColorMaps(allNodes, allLinks);
+  let processedData = preprocessGraphData(data);
+  processedData.nodes = calculateNodeDegree(processedData.nodes, processedData.links);
+  processedData.nodes = calculateSaturationLevel(processedData.nodes);
+  allNodes = processedData.nodes;
+  allLinks = processedData.links;
 
-    const designerNodes = allNodes.filter((d) => d["Data de nascimento"]);
-    const minDataYear = d3.min(designerNodes, (d) => +d["Data de nascimento"]) || YEAR_MIN_DEFAULT;
-    const maxDataYear = d3.max(designerNodes, (d) => +d["Data de nascimento"]) || YEAR_MAX_DEFAULT;
+  buildColorMaps(allNodes, allLinks);
 
-    window.currentMin = minDataYear;
-    window.currentMax = maxDataYear;
-    window.currentCategory = "all";
-    window.currentNationality = "all";
-    window.currentPeriod = "all";
+  const designerNodes = allNodes.filter((d) => d["Data de nascimento"]);
+  const minDataYear = d3.min(designerNodes, (d) => +d["Data de nascimento"]) || YEAR_MIN_DEFAULT;
+  const maxDataYear = d3.max(designerNodes, (d) => +d["Data de nascimento"]) || YEAR_MAX_DEFAULT;
 
-    initSlider(minDataYear, maxDataYear);
-    setupCategoryFilter();
-    setupNationalityFilter();
-    setupDesignerSearch();
-    setupLogoReset();
+  window.currentMin = minDataYear;
+  window.currentMax = maxDataYear;
+  window.currentCategory = "all";
+  window.currentNationality = "all";
+  window.currentPeriod = "all";
 
-    window.applyAllFilters();
-  })
+  initSlider(minDataYear, maxDataYear);
+  setupCategoryFilter();
+  setupNationalityFilter();
+  setupDesignerSearch();
+  setupLogoReset();
+
+  window.applyAllFilters();
+})
   .catch((error) => {
-    console.error("Erro fatal ao carregar data.json:", error);
+    console.error("Erro fatal ao carregar dados:", error);
     showToast("Erro ao carregar os dados.", "erro");
   });
 
@@ -473,7 +513,15 @@ function applyAllFilters(centerNodes = false) {
   }
 
   drawForceGraph({ nodes: filteredNodes, links: filteredLinks }, isNameSearch || centerNodes);
+
+  if (window._pendingAreaCard && typeof focusNode === "function") {
+    // Clicar no filtro → abre card
+    const areaNode = filteredNodes.find((node) => node.isCategory && node.id === window._pendingAreaCard);
+    if (areaNode) {
+      focusNode(null, areaNode, { areaFromFilter: true });
+    }
+    window._pendingAreaCard = null;
+  }
 }
 
 window.applyAllFilters = applyAllFilters;
-

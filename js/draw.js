@@ -1,98 +1,138 @@
 // ============================================================
-// DRAW.JS — Renderização do Grafo de Forças
+// DRAW.JS - renderizacao do grafo
 // ============================================================
-
-// ===== SIZING CONSTANTS =====
 
 let _graphFirstDraw = true;
 
-const FIXED_RADIUS_CATEGORY  = 38;
+const FIXED_RADIUS_CATEGORY = 38;
 const FIXED_RADIUS_TECHNIQUE = 24;
-const MULT_PERSON    = 0.45;
-const MIN_RADIUS_PERSON    = 6;
-const COLLISION_PADDING = 2;
+const MULT_PERSON = 0.45;
+const MIN_RADIUS_PERSON = 6;
+const COLLISION_PADDING = 6;
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-// Posições fixas iniciais das categorias — baseadas na referência visual
 const CATEGORY_POSITIONS = {
   "Comunicação": { rx: 0.53, ry: 0.53 },
-  "Produto":     { rx: 0.71, ry: 0.23 },
-  "Interação":   { rx: 0.27, ry: 0.34 },
-  "Teórico":     { rx: 0.26, ry: 0.65 },
-  "Serviço":     { rx: 0.86, ry: 0.53 },
+  "Produto": { rx: 0.71, ry: 0.23 },
+  "Interação": { rx: 0.27, ry: 0.34 },
+  "Teórico": { rx: 0.26, ry: 0.65 },
+  "Serviço": { rx: 0.86, ry: 0.53 },
 };
 
-// ===== NODE RADIUS =====
+function getNodeField(node, fieldName) {
+  const normalizedTarget = normalizeKey(fieldName);
+  const directValue = node?.[fieldName];
+  if (directValue != null && directValue !== "") return directValue;
+  const matchedKey = Object.keys(node || {}).find((key) => normalizeKey(key) === normalizedTarget);
+  return matchedKey ? node[matchedKey] : "";
+}
 
-function nodeRadius(d) {
-  if (d.isCategory)  return FIXED_RADIUS_CATEGORY;
-  if (d.isTechnique) return FIXED_RADIUS_TECHNIQUE;
-  const base = Math.max(radiusScale(d.degree || 1), 1);
+function getCategoryColorByName(areaName) {
+  if (!areaName) return null;
+  if (CATEGORY_COLORS[areaName]) return CATEGORY_COLORS[areaName];
+  const normalized = normalizeKey(areaName);
+  return axisColorsNormalized[normalized] || null;
+}
+
+function nodeRadius(node) {
+  if (node.isCategory) return FIXED_RADIUS_CATEGORY * (window.DBG_AREA_RADIUS_MULT || 1);
+  if (node.isTechnique) return FIXED_RADIUS_TECHNIQUE * (window.DBG_TECH_RADIUS_MULT || 1);
+  const base = Math.max(radiusScale(node.degree || 1), 1);
   return Math.max(base * MULT_PERSON, MIN_RADIUS_PERSON);
 }
 
-// ===== CUSTOM ORBIT FORCE =====
-// Distribui pessoas em órbita uniforme ao redor de suas técnicas
+function getPrimaryAreaForPerson(node) {
+  const techniques = String(getNodeField(node, "Técnicas") || getNodeField(node, "Tecnicas"))
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  const firstTechnique = techniques[0];
+  if (firstTechnique && window._techniqueAreaMap?.has(firstTechnique)) {
+    return window._techniqueAreaMap.get(firstTechnique);
+  }
+
+  const areas = String(getNodeField(node, "Área do design") || getNodeField(node, "Area do design"))
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return areas[0] || inferredPersonArea.get(node.id) || null;
+}
+
+function buildTechniquePersonMap(links, nodeById) {
+  const techniquePeople = new Map();
+
+  links.forEach((link) => {
+    if (link.type !== "person-technique-link") return;
+    const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+    const targetId = typeof link.target === "object" ? link.target.id : link.target;
+    const source = nodeById.get(sourceId);
+    const target = nodeById.get(targetId);
+    if (!source || !target) return;
+
+    const person = (!source.isCategory && !source.isTechnique) ? source : target;
+    const technique = person === source ? target : source;
+    if (!person || !technique || person.isCategory || person.isTechnique) return;
+
+    if (!techniquePeople.has(technique.id)) techniquePeople.set(technique.id, []);
+    const group = techniquePeople.get(technique.id);
+    if (!group.includes(person.id)) group.push(person.id);
+  });
+
+  return techniquePeople;
+}
+
+function createSunflowerLayout(personIds, nodeById, minRadius = 48, spacing = 18) {
+  return personIds.map((personId, index) => {
+    const person = nodeById.get(personId);
+    const personRadius = person ? nodeRadius(person) : MIN_RADIUS_PERSON;
+    if (person) person.__sunflowerIndex = index;
+    return {
+      personId,
+      angle: index * GOLDEN_ANGLE,
+      radius: minRadius + Math.sqrt(index + 1) * spacing + personRadius * 1.1,
+    };
+  });
+}
 
 function forceOrbit(links, orbitRadius = 58, strength = 0.65) {
   let nodeById = new Map();
-  // person.id → { tech, angle, totalInOrbit, indexInOrbit }
   let orbitMap = new Map();
 
   function buildMap() {
     orbitMap = new Map();
-    // Agrupa pessoas por técnica âncora
-    const techPersons = new Map(); // techId → [personId, ...]
-    links.forEach((l) => {
-      if (l.type !== "person-technique-link") return;
-      const srcId = typeof l.source === "object" ? l.source.id : l.source;
-      const tgtId = typeof l.target === "object" ? l.target.id : l.target;
-      const src = nodeById.get(srcId);
-      const tgt = nodeById.get(tgtId);
-      if (!src || !tgt) return;
-      const person = (!src.isCategory && !src.isTechnique) ? src : tgt;
-      const tech   = person === src ? tgt : src;
-      if (!person || !tech || person.isCategory || person.isTechnique) return;
-      // Primeira técnica como âncora
-      if (!orbitMap.has(person.id)) {
-        if (!techPersons.has(tech.id)) techPersons.set(tech.id, []);
-        techPersons.get(tech.id).push(person.id);
-        orbitMap.set(person.id, { tech, angle: 0 });
-      }
-    });
+    const techniquePeople = buildTechniquePersonMap(links, nodeById);
 
-    // Distribui ângulos uniformemente por técnica
-    techPersons.forEach((personIds, _techId) => {
-      const n = personIds.length;
-      personIds.forEach((pid, i) => {
-        const entry = orbitMap.get(pid);
-        if (entry) entry.angle = (2 * Math.PI * i) / n;
+    techniquePeople.forEach((personIds, techniqueId) => {
+      const technique = nodeById.get(techniqueId);
+      createSunflowerLayout(personIds, nodeById, orbitRadius, 14).forEach(({ personId, angle, radius }) => {
+        orbitMap.set(personId, { technique, angle, radius });
       });
     });
   }
 
   function force(alpha) {
-    orbitMap.forEach(({ tech, angle }, personId) => {
+    orbitMap.forEach(({ technique, angle, radius }, personId) => {
       const person = nodeById.get(personId);
-      if (!person || tech.x == null) return;
+      if (!person || !technique || technique.x == null) return;
 
-      // Posição alvo na órbita
-      const tx = tech.x + Math.cos(angle) * orbitRadius;
-      const ty = tech.y + Math.sin(angle) * orbitRadius;
+      const targetX = technique.x + Math.cos(angle) * radius;
+      const targetY = technique.y + Math.sin(angle) * radius;
 
-      person.vx += (tx - person.x) * alpha * strength;
-      person.vy += (ty - person.y) * alpha * strength;
+      person.vx += (targetX - person.x) * alpha * strength;
+      person.vy += (targetY - person.y) * alpha * strength;
     });
   }
 
   force.initialize = function(nodes) {
-    nodeById = new Map(nodes.map((n) => [n.id, n]));
+    nodeById = new Map(nodes.map((node) => [node.id, node]));
     buildMap();
   };
 
   return force;
 }
 
-// ===== FORCE GRAPH =====
 
 function drawForceGraph(data, centerNodes = false) {
   graphData.nodes = Array.isArray(data.nodes) ? data.nodes : [];
@@ -101,459 +141,627 @@ function drawForceGraph(data, centerNodes = false) {
   if (simulation) simulation.stop();
 
   const graphAreaEl = document.querySelector(".graph-area");
-  const currentWidth  = Math.min(graphAreaEl ? graphAreaEl.clientWidth  : window.innerWidth,  2000);
+  const currentWidth = Math.min(graphAreaEl ? graphAreaEl.clientWidth : window.innerWidth, 2000);
   const currentHeight = Math.min(graphAreaEl ? graphAreaEl.clientHeight : window.innerHeight, 1200);
 
   svg.attr("viewBox", `0 0 ${currentWidth} ${currentHeight}`);
 
-  const allDegrees = graphData.nodes.map((d) => d.degree);
+  const allDegrees = graphData.nodes.map((node) => node.degree);
   radiusScale.domain([d3.min(allDegrees) || 1, d3.max(allDegrees) || 1]);
 
-  // Posições fixas para categorias
-  graphData.nodes.forEach((d) => {
-    if (d.isCategory && CATEGORY_POSITIONS[d.id]) {
-      const pos = CATEGORY_POSITIONS[d.id];
-      d.fx = pos.rx * currentWidth;
-      d.fy = pos.ry * currentHeight;
-    } else if (d.isCategory) {
-      d.fx = null;
-      d.fy = null;
+  graphData.nodes.forEach((node) => {
+    if (node.isCategory && CATEGORY_POSITIONS[node.id]) {
+      const position = CATEGORY_POSITIONS[node.id];
+      node.fx = position.rx * currentWidth;
+      node.fy = position.ry * currentHeight;
+    } else if (node.isCategory) {
+      node.fx = null;
+      node.fy = null;
     }
   });
 
   if (centerNodes) {
-    graphData.nodes.forEach((d) => {
-      if (!d.isCategory) {
-        d.x  = currentWidth  / 2 + (Math.random() - 0.5) * 80;
-        d.y  = currentHeight / 2 + (Math.random() - 0.5) * 80;
-        d.vx = 0;
-        d.vy = 0;
+    graphData.nodes.forEach((node) => {
+      if (!node.isCategory) {
+        node.x = currentWidth / 2 + (Math.random() - 0.5) * 80;
+        node.y = currentHeight / 2 + (Math.random() - 0.5) * 80;
+        node.vx = 0;
+        node.vy = 0;
       }
     });
   }
 
-  simulation = d3
-    .forceSimulation(graphData.nodes)
-    .force("link",
+  const isFirstDraw = _graphFirstDraw;
+
+  simulation = d3.forceSimulation(graphData.nodes)
+    .velocityDecay(0.38)
+    .alphaDecay(0.028)
+    .force(
+      "link",
       d3.forceLink(graphData.links)
-        .id((d) => d.id)
-        .distance((l) => {
-          if (l.type === "technique-category-link") {
-            const id = typeof l.source === "object" ? l.source.id : l.source;
-            const h = id.split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) & 0xffff, 0);
-            return 90 + (h % 100); // 90–189px por técnica
-          }
-          if (l.type === "person-technique-link") return 70;
-          return 100;
+        .id((node) => node.id)
+        .distance((link) => {
+          if (link.type === "technique-category-link") return 105;
+          if (link.type === "person-technique-link") return 58;
+          return 80;
         })
-        .strength((l) => {
-          if (l.type === "person-technique-link") return 0.9;
-          if (l.type === "technique-category-link") return 0.5;
-          return 0.4;
+        .strength((link) => {
+          if (link.type === "person-technique-link") return 0.62;
+          if (link.type === "technique-category-link") return 0.52;
+          return 0.5;
         })
     )
-    .force("orbit",   forceOrbit(graphData.links, 55, 0.7))
-    .force("charge",  d3.forceManyBody().strength(-600))
-    .force("center",  d3.forceCenter(currentWidth / 2, currentHeight / 2))
-    .force("collide", d3.forceCollide().radius((d) => nodeRadius(d) + COLLISION_PADDING))
-    .force("x", d3.forceX((d) => {
-      if (d.isCategory && CATEGORY_POSITIONS[d.id]) return CATEGORY_POSITIONS[d.id].rx * currentWidth;
-      const period = d["Período"] || "";
-      if (period.toLowerCase().includes("cl")) return currentWidth * 0.30;
-      if (period.toLowerCase().includes("cont")) return currentWidth * 0.70;
+    .force("charge", d3.forceManyBody().strength((node) => (node.isCategory ? -1200 : node.isTechnique ? -480 : -180)))
+    .force("center", d3.forceCenter(currentWidth / 2, currentHeight / 2))
+    .force("collide", d3.forceCollide().radius((node) => nodeRadius(node) + COLLISION_PADDING + (node.isTechnique ? 2 : 4)).iterations(4))
+    .force("x", d3.forceX((node) => {
+      if (node.isCategory && CATEGORY_POSITIONS[node.id]) return CATEGORY_POSITIONS[node.id].rx * currentWidth;
+      const period = String(getNodeField(node, "Período") || getNodeField(node, "Periodo") || "");
+      if (period.toLowerCase().includes("cl")) return currentWidth * 0.3;
+      if (period.toLowerCase().includes("cont")) return currentWidth * 0.7;
       return currentWidth / 2;
-    }).strength((d) => {
-      if (d.isCategory && CATEGORY_POSITIONS[d.id]) return 0.8;
-      const period = d["Período"] || "";
+    }).strength((node) => {
+      if (node.isCategory && CATEGORY_POSITIONS[node.id]) return 0.8;
+      const period = String(getNodeField(node, "Período") || getNodeField(node, "Periodo") || "");
       if (period.toLowerCase().includes("cl") || period.toLowerCase().includes("cont")) return 0.05;
       return 0.1;
     }))
-    .force("y", d3.forceY((d) => {
-      if (d.isCategory && CATEGORY_POSITIONS[d.id]) return CATEGORY_POSITIONS[d.id].ry * currentHeight;
+    .force("y", d3.forceY((node) => {
+      if (node.isCategory && CATEGORY_POSITIONS[node.id]) return CATEGORY_POSITIONS[node.id].ry * currentHeight;
       return currentHeight / 2;
-    }).strength((d) => {
-      if (d.isCategory && CATEGORY_POSITIONS[d.id]) return 0.8;
+    }).strength((node) => {
+      if (node.isCategory && CATEGORY_POSITIONS[node.id]) return 0.8;
       return 0.1;
     }));
 
-  // Pré-computa metadados dos links
-  const nodeById = new Map(graphData.nodes.map((n) => [n.id, n]));
-  const nodeAreas = (n) =>
-    String(n?.["Área do design"] || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const nodeById = new Map(graphData.nodes.map((node) => [node.id, node]));
+  const nodeAreas = (node) =>
+    String(getNodeField(node, "Área do design") || getNodeField(node, "Area do design") || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
 
-  const linkMeta = new Map();
-  graphData.links.forEach((l) => {
-    const srcId = typeof l.source === "object" ? l.source.id : l.source;
-    const tgtId = typeof l.target === "object" ? l.target.id : l.target;
-    const src = nodeById.get(srcId);
-    const tgt = nodeById.get(tgtId);
-
-    // Links de pessoa → branco semitransparente; técnica→categoria → cor da categoria
-    let color;
-    if (l.type === "technique-category-link") {
-      color = tgt ? getBaseColorForNode(tgt) : "#999";
-    } else {
-      color = "rgba(220,220,220,0.5)";
-    }
+  const localLinkMeta = new Map();
+  graphData.links.forEach((link) => {
+    const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+    const targetId = typeof link.target === "object" ? link.target.id : link.target;
+    const source = nodeById.get(sourceId);
+    const target = nodeById.get(targetId);
 
     let isPrimary = true;
-    if (l.type === "person-technique-link" || l.type === "person-category-fallback-link") {
-      const person = (src && !src.isCategory && !src.isTechnique) ? src : tgt;
-      const other  = person === src ? tgt : src;
+    let techniqueArea = null;
+
+    if (link.type === "person-technique-link" || link.type === "person-category-fallback-link") {
+      const person = (source && !source.isCategory && !source.isTechnique) ? source : target;
+      const other = person === source ? target : source;
       if (person && other) {
         const areas = nodeAreas(person);
         if (areas.length > 1) {
           const otherArea = other.isCategory ? other.id : nodeAreas(other)[0];
           isPrimary = otherArea === areas[0];
         }
+        if (other?.isTechnique) techniqueArea = getNodeField(other, "Área do design") || getNodeField(other, "Area do design");
       }
     }
 
-    linkMeta.set(l, { color, isPrimary });
+    let color;
+    if (link.type === "technique-category-link") {
+      try {
+        color = d3.color(target ? getBaseColorForNode(target) : "#999")?.formatHex() || "#999";
+      } catch (_error) {
+        color = "#999";
+      }
+    } else if (link.type === "person-technique-link") {
+      color = "#a8a8a8";
+    } else {
+      color = "#dcdcdc";
+    }
+
+    localLinkMeta.set(link, { color, isPrimary });
   });
 
-  if (typeof window._setLinkMeta === "function") window._setLinkMeta(linkMeta);
+  if (typeof window._setLinkMeta === "function") window._setLinkMeta(localLinkMeta);
 
-  // Links — coloridos (técnica→categoria) aparecem por padrão; pessoa→técnica invisíveis
   const link = linkGroup
     .selectAll(".link")
-    .data(graphData.links, (d) => {
-      const s = typeof d.source === "object" ? d.source.id : d.source;
-      const t = typeof d.target === "object" ? d.target.id : d.target;
-      return s + "-" + t;
+    .data(graphData.links, (node) => {
+      const sourceId = typeof node.source === "object" ? node.source.id : node.source;
+      const targetId = typeof node.target === "object" ? node.target.id : node.target;
+      return `${sourceId}-${targetId}`;
     })
     .join("line")
     .attr("class", "link")
-    .attr("stroke",         (d) => linkMeta.get(d)?.color   ?? "#999")
-    .attr("stroke-opacity", (d) => d.type === "technique-category-link" ? 0.45 : 0)
-    .attr("stroke-width",   (d) => {
-      const m = linkMeta.get(d);
-      if (d.type === "technique-category-link") return m?.isPrimary ? 0.8 : 0.4;
-      return 0.6;
-    });
+    .attr("stroke", (node) => localLinkMeta.get(node)?.color ?? "#999")
+    .attr("stroke-opacity", 0)
+    .attr("stroke-width", (node) => {
+      const meta = localLinkMeta.get(node);
+      const mult = window.DBG_LINK_WIDTH_MULT || 1;
+      if (node.type === "technique-category-link") return (meta?.isPrimary ? 1.1 : 0.65) * mult;
+      if (node.type === "person-technique-link") return (meta?.isPrimary ? 0.8 : 0.4) * mult;
+      return 0.6 * mult;
+    })
+    .attr("stroke-linecap", "round");
 
-  // Nós
   const node = nodeGroup
     .selectAll(".node")
     .data(
       [...graphData.nodes].sort((a, b) => {
-        const rank = (n) => (n.isCategory ? 0 : n.isTechnique ? 1 : 2);
+        const rank = (candidate) => (candidate.isCategory ? 0 : candidate.isTechnique ? 1 : 2);
         const rankDiff = rank(a) - rank(b);
-        return rankDiff !== 0 ? rankDiff : (b.degree || 0) - (a.degree || 0);
+        if (rankDiff !== 0) return rankDiff;
+        if (!a.isCategory && !a.isTechnique && !b.isCategory && !b.isTechnique) {
+          return (a.__sunflowerIndex || 0) - (b.__sunflowerIndex || 0);
+        }
+        return (b.degree || 0) - (a.degree || 0);
       }),
-      (d) => d.id
+      (nodeData) => nodeData.id
     )
     .join("g")
     .attr("class", "node")
     .order()
     .call(drag(simulation))
-    .on("pointerdown.nodeclick", (event, d) => {
-      d._pd = { x: event.clientX, y: event.clientY };
+    .on("pointerdown.nodeclick", (event, nodeData) => {
+      nodeData._pd = { x: event.clientX, y: event.clientY };
     })
-    .on("pointerup.nodeclick", (event, d) => {
-      if (!d._pd) return;
-      const moved = Math.hypot(event.clientX - d._pd.x, event.clientY - d._pd.y);
-      d._pd = null;
+    .on("pointerup.nodeclick", (event, nodeData) => {
+      if (!nodeData._pd) return;
+      const moved = Math.hypot(event.clientX - nodeData._pd.x, event.clientY - nodeData._pd.y);
+      nodeData._pd = null;
       if (moved > 5) return;
       event.stopPropagation();
-      if (activeNode && activeNode.id === d.id) {
+      if (activeNode && activeNode.id === nodeData.id) {
         focusNode(event, null);
       } else {
-        focusNode(event, d);
+        focusNode(event, nodeData);
       }
     })
-    .on("mouseover", (event, d) => {
-      let tip = document.getElementById("node-tooltip");
-      if (!tip) {
-        tip = document.createElement("div");
-        tip.id = "node-tooltip";
-        tip.style.cssText = "position:fixed;display:none;background:rgba(0,0,0,0.85);color:#e8dcc8;padding:5px 10px;border-radius:4px;font-size:12px;pointer-events:none;z-index:200;white-space:nowrap;";
-        document.body.appendChild(tip);
-      }
-      tip.textContent = d.Nome || d.id;
-      tip.style.display = "block";
-      tip.style.left = (event.clientX + 14) + "px";
-      tip.style.top  = (event.clientY - 10) + "px";
-
-      if (!activeNode) {
-        linkGroup.selectAll(".link")
-          .transition().duration(180).ease(d3.easeCubicOut)
-          .attr("stroke-opacity", (l) => {
-            const s = typeof l.source === "object" ? l.source.id : l.source;
-            const t = typeof l.target === "object" ? l.target.id : l.target;
-            if (s === d.id || t === d.id) {
-              return l.type === "technique-category-link" ? 0.92 : 0.6;
-            }
-            return 0;
-          });
+    .on("mouseover", (event, nodeData) => {
+      // ── Área de design: mostra linhas de ligação ──────────────
+      if (nodeData.isCategory) {
+        if (!activeNode && !window.selectedCategoryHighlights.has(nodeData.id)) {
+          linkGroup.selectAll(".link")
+            .filter((link) => {
+              const srcId = _linkNodeId(link.source);
+              const tgtId = _linkNodeId(link.target);
+              return (link.type === "technique-category-link") &&
+                     (srcId === nodeData.id || tgtId === nodeData.id);
+            })
+            .interrupt()
+            .transition().duration(180)
+            .attr("stroke-opacity", 0.72);
+        }
+        return;
       }
 
-      if (d.isTechnique && !(activeNode && activeNode.id === d.id)) {
-        const r = nodeRadius(d);
+      // ── Técnica ativa: hover em pessoa conectada → círculo some, nome no lugar ──
+      if (activeNode?.isTechnique && !nodeData.isTechnique &&
+          _isPersonLinkedToTechnique(nodeData.id, activeNode.id) &&
+          !window._areTechniqueNamesVisible(activeNode.id) &&
+          !window.DBG_ALL_NAMES_VISIBLE &&
+          window.DBG_HOVER_NAMES !== false) {
         d3.select(event.currentTarget).selectAll("circle")
-          .transition().duration(250).attr("r", r * 2.2);
-        d3.select(event.currentTarget).selectAll(".node-icon-img")
-          .transition().duration(250)
-          .attr("width", r * 4.4).attr("height", r * 4.4)
-          .attr("x", -r * 2.2).attr("y", -r * 2.2);
-      }
-    })
-    .on("mousemove", (event) => {
-      const tip = document.getElementById("node-tooltip");
-      if (tip) {
-        tip.style.left = (event.clientX + 14) + "px";
-        tip.style.top  = (event.clientY - 10) + "px";
-      }
-    })
-    .on("mouseout", (event, d) => {
-      const tip = document.getElementById("node-tooltip");
-      if (tip) tip.style.display = "none";
-
-      if (!activeNode) {
-        linkGroup.selectAll(".link")
-          .transition().duration(280).ease(d3.easeCubicIn)
-          .attr("stroke-opacity", (l) => l.type === "technique-category-link" ? 0.45 : 0);
+          .interrupt()
+          .transition().duration(300)
+          .style("opacity", 0);
+        // pointer-events: none no label — o círculo invisível (opacity:0) ainda captura events
+        labelGroup.selectAll(".label")
+          .filter((c) => c.id === nodeData.id)
+          .attr("dy", "0")
+          .attr("dominant-baseline", "middle")
+          .style("font-size", `${window.DBG_PERSON_NAME_SIZE || 10}px`)
+          .style("visibility", "visible")
+          .style("pointer-events", "none")
+          .text(nodeData.Nome || nodeData.id);
+        return;
       }
 
-      if (d.isTechnique && !(activeNode && activeNode.id === d.id)) {
-        const r = nodeRadius(d);
+      // ── Pessoa: swap círculo → nome ────────────────────────────
+      if (!nodeData.isTechnique && !(activeNode && activeNode.id === nodeData.id)) {
+        if (window.DBG_HOVER_NAMES !== false && !window.DBG_ALL_NAMES_VISIBLE) {
+          d3.select(event.currentTarget).selectAll("circle")
+            .interrupt()
+            .transition().duration(300)
+            .style("opacity", 0);
+
+          // pointer-events: none no label — o círculo invisível (opacity:0 CSS) ainda
+          // captura eventos, evitando o loop mouseout/mouseover entre grupos SVG distintos
+          labelGroup.selectAll(".label")
+            .filter((candidate) => candidate.id === nodeData.id)
+            .attr("dy", "0")
+            .attr("dominant-baseline", "middle")
+            .style("font-size", `${window.DBG_PERSON_NAME_SIZE || 10}px`)
+            .style("visibility", "visible")
+            .style("pointer-events", "none")
+            .text(nodeData.Nome || nodeData.id);
+        }
+
+        if (!activeNode) {
+          linkGroup.selectAll(".link")
+            .filter((link) => {
+              const srcId = _linkNodeId(link.source);
+              const tgtId = _linkNodeId(link.target);
+              return srcId === nodeData.id || tgtId === nodeData.id;
+            })
+            .interrupt()
+            .transition().duration(180)
+            .attr("stroke-opacity", (link) => {
+              if (link.type === "technique-category-link") return 0.18;
+              return 0.55;
+            });
+        }
+      }
+
+      // ── Técnica: expande bolinha + mostra linhas ───────────────
+      if (nodeData.isTechnique && !(activeNode && activeNode.id === nodeData.id)) {
+        const r = nodeRadius(nodeData);
         d3.select(event.currentTarget).selectAll("circle")
-          .transition().duration(250).attr("r", r);
+          .interrupt()
+          .transition().duration(400)
+          .attr("r", r * 2.2);
         d3.select(event.currentTarget).selectAll(".node-icon-img")
-          .transition().duration(250)
-          .attr("width", r * 2).attr("height", r * 2)
-          .attr("x", -r).attr("y", -r);
+          .interrupt()
+          .transition().duration(400)
+          .attr("width", r * 4.4)
+          .attr("height", r * 4.4)
+          .attr("x", -r * 2.2)
+          .attr("y", -r * 2.2);
+
+        if (!activeNode) {
+          linkGroup.selectAll(".link")
+            .filter((link) => {
+              const srcId = _linkNodeId(link.source);
+              const tgtId = _linkNodeId(link.target);
+              return srcId === nodeData.id || tgtId === nodeData.id;
+            })
+            .interrupt()
+            .transition().duration(200)
+            .attr("stroke-opacity", (link) => {
+              if (link.type === "technique-category-link") return 0.72;
+              return 0.32;
+            });
+        }
+      }
+    })
+    .on("mouseout", (event, nodeData) => {
+      // ── Área de design: esconde linhas ────────────────────────
+      if (nodeData.isCategory) {
+        if (!activeNode && !window.selectedCategoryHighlights.has(nodeData.id)) {
+          linkGroup.selectAll(".link")
+            .filter((link) => {
+              const srcId = _linkNodeId(link.source);
+              const tgtId = _linkNodeId(link.target);
+              return (link.type === "technique-category-link") &&
+                     (srcId === nodeData.id || tgtId === nodeData.id);
+            })
+            .interrupt()
+            .transition().duration(220)
+            .attr("stroke-opacity", 0);
+        }
+        return;
+      }
+
+      // ── Técnica ativa: restaura pessoa ao sair ─────────────────
+      if (activeNode?.isTechnique && !nodeData.isTechnique &&
+          _isPersonLinkedToTechnique(nodeData.id, activeNode.id) &&
+          !window._areTechniqueNamesVisible(activeNode.id) &&
+          !window.DBG_ALL_NAMES_VISIBLE) {
+        d3.select(event.currentTarget).selectAll("circle")
+          .interrupt()
+          .transition().duration(300)
+          .style("opacity", 0.92);
+        labelGroup.selectAll(".label")
+          .filter((c) => c.id === nodeData.id)
+          .attr("dy", `${nodeRadius(nodeData) + 6}px`)
+          .attr("dominant-baseline", "hanging")
+          .style("font-size", "9px")
+          .style("visibility", "hidden")
+          .style("pointer-events", "none")
+          .text((c) => (c.Nome || c.id).split(" ")[0]);
+        return;
+      }
+
+      // ── Pessoa: restaura círculo, esconde nome e linhas ────────
+      if (!nodeData.isTechnique && !(activeNode && activeNode.id === nodeData.id)) {
+        if (!window.DBG_ALL_NAMES_VISIBLE) {
+          d3.select(event.currentTarget).selectAll("circle")
+            .interrupt()
+            .transition().duration(300)
+            .style("opacity", 0.92);
+
+          labelGroup.selectAll(".label")
+            .filter((candidate) => candidate.id === nodeData.id)
+            .attr("dy", `${nodeRadius(nodeData) + 6}px`)
+            .attr("dominant-baseline", "hanging")
+            .style("font-size", "9px")
+            .style("visibility", "hidden")
+            .style("pointer-events", "none")
+            .text((candidate) => (candidate.Nome || candidate.id).split(" ")[0]);
+        }
+
+        if (!activeNode) {
+          linkGroup.selectAll(".link")
+            .filter((link) => {
+              const srcId = _linkNodeId(link.source);
+              const tgtId = _linkNodeId(link.target);
+              return srcId === nodeData.id || tgtId === nodeData.id;
+            })
+            .interrupt()
+            .transition().duration(220)
+            .attr("stroke-opacity", 0);
+        }
+      }
+
+      // ── Técnica: restaura tamanho + esconde linhas ─────────────
+      if (nodeData.isTechnique && !(activeNode && activeNode.id === nodeData.id)) {
+        const r = nodeRadius(nodeData);
+        d3.select(event.currentTarget).selectAll("circle")
+          .interrupt()
+          .transition().duration(400)
+          .attr("r", r);
+        d3.select(event.currentTarget).selectAll(".node-icon-img")
+          .interrupt()
+          .transition().duration(400)
+          .attr("width", r * 2)
+          .attr("height", r * 2)
+          .attr("x", -r)
+          .attr("y", -r);
+
+        if (!activeNode) {
+          linkGroup.selectAll(".link")
+            .filter((link) => {
+              const srcId = _linkNodeId(link.source);
+              const tgtId = _linkNodeId(link.target);
+              return srcId === nodeData.id || tgtId === nodeData.id;
+            })
+            .interrupt()
+            .transition().duration(220)
+            .attr("stroke-opacity", 0);
+        }
       }
     });
 
   node.selectAll(".node-shape, .node-icon-img, .node-hitarea").remove();
 
-  node.each(function (d) {
-    const r   = nodeRadius(d);
-    const el  = d3.select(this);
+  node.each(function(nodeData) {
+    const r = nodeRadius(nodeData);
+    const el = d3.select(this);
 
-    if (d.isCategory) {
-      // Círculo invisível (física + hover)
+    if (nodeData.isCategory) {
       el.append("circle")
         .attr("r", r)
         .attr("class", "node-hitarea")
         .attr("fill", "transparent")
         .attr("stroke", "transparent");
-      // Ícone adinkra
-      const iconPath = CATEGORY_ICON_PATH[d.id];
+
+      const iconPath = CATEGORY_ICON_PATH[nodeData.id];
       if (iconPath) {
         el.append("image")
           .attr("href", iconPath)
           .attr("class", "node-icon-img")
-          .attr("width", r * 2).attr("height", r * 2)
-          .attr("x", -r).attr("y", -r);
+          .attr("width", r * 2)
+          .attr("height", r * 2)
+          .attr("x", -r)
+          .attr("y", -r);
       }
-    } else if (d.isTechnique) {
-      const fill   = getNodeFillColor(d);
-      const stroke = getNodeStrokeColor(d);
+      return;
+    }
+
+    if (nodeData.isTechnique) {
       el.append("circle")
         .attr("r", r)
         .attr("class", "node-shape")
-        .attr("fill", fill)
-        .attr("stroke", stroke)
+        .attr("fill", getNodeFillColor(nodeData))
+        .attr("stroke", getNodeStrokeColor(nodeData))
         .attr("stroke-width", 1.5);
-      const svgSource = window.getIconPath(d.Nome);
+
+      const svgSource = window.getIconPath(nodeData.Nome);
       if (svgSource) {
         el.append("image")
           .attr("href", svgSource)
           .attr("class", "node-icon-img")
-          .attr("width", r * 2).attr("height", r * 2)
-          .attr("x", -r).attr("y", -r);
+          .attr("width", r * 2)
+          .attr("height", r * 2)
+          .attr("x", -r)
+          .attr("y", -r);
       }
-    } else {
-      // Pessoa — bolinha branca sólida
-      el.append("circle")
-        .attr("r", r)
-        .attr("class", "node-shape circle-shape person-circle")
-        .attr("fill", "#ffffff")
-        .attr("stroke", "none");
+      return;
     }
+
+    const personFill = getNodeFillColor(nodeData);
+
+    el.append("circle")
+      .attr("r", r)
+      .attr("class", "node-shape circle-shape person-circle")
+      .attr("fill", personFill)
+      .attr("stroke", "none")
+      .style("opacity", 0.92);
   });
 
-  // Entrada dos nós — animação apenas no primeiro carregamento
-  if (_graphFirstDraw) {
+  if (isFirstDraw) {
     _graphFirstDraw = false;
-    node
-      .style("opacity", 0)
+    node.style("opacity", 0)
       .transition()
-      .duration(900)
-      .delay((d, i) => Math.min(i * 8, 600))
+      .duration(800)
+      .delay((_, index) => Math.min(index * 10, 500))
       .ease(d3.easeCubicOut)
       .style("opacity", 1);
 
-    node.each(function(d, i) {
-      const el    = d3.select(this);
-      const delay = Math.min(i * 8, 600);
-      const r     = nodeRadius(d);
+    node.each(function(nodeData, index) {
+      const el = d3.select(this);
+      const delay = Math.min(index * 10, 500);
+      const r = nodeRadius(nodeData);
       el.selectAll("circle.node-shape, circle.node-hitarea, circle.person-circle")
         .attr("r", 0)
-        .transition().duration(800).delay(delay)
-        .ease(d3.easeBackOut.overshoot(1.4))
+        .transition()
+        .duration(700)
+        .delay(delay)
+        .ease(d3.easeCubicOut)
         .attr("r", r);
       el.selectAll(".node-icon-img")
-        .attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0)
-        .transition().duration(800).delay(delay)
-        .ease(d3.easeBackOut.overshoot(1.2))
-        .attr("width", r * 2).attr("height", r * 2)
-        .attr("x", -r).attr("y", -r);
+        .attr("width", 0)
+        .attr("height", 0)
+        .attr("x", 0)
+        .attr("y", 0)
+        .transition()
+        .duration(700)
+        .delay(delay)
+        .ease(d3.easeCubicOut)
+        .attr("width", r * 2)
+        .attr("height", r * 2)
+        .attr("x", -r)
+        .attr("y", -r);
     });
+
+    // Adiciona orbit force após a animação de entrada se estabilizar
+    setTimeout(() => {
+      if (simulation) {
+        simulation.force("orbit", forceOrbit(graphData.links, 52, 0.55));
+        simulation.alpha(0.25).restart();
+      }
+    }, 900);
   } else {
-    node.style("opacity", 1);
+    simulation.force("orbit", forceOrbit(graphData.links, 52, 0.55));
+    node
+      .style("opacity", 0)
+      .transition()
+      .duration(500)
+      .ease(d3.easeSinOut)
+      .style("opacity", 1);
   }
 
-  // Rótulos — todos os nós no labelGroup
   const labels = labelGroup
     .selectAll(".label")
-    .data(graphData.nodes, (d) => d.id)
+    .data(graphData.nodes.filter((nodeData) => !nodeData.isCategory && !nodeData.isTechnique), (nodeData) => nodeData.id)
     .join("text")
-    .attr("class", (d) => "label" + ((!d.isCategory && !d.isTechnique) ? " label-person" : ""))
-    .text((d) => {
-      if (d.isCategory) return d.Nome || d.id;
-      if (d.isTechnique) return d.Nome || d.id;
-      const nome = d.Nome || d.id;
-      return nome.split(" ")[0];
-    })
+    .attr("class", "label label-person")
+    .text((nodeData) => (nodeData.Nome || nodeData.id).split(" ")[0])
     .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "central")
-    .attr("dy", (d) => d.isTechnique ? (nodeRadius(d) + 12) + "px" : "0")
-    .style("font-size", (d) => d.isTechnique ? "10px" : (d.isCategory ? "8px" : "6px"))
-    .style("fill", (d) => d.isTechnique ? "#e8dcc8" : "rgba(255,255,255,0.6)")
+    .attr("dominant-baseline", "hanging")
+    .attr("dy", (nodeData) => `${nodeRadius(nodeData) + 6}px`)
+    .style("font-size", "9px")
+    .style("fill", "rgba(255,255,255,0.9)")
     .style("visibility", "hidden")
-    .style("pointer-events", (d) => d.isTechnique ? "all" : "none")
-    .style("stroke", "transparent")
-    .style("stroke-width", "18px")
-    .style("cursor", "pointer");
+    .style("pointer-events", "none")
+    .style("stroke", "rgba(0,0,0,0.72)")
+    .style("stroke-width", "2.5px")
+    .style("paint-order", "stroke");
 
-  // Clique nos rótulos visíveis → foca o nó correspondente
   labels
-    .on("pointerdown.labelclick", (event, d) => {
-      d._lpd = { x: event.clientX, y: event.clientY };
+    .on("pointerdown.labelclick", (event, nodeData) => {
+      nodeData._lpd = { x: event.clientX, y: event.clientY };
     })
-    .on("pointerup.labelclick", (event, d) => {
-      if (!d._lpd) return;
-      const moved = Math.hypot(event.clientX - d._lpd.x, event.clientY - d._lpd.y);
-      d._lpd = null;
+    .on("pointerup.labelclick", (event, nodeData) => {
+      if (!nodeData._lpd) return;
+      const moved = Math.hypot(event.clientX - nodeData._lpd.x, event.clientY - nodeData._lpd.y);
+      nodeData._lpd = null;
       if (moved > 5) return;
       event.stopPropagation();
-      focusNode(event, d);
+      focusNode(event, nodeData);
     });
 
-  // Tooltip nativo — separado para não contaminar a seleção `labels`
-  labels.selectAll("title").remove();
-  labels.append("title").text((d) => d.Nome || d.id);
-
-  // Tick
   simulation.on("tick", () => {
-    link.each(function(d) {
-      const dx   = d.target.x - d.source.x;
-      const dy   = d.target.y - d.source.y;
+    link.each(function(linkData) {
+      const dx = linkData.target.x - linkData.source.x;
+      const dy = linkData.target.y - linkData.source.y;
       const dist = Math.hypot(dx, dy) || 1;
-      const gap  = 22;
-      const rs   = nodeRadius(d.source) + gap;
-      const rt   = nodeRadius(d.target) + gap;
+      const sourceRadius = nodeRadius(linkData.source);
+      const targetRadius = nodeRadius(linkData.target);
+
       d3.select(this)
-        .attr("x1", d.source.x + (dx / dist) * rs)
-        .attr("y1", d.source.y + (dy / dist) * rs)
-        .attr("x2", d.target.x - (dx / dist) * rt)
-        .attr("y2", d.target.y - (dy / dist) * rt);
+        .attr("x1", linkData.source.x + (dx / dist) * sourceRadius)
+        .attr("y1", linkData.source.y + (dy / dist) * sourceRadius)
+        .attr("x2", linkData.target.x - (dx / dist) * targetRadius)
+        .attr("y2", linkData.target.y - (dy / dist) * targetRadius);
     });
 
     node
-      .each(function (d) {
-        const r = nodeRadius(d);
-        d.x = Math.max(r, Math.min(currentWidth  - r, d.x));
-        d.y = Math.max(r, Math.min(currentHeight - r, d.y));
+      .each(function(nodeData) {
+        const r = nodeRadius(nodeData);
+        nodeData.x = Math.max(r, Math.min(currentWidth - r, nodeData.x));
+        nodeData.y = Math.max(r, Math.min(currentHeight - r, nodeData.y));
       })
-      .attr("transform", (d) => `translate(${d.x},${d.y})`);
+      .attr("transform", (nodeData) => `translate(${nodeData.x},${nodeData.y})`);
 
-    labels.attr("transform", (d) => `translate(${d.x},${d.y})`);
+    labels.attr("transform", (nodeData) => `translate(${nodeData.x},${nodeData.y})`);
   });
 
-  // Fechar card ao clicar no fundo
-  let _bgPd = null;
-  svg.on("pointerdown.background", (e) => { _bgPd = { x: e.clientX, y: e.clientY }; });
+  let backgroundPointerDown = null;
+  svg.on("pointerdown.background", (event) => {
+    backgroundPointerDown = { x: event.clientX, y: event.clientY };
+  });
   svg.on("pointerup.background", (event) => {
-    if (!_bgPd) return;
-    const moved = Math.hypot(event.clientX - _bgPd.x, event.clientY - _bgPd.y);
-    _bgPd = null;
+    if (!backgroundPointerDown) return;
+    const moved = Math.hypot(event.clientX - backgroundPointerDown.x, event.clientY - backgroundPointerDown.y);
+    backgroundPointerDown = null;
     if (moved > 5) return;
     if (!event.target.closest(".node")) focusNode(event, null);
   });
 
-  simulation.alpha(0.5).restart();
+  simulation.alpha(0.9).restart();
 }
 
-// ===== NODE COLORS =====
-
-function getNodeFillColor(d) {
-  const baseHex = getBaseColorForNode(d);
-  if (d.isCategory) return baseHex;
+function getNodeFillColor(node) {
+  const baseHex = getBaseColorForNode(node);
+  if (node.isCategory) return baseHex;
   try {
-    const brightness = d.isTechnique ? TECHNIQUE_BRIGHTNESS : PERSON_BRIGHTNESS;
+    const brightness = node.isTechnique ? TECHNIQUE_BRIGHTNESS : PERSON_BRIGHTNESS;
     return d3.rgb(baseHex).brighter(brightness).toString();
-  } catch (e) {
+  } catch (_error) {
     return baseHex;
   }
 }
 
-function getNodeStrokeColor(d) {
-  const baseHex = getBaseColorForNode(d);
+function getNodeStrokeColor(node) {
+  const baseHex = getBaseColorForNode(node);
   try {
     return d3.rgb(baseHex).darker(1).toString();
-  } catch (e) {
+  } catch (_error) {
     return "#333";
   }
 }
 
-// ===== ICONS =====
-
 const iconTec = {
-  "Design gráfico":               "./assets/icons/comunica/designGrafico.svg",
-  "Ilustração":                   "./assets/icons/comunica/ilustracao.svg",
-  "Tipografia":                   "./assets/icons/comunica/tipografia.svg",
-  "Direção de arte":              "./assets/icons/comunica/DirecaoArte.svg",
-  "Produção audiovisual":         "./assets/icons/comunica/producaoAudiovisual.svg",
-  "Fotografia":                   "./assets/icons/comunica/fotografia.svg",
-  "Videografismo":                "./assets/icons/comunica/videografismo.svg",
-  "Design editorial":             "./assets/icons/comunica/designEditorial.svg",
-  "Identidade visual":            "./assets/icons/comunica/identidadeVisual.svg",
-  "Design de superfície":         "./assets/icons/comunica/designSuperficie.svg",
-  "Arte urbana":                  "./assets/icons/comunica/arteUrbana.svg",
-  "Design de objetos industriais":"./assets/icons/produ/designObjetos.svg",
-  "Design de mobiliário":         "./assets/icons/produ/designMobiliario.svg",
-  "Moda e têxtil":                "./assets/icons/produ/modaTextil.svg",
-  "Escultura":                    "./assets/icons/produ/escultura.svg",
-  "Prática 3D":                   "./assets/icons/produ/praticas3d.svg",
-  "Design de interiores":         "./assets/icons/produ/designInteriores.svg",
-  "Design de adereços":           "./assets/icons/produ/designAderecos.svg",
-  "Embalagem":                    "./assets/icons/produ/embalagem.svg",
-  "UI Design de interface":       "./assets/icons/intera/desingInterface.svg",
-  "Programação":                  "./assets/icons/intera/programacao.svg",
-  "Instalações interativas":      "./assets/icons/intera/instalacoesInterativas.svg",
-  "Arte digital":                 "./assets/icons/intera/arteDigital.svg",
-  "UX Experiência do usuário":    "./assets/icons/intera/experienciaUsuario.svg",
-  "Realidades mistas":            "./assets/icons/intera/realidadesMistas.svg",
-  "CX Experiência do Cliente":    "./assets/icons/servi/CX (Experiência do Cliente) .svg",
-  "Design para impacto social":   "./assets/icons/servi/Design para Impacto Social.svg",
-  "Branding":                     "./assets/icons/servi/Branding.svg",
-  "Curadoria":                    "./assets/icons/servi/Curadoria.svg",
-  "Economia criativa":            "./assets/icons/servi/Economia criativa.svg",
-  "Educação":                     "./assets/icons/teori/educacacao.svg",
-  "Escrita e publicação":         "./assets/icons/teori/escritaPublicacao.svg",
-  "Ativismo e justiça social":    "./assets/icons/teori/AtivismoJustica.svg",
-  "Relações étnico-raciais":      "./assets/icons/teori/relacoesEtinico.svg",
-  "Design e gênero":              "./assets/icons/teori/designGenero.svg",
+  "Design gráfico": "./assets/icons/comunica/designGrafico.svg",
+  "Ilustração": "./assets/icons/comunica/ilustracao.svg",
+  "Tipografia": "./assets/icons/comunica/tipografia.svg",
+  "Direção de arte": "./assets/icons/comunica/DirecaoArte.svg",
+  "Produção audiovisual": "./assets/icons/comunica/producaoAudiovisual.svg",
+  "Fotografia": "./assets/icons/comunica/fotografia.svg",
+  "Videografismo": "./assets/icons/comunica/videografismo.svg",
+  "Design editorial": "./assets/icons/comunica/designEditorial.svg",
+  "Identidade visual": "./assets/icons/comunica/identidadeVisual.svg",
+  "Design de superfície": "./assets/icons/comunica/designSuperficie.svg",
+  "Arte urbana": "./assets/icons/comunica/arteUrbana.svg",
+  "Design de objetos industriais": "./assets/icons/produ/designObjetos.svg",
+  "Design de mobiliário": "./assets/icons/produ/designMobiliario.svg",
+  "Moda e têxtil": "./assets/icons/produ/modaTextil.svg",
+  "Escultura": "./assets/icons/produ/escultura.svg",
+  "Prática 3D": "./assets/icons/produ/praticas3d.svg",
+  "Design de interiores": "./assets/icons/produ/designInteriores.svg",
+  "Design de adereços": "./assets/icons/produ/designAderecos.svg",
+  "Embalagem": "./assets/icons/produ/embalagem.svg",
+  "UI Design de interface": "./assets/icons/intera/desingInterface.svg",
+  "Programação": "./assets/icons/intera/programacao.svg",
+  "Instalações interativas": "./assets/icons/intera/instalacoesInterativas.svg",
+  "Arte digital": "./assets/icons/intera/arteDigital.svg",
+  "UX Experiência do usuário": "./assets/icons/intera/experienciaUsuario.svg",
+  "Realidades mistas": "./assets/icons/intera/realidadesMistas.svg",
+  "CX Experiência do Cliente": "./assets/icons/servi/CX (Experiência do Cliente) .svg",
+  "Design para impacto social": "./assets/icons/servi/Design para Impacto Social.svg",
+  "Branding": "./assets/icons/servi/Branding.svg",
+  "Curadoria": "./assets/icons/servi/Curadoria.svg",
+  "Economia criativa": "./assets/icons/servi/Economia criativa.svg",
+  "Educação": "./assets/icons/teori/educacacao.svg",
+  "Escrita e publicação": "./assets/icons/teori/escritaPublicacao.svg",
+  "Ativismo e justiça social": "./assets/icons/teori/AtivismoJustica.svg",
+  "Relações étnico-raciais": "./assets/icons/teori/relacoesEtinico.svg",
+  "Design e gênero": "./assets/icons/teori/designGenero.svg",
 };
 
-window.getIconPath = function (name) {
+window.getIconPath = function(name) {
   return iconTec[name] || null;
 };
 
-window.getAreaIconPath = function (area) {
+window.getAreaIconPath = function(area) {
   return CATEGORY_ICON_PATH[area] || null;
 };

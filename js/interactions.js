@@ -1,8 +1,6 @@
 // ============================================================
-// INTERACTIONS.JS — Drag, Foco e Card de Perfil
+// INTERACTIONS.JS - Drag, foco e cards
 // ============================================================
-
-// ===== DRAG BEHAVIOR =====
 
 function drag(simulation) {
   let wasDragged = false;
@@ -23,26 +21,393 @@ function drag(simulation) {
     d.fy = event.y;
   }
 
-  function dragended(event, d) {
+  function dragended(event) {
     if (!event.active) simulation.alphaTarget(0);
   }
 
-  return d3
-    .drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended);
+  return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
 }
 
-// linkMeta exposto por draw.js
 let linkMeta = null;
+const techniqueNamesVisibility = new Map();
+
 window._setLinkMeta = function(m) { linkMeta = m; };
+window._areTechniqueNamesVisible = function(techId) {
+  return techniqueNamesVisibility.get(techId) === true;
+};
 
-// ===== FOCUS =====
+// Exibe/oculta TODOS os nomes de pessoas de uma vez (botão global no painel de debug)
+window._setAllNamesVisible = function(visible) {
+  window.DBG_ALL_NAMES_VISIBLE = visible;
+  const nameSizePx = `${window.DBG_PERSON_NAME_SIZE || 10}px`;
 
-function focusNode(event, d) {
+  // Atualiza texto e posição imediatamente
+  labelGroup.selectAll(".label")
+    .interrupt()
+    .text((node) => visible ? (node.Nome || node.id) : (node.Nome || node.id).split(" ")[0])
+    .attr("dy", visible ? "0" : (node) => `${nodeRadius(node) + 6}px`)
+    .attr("dominant-baseline", visible ? "middle" : "hanging")
+    .style("font-size", visible ? nameSizePx : "9px")
+    .style("visibility", visible ? "visible" : "hidden")
+    .style("pointer-events", visible ? "all" : "none");
 
-  // Libera nó anterior
+  // Fade dos círculos
+  nodeGroup.selectAll(".node")
+    .filter((node) => !node.isCategory && !node.isTechnique)
+    .interrupt()
+    .transition()
+    .duration(350)
+    .style("opacity", visible ? 0 : 0.92);
+};
+
+// ── Multi-seleção de categorias ──────────────────────────────
+window.selectedCategoryHighlights = new Set();
+
+function _renderCategoryHighlights() {
+  const selected = window.selectedCategoryHighlights;
+
+  if (selected.size === 0) {
+    // Sem seleção: esconde só as linhas, todos os nós ficam visíveis
+    linkGroup.selectAll(".link")
+      .interrupt()
+      .transition()
+      .duration(220)
+      .attr("stroke-opacity", 0);
+    return;
+  }
+
+  // Vizinhos de 2 hops de todas as categorias selecionadas (para saber quais linhas mostrar)
+  const allNeighbors = new Set();
+  selected.forEach((catId) => {
+    const catNode = graphData.nodes.find((n) => n.id === catId);
+    if (catNode) _twohopNeighbors(catNode).forEach((id) => allNeighbors.add(id));
+  });
+
+  // Todos os nós ficam visíveis — sem dimming
+  nodeGroup.selectAll(".node")
+    .interrupt()
+    .transition()
+    .duration(220)
+    .style("opacity", 1);
+
+  // Só as linhas das categorias selecionadas aparecem
+  linkGroup.selectAll(".link")
+    .interrupt()
+    .attr("stroke-opacity", (link) => {
+      const srcId = _linkNodeId(link.source);
+      const tgtId = _linkNodeId(link.target);
+      if (link.type === "technique-category-link") {
+        // Linha área→técnica: só se a área está selecionada
+        return (selected.has(srcId) || selected.has(tgtId)) ? 0.72 : 0;
+      }
+      if (link.type === "person-technique-link") {
+        // Linha técnica→pessoa: só se ambos os extremos são vizinhos de uma área selecionada
+        return (allNeighbors.has(srcId) && allNeighbors.has(tgtId)) ? 0.28 : 0;
+      }
+      return 0;
+    });
+}
+
+window._toggleCategoryHighlight = function(categoryId) {
+  // Limpa foco de nó individual se houver
+  if (activeNode && !activeNode.isCategory) {
+    activeNode.fx = null;
+    activeNode.fy = null;
+    _restoreNodeSizes();
+    activeNode = null;
+    _hideCard();
+  }
+
+  if (window.selectedCategoryHighlights.has(categoryId)) {
+    window.selectedCategoryHighlights.delete(categoryId);
+  } else {
+    window.selectedCategoryHighlights.add(categoryId);
+  }
+
+  _renderCategoryHighlights();
+};
+
+function _linkNodeId(v) {
+  return typeof v === "object" ? v.id : v;
+}
+
+function _neighborsForNode(node) {
+  const neighbors = new Set([node.id]);
+  graphData.links.forEach((link) => {
+    const sourceId = _linkNodeId(link.source);
+    const targetId = _linkNodeId(link.target);
+    if (sourceId === node.id) neighbors.add(targetId);
+    if (targetId === node.id) neighbors.add(sourceId);
+  });
+  return neighbors;
+}
+
+// 2 hops: útil para categorias (categoria → técnicas → pessoas)
+function _twohopNeighbors(node) {
+  const neighbors = new Set([node.id]);
+  const firstHop = new Set();
+
+  graphData.links.forEach((link) => {
+    const srcId = _linkNodeId(link.source);
+    const tgtId = _linkNodeId(link.target);
+    if (srcId === node.id) { neighbors.add(tgtId); firstHop.add(tgtId); }
+    if (tgtId === node.id) { neighbors.add(srcId); firstHop.add(srcId); }
+  });
+
+  graphData.links.forEach((link) => {
+    const srcId = _linkNodeId(link.source);
+    const tgtId = _linkNodeId(link.target);
+    if (firstHop.has(srcId)) neighbors.add(tgtId);
+    if (firstHop.has(tgtId)) neighbors.add(srcId);
+  });
+
+  return neighbors;
+}
+
+function _isPersonLinkedToTechnique(personId, techniqueId) {
+  return graphData.links.some((link) => {
+    if (link.type !== "person-technique-link") return false;
+    const sourceId = _linkNodeId(link.source);
+    const targetId = _linkNodeId(link.target);
+    return (
+      (sourceId === personId && targetId === techniqueId) ||
+      (sourceId === techniqueId && targetId === personId)
+    );
+  });
+}
+
+function _setPersonLabelVisibility(personId, visible, fullName = false) {
+  const nameSizePx = `${window.DBG_PERSON_NAME_SIZE || 10}px`;
+  labelGroup.selectAll(".label")
+    .filter((node) => node.id === personId)
+    .attr("dy", visible && fullName ? "0" : (node) => `${nodeRadius(node) + 6}px`)
+    .attr("dominant-baseline", visible && fullName ? "middle" : "hanging")
+    .style("font-size", visible && fullName ? nameSizePx : "9px")
+    .style("visibility", visible ? "visible" : "hidden")
+    .style("pointer-events", visible ? "all" : "none")
+    .text((node) => fullName ? (node.Nome || node.id) : (node.Nome || node.id).split(" ")[0]);
+}
+
+function _highlightPersonInGraph(person, highlighted) {
+  const factor = highlighted ? 1.85 : 1;
+  nodeGroup.selectAll(".node")
+    .filter((node) => node.id === person.id)
+    .selectAll("circle")
+    .transition()
+    .duration(highlighted ? 140 : 180)
+    .attr("r", nodeRadius(person) * factor);
+
+  if (activeNode && activeNode.isTechnique && _isPersonLinkedToTechnique(person.id, activeNode.id)) {
+    _setPersonLabelVisibility(person.id, highlighted, true);
+    nodeGroup.selectAll(".node")
+      .filter((node) => node.id === person.id)
+      .transition()
+      .duration(140)
+      .style("opacity", highlighted ? 1 : (window._areTechniqueNamesVisible(activeNode.id) ? 0 : 0.92));
+  }
+}
+
+function _showCard() {
+  const panel = document.querySelector(".info-panel");
+  if (panel) panel.classList.add("is-open");
+}
+
+function _hideCard() {
+  const panel = document.querySelector(".info-panel");
+  if (panel) panel.classList.remove("is-open");
+  const techniqueAreaCard = document.getElementById("card-tec-area");
+  const personCard = document.getElementById("card-pessoa");
+  if (techniqueAreaCard) techniqueAreaCard.style.display = "none";
+  if (personCard) personCard.style.display = "none";
+}
+
+function _restoreNodeSizes() {
+  nodeGroup.selectAll(".node").each(function(node) {
+    const el = d3.select(this);
+    const r = nodeRadius(node);
+    el.selectAll("circle")
+      .interrupt()
+      .style("opacity", null)   // limpa opacity inline presa
+      .transition().duration(220).attr("r", r);
+    el.selectAll(".node-icon-img").interrupt().transition().duration(220)
+      .attr("width", r * 2)
+      .attr("height", r * 2)
+      .attr("x", -r)
+      .attr("y", -r);
+  });
+}
+
+function _resetGraphState() {
+  if (window.selectedCategoryHighlights) window.selectedCategoryHighlights.clear();
+  nodeGroup.selectAll(".node").interrupt().transition().duration(220).style("opacity", 1);
+  labelGroup.selectAll(".label")
+    .interrupt()
+    .transition()
+    .duration(180)
+    .style("visibility", "hidden")
+    .style("pointer-events", "none")
+    .text((node) => (node.Nome || node.id).split(" ")[0]);
+  linkGroup.selectAll(".link")
+    .interrupt()
+    .transition()
+    .duration(220)
+    .attr("stroke-opacity", 0);
+}
+
+function _setFocusedNodeScale(node) {
+  if (node.isCategory) return;
+
+  const baseRadius = nodeRadius(node);
+  const focusRadius = baseRadius * 2.15;
+
+  nodeGroup.selectAll(".node").each(function(candidate) {
+    if (candidate.id !== node.id) return;
+    const el = d3.select(this);
+    el.selectAll("circle")
+      .interrupt()
+      .style("opacity", null)   // limpa opacity inline (pode estar 0 por hover de técnica)
+      .transition()
+      .duration(300)
+      .ease(d3.easeCubicOut)
+      .attr("r", focusRadius);
+    el.selectAll(".node-icon-img")
+      .interrupt()
+      .transition()
+      .duration(300)
+      .ease(d3.easeCubicOut)
+      .attr("width", focusRadius * 2)
+      .attr("height", focusRadius * 2)
+      .attr("x", -focusRadius)
+      .attr("y", -focusRadius);
+  });
+}
+
+function _renderGraphFocus(node, neighbors, options = {}) {
+  if (node.isCategory) {
+    nodeGroup.selectAll(".node")
+      .interrupt()
+      .transition()
+      .duration(280)
+      .style("opacity", (candidate) => {
+        if (candidate.id === node.id) return 1;
+        if (!neighbors.has(candidate.id)) return 0.06;
+        if (candidate.isTechnique) return 1;
+        if (!candidate.isCategory && !candidate.isTechnique) return 0.75; // pessoas visíveis
+        return 1;
+      });
+
+    labelGroup.selectAll(".label")
+      .interrupt()
+      .transition()
+      .duration(180)
+      .style("visibility", "hidden")
+      .style("pointer-events", "none");
+  } else if (node.isTechnique) {
+    const showingNames = window._areTechniqueNamesVisible(node.id);
+
+    nodeGroup.selectAll(".node")
+      .interrupt()
+      .transition()
+      .duration(280)
+      .style("opacity", (candidate) => {
+        if (candidate.id === node.id) return 1;
+        if (!neighbors.has(candidate.id)) return 0.05;
+        if (!candidate.isCategory && !candidate.isTechnique) return showingNames ? 0 : 0.92;
+        return 1;
+      });
+
+    const nameSizePx = `${window.DBG_PERSON_NAME_SIZE || 10}px`;
+    labelGroup.selectAll(".label")
+      .interrupt()
+      .text((candidate) =>
+        showingNames && neighbors.has(candidate.id)
+          ? (candidate.Nome || candidate.id)
+          : (candidate.Nome || candidate.id).split(" ")[0])
+      .attr("dy", (candidate) =>
+        showingNames && neighbors.has(candidate.id) ? "0" : `${nodeRadius(candidate) + 6}px`)
+      .attr("dominant-baseline", (candidate) =>
+        showingNames && neighbors.has(candidate.id) ? "middle" : "hanging")
+      .style("font-size", (candidate) =>
+        showingNames && neighbors.has(candidate.id) ? nameSizePx : "9px")
+      .style("visibility", (candidate) =>
+        showingNames && neighbors.has(candidate.id) ? "visible" : "hidden")
+      .style("pointer-events", (candidate) =>
+        showingNames && neighbors.has(candidate.id) ? "all" : "none");
+  } else {
+    nodeGroup.selectAll(".node")
+      .interrupt()
+      .transition()
+      .duration(280)
+      .style("opacity", (candidate) => neighbors.has(candidate.id) ? 1 : 0.08);
+
+    labelGroup.selectAll(".label")
+      .interrupt()
+      .transition()
+      .duration(180)
+      .style("visibility", "hidden")
+      .style("pointer-events", "none");
+  }
+
+  linkGroup.selectAll(".link")
+    .attr("stroke-opacity", (link) => {
+      const sourceId = _linkNodeId(link.source);
+      const targetId = _linkNodeId(link.target);
+      const meta = linkMeta ? linkMeta.get(link) : null;
+      const isDirect = sourceId === node.id || targetId === node.id;
+      const isVisibleNetwork = neighbors.has(sourceId) && neighbors.has(targetId);
+
+      if (node.isCategory) {
+        if (link.type === "technique-category-link" && isVisibleNetwork) return meta?.isPrimary ? 0.72 : 0.42;
+        if (link.type === "person-technique-link" && isVisibleNetwork) return meta?.isPrimary ? 0.2 : 0.09;
+        return 0;
+      }
+
+      if (node.isTechnique) {
+        if (isDirect) {
+          if (link.type === "technique-category-link") return 0.75;
+          return meta?.isPrimary ? 0.78 : 0.28;
+        }
+        return 0;
+      }
+
+      if (isDirect) {
+        if (link.type === "technique-category-link") return 0.18;
+        return meta?.isPrimary ? 0.74 : 0.26;
+      }
+
+      return 0;
+    });
+
+  if (options.areaFromFilter && node.isCategory) {
+    if (options.noCard) {
+      _hideCard();
+    } else {
+      const connectedTechniques = graphData.nodes.filter((candidate) =>
+        candidate.isTechnique && neighbors.has(candidate.id));
+      exibirAreaCard(node, connectedTechniques);
+      _showCard();
+    }
+    return;
+  }
+
+  if (node.isTechnique) {
+    const connectedPeople = graphData.nodes.filter((candidate) =>
+      !candidate.isCategory && !candidate.isTechnique && neighbors.has(candidate.id));
+    exibirListaPessoas(node, connectedPeople);
+    _showCard();
+    return;
+  }
+
+  if (!node.isCategory) {
+    exibirPerfil(node);
+    _showCard();
+    return;
+  }
+
+  _hideCard();
+}
+
+function focusNode(event, d, options = {}) {
   if (activeNode && (!d || activeNode.id !== d.id)) {
     if (!activeNode.isCategory) {
       activeNode.fx = null;
@@ -51,177 +416,46 @@ function focusNode(event, d) {
     _restoreNodeSizes();
   }
 
-  const isFocado = !!d;
-  activeNode = isFocado ? d : null;
-
-  if (isFocado) {
-    nodeGroup.selectAll(".node")
-      .filter((o) => o.id === d.id)
-      .raise();
-
-    const vb = svg.attr("viewBox").split(" ");
-    const centerX = (+vb[2] || window.innerWidth)  / 2;
-    const centerY = (+vb[3] || window.innerHeight) / 2;
-
-    if (!d.isCategory) {
-      d.fx = centerX;
-      d.fy = centerY;
-      d.x  = centerX;
-      d.y  = centerY;
-    }
-
-    // Tamanho do nó focado — categorias não crescem
-    const r = nodeRadius(d);
-    const enlargedRadius = r * 2.5;
-
-    if (!d.isCategory) {
-      nodeGroup.selectAll(".node").each(function(o) {
-        const el = d3.select(this);
-        if (o.id === d.id) {
-          // Pulse: escala rápido → acomoda suave
-          el.selectAll("circle")
-            .transition().duration(150).ease(d3.easeQuadOut).attr("r", r * 1.9)
-            .transition().duration(550).ease(d3.easeElasticOut.period(0.45)).attr("r", enlargedRadius);
-          el.selectAll(".node-icon-img")
-            .transition().duration(150).ease(d3.easeQuadOut)
-            .attr("width", r * 3.8).attr("height", r * 3.8).attr("x", -r * 1.9).attr("y", -r * 1.9)
-            .transition().duration(550).ease(d3.easeElasticOut.period(0.45))
-            .attr("width", enlargedRadius * 2).attr("height", enlargedRadius * 2)
-            .attr("x", -enlargedRadius).attr("y", -enlargedRadius);
-        }
-      });
-    }
-
-    // Vizinhos diretos
-    const neighbors = new Set([d.id]);
-    graphData.links.forEach((link) => {
-      const ls = typeof link.source === "object" ? link.source.id : link.source;
-      const lt = typeof link.target === "object" ? link.target.id : link.target;
-      if (ls === d.id) neighbors.add(lt);
-      else if (lt === d.id) neighbors.add(ls);
-    });
-
-    // Opacidade dos nós + labels — comportamento separado por tipo de nó focado
-    if (d.isCategory) {
-      // Categoria focada: técnicas visíveis sem label, pessoas como pontos
-      nodeGroup.selectAll(".node").transition().duration(700)
-        .style("opacity", (o) => {
-          if (o.id === d.id) return 1;
-          if (!neighbors.has(o.id)) return 0.05;
-          if (!o.isCategory && !o.isTechnique) return 0.35;
-          return 1;
-        });
-
-      labelGroup.selectAll(".label").transition().duration(700)
-        .style("visibility", "hidden")
-        .style("pointer-events", "none");
-
-    } else if (d.isTechnique) {
-      // Técnica focada: círculos de pessoas somem, nomes aparecem como labels
-      nodeGroup.selectAll(".node").transition().duration(700)
-        .style("opacity", (o) => {
-          if (o.id === d.id) return 1;
-          if (!neighbors.has(o.id)) return 0.05;
-          if (!o.isCategory && !o.isTechnique) return 0;
-          return 1;
-        });
-
-      labelGroup.selectAll(".label").transition().duration(700)
-        .style("visibility", (o) =>
-          (!o.isCategory && !o.isTechnique && neighbors.has(o.id)) ? "visible" : "hidden")
-        .style("pointer-events", (o) =>
-          (!o.isCategory && !o.isTechnique && neighbors.has(o.id)) ? "all" : "none")
-        .style("font-size", "10px")
-        .text((o) => {
-          if (!o.isCategory && !o.isTechnique && neighbors.has(o.id)) return o.Nome || o.id;
-          return (o.Nome || o.id).split(" ")[0];
-        });
-
-    } else {
-      // Pessoa focada: destaca vizinhos, sem labels
-      nodeGroup.selectAll(".node").transition().duration(700)
-        .style("opacity", (o) => neighbors.has(o.id) ? 1 : 0.08);
-
-      labelGroup.selectAll(".label").transition().duration(700)
-        .style("visibility", "hidden")
-        .style("pointer-events", "none");
-    }
-
-    // Links
-    linkGroup.selectAll(".link").transition().duration(700)
-      .attr("stroke-opacity", (l) => {
-        const ls = typeof l.source === "object" ? l.source.id : l.source;
-        const lt = typeof l.target === "object" ? l.target.id : l.target;
-        if (ls === d.id || lt === d.id) {
-          return l.type === "technique-category-link" ? 0.85 : 0.4;
-        }
-        return l.type === "technique-category-link" ? 0.12 : 0.01;
-      });
-
-    // Painel
-    if (d.isCategory) {
-      const connectedTecnicas = graphData.nodes.filter((o) =>
-        o.isTechnique && neighbors.has(o.id)
-      );
-      exibirAreaCard(d, connectedTecnicas);
-    } else if (d.isTechnique) {
-      const connectedDesigners = graphData.nodes.filter((o) =>
-        !o.isCategory && !o.isTechnique && neighbors.has(o.id)
-      );
-      exibirListaPessoas(d, connectedDesigners);
-    } else {
-      exibirPerfil(d);
-    }
-    _showCard("all");
-
-  } else {
+  if (!d) {
+    activeNode = null;
     _hideCard();
-    _restoreNodeSizes();
-    nodeGroup.selectAll(".node").transition().duration(700).style("opacity", 1);
-    labelGroup.selectAll(".label").transition().duration(700)
-      .style("visibility", "hidden")
-      .style("pointer-events", "none")
-      .style("font-size", (o) => o.isTechnique ? "10px" : (o.isCategory ? "8px" : "6px"))
-      .attr("dy", (o) => o.isTechnique ? (nodeRadius(o) + 12) + "px" : "0")
-      .text((o) => {
-        if (o.isCategory || o.isTechnique) return o.Nome || o.id;
-        return (o.Nome || o.id).split(" ")[0];
-      });
-    linkGroup.selectAll(".link").transition().duration(700)
-      .attr("stroke-opacity", (l) => l.type === "technique-category-link" ? 0.45 : 0);
+    _resetGraphState();
+    if (simulation) simulation.alpha(0.06).restart();
+    return;
   }
 
-  if (simulation) simulation.alpha(0.1).restart();
+  if (d.isCategory && !options.areaFromFilter) {
+    // Clique direto no grafo → multi-seleção de highlights (sem filtrar, sem card)
+    window._toggleCategoryHighlight(d.id);
+    return;
+  }
+
+  activeNode = d;
+
+  nodeGroup.selectAll(".node")
+    .filter((node) => node.id === d.id)
+    .raise();
+
+  const viewBox = svg.attr("viewBox").split(" ");
+  const svgW = +viewBox[2] || window.innerWidth;
+  const svgH = +viewBox[3] || window.innerHeight;
+
+  if (!d.isCategory) {
+    // Move para o canto superior-esquerdo para dar espaço ao card
+    d.fx = svgW * 0.18;
+    d.fy = svgH * 0.2;
+    d.x = d.fx;
+    d.y = d.fy;
+  }
+
+  _setFocusedNodeScale(d);
+  const neighbors = d.isCategory ? _twohopNeighbors(d) : _neighborsForNode(d);
+  _renderGraphFocus(d, neighbors, options);
+
+  if (simulation) simulation.alpha(0.08).restart();
 }
 
-function _restoreNodeSizes() {
-  nodeGroup.selectAll(".node").each(function(node) {
-    const el = d3.select(this);
-    const r = nodeRadius(node);
-    el.selectAll("circle").transition().duration(500).attr("r", r);
-    el.selectAll(".node-icon-img").transition().duration(500)
-      .attr("width", r * 2).attr("height", r * 2)
-      .attr("x", -r).attr("y", -r);
-  });
-}
-
-function _showCard(mode) {
-  const panel = document.querySelector(".info-panel");
-  if (panel) panel.classList.add("is-open");
-}
-
-function _hideCard() {
-  const panel = document.querySelector(".info-panel");
-  if (panel) panel.classList.remove("is-open");
-  const taEl = document.getElementById("card-tec-area");
-  const pEl  = document.getElementById("card-pessoa");
-  if (taEl) taEl.style.display = "none";
-  if (pEl)  pEl.style.display  = "none";
-}
-
-// ===== CARD DE ÁREA (categoria focada) =====
-
-function exibirAreaCard(nodeData, tecnicas) {
+function exibirAreaCard(nodeData, techniques) {
   const container = document.getElementById("card-tec-area");
   container.style.display = "block";
   document.getElementById("card-pessoa").style.display = "none";
@@ -229,203 +463,217 @@ function exibirAreaCard(nodeData, tecnicas) {
 
   const area = nodeData.Nome || nodeData.id;
   const adinkraInfo = (typeof ADINKRA_INFO !== "undefined" && ADINKRA_INFO[area]) || {};
-  const areaDesc    = AREA_DESCRICOES[area] || "";
+  const areaDescription = AREA_DESCRICOES[area] || "";
 
-  // 1. Título "Sobre o adinkra" (h2 Bellucci — sempre exibido)
-  const sobreH2 = document.createElement("h2");
-  sobreH2.className = "card-ta-nome card-sobre-adinkra-titulo";
-  sobreH2.textContent = "Sobre o adinkra";
-  container.appendChild(sobreH2);
+  const aboutTitle = document.createElement("h2");
+  aboutTitle.className = "card-ta-nome card-sobre-adinkra-titulo";
+  aboutTitle.textContent = "Sobre o adinkra";
+  container.appendChild(aboutTitle);
 
-  // 2. Texto explicando o adinkra
   if (adinkraInfo.nome) {
-    const nomeEl = document.createElement("p");
-    nomeEl.className = "card-adinkra-nome-inline";
-    nomeEl.textContent = adinkraInfo.nome;
-    container.appendChild(nomeEl);
-  }
-  const descAdinkra = document.createElement("p");
-  descAdinkra.className = "card-desc";
-  descAdinkra.textContent = adinkraInfo.descricao || "—";
-  container.appendChild(descAdinkra);
-
-  // 3. Título com o nome da área do design (h2 Bellucci)
-  const h2Area = document.createElement("h2");
-  h2Area.className = "card-ta-nome";
-  h2Area.textContent = area;
-  container.appendChild(h2Area);
-
-  // 4. Texto sobre a área
-  if (areaDesc) {
-    const p = document.createElement("p");
-    p.className = "card-desc";
-    p.textContent = areaDesc;
-    container.appendChild(p);
+    const adinkraName = document.createElement("p");
+    adinkraName.className = "card-adinkra-nome-inline";
+    adinkraName.textContent = adinkraInfo.nome;
+    container.appendChild(adinkraName);
   }
 
-  // 5. Técnicas conectadas
-  if (tecnicas.length > 0) {
-    const grid = document.createElement("div");
-    grid.className = "names-grid";
-    tecnicas
+  const adinkraDescription = document.createElement("p");
+  adinkraDescription.className = "card-desc";
+  adinkraDescription.textContent = adinkraInfo.descricao || "-";
+  container.appendChild(adinkraDescription);
+
+  const areaTitle = document.createElement("h2");
+  areaTitle.className = "card-ta-nome";
+  areaTitle.textContent = area;
+  container.appendChild(areaTitle);
+
+  if (areaDescription) {
+    const description = document.createElement("p");
+    description.className = "card-desc";
+    description.textContent = areaDescription;
+    container.appendChild(description);
+  }
+
+  if (techniques.length > 0) {
+    const tecTitle = document.createElement("p");
+    tecTitle.className = "card-desc";
+    tecTitle.style.fontWeight = "600";
+    tecTitle.style.marginTop = "12px";
+    tecTitle.textContent = "Técnicas";
+    container.appendChild(tecTitle);
+
+    const tecGrid = document.createElement("div");
+    tecGrid.className = "names-grid";
+    techniques
       .slice()
       .sort((a, b) => (a.Nome || "").localeCompare(b.Nome || "", "pt"))
-      .forEach((tec) => {
-        const span = document.createElement("span");
-        span.className = "names-grid-item";
-        span.textContent = tec.Nome || tec.id;
-        span.addEventListener("click", () => focusNode(null, tec));
-        grid.appendChild(span);
+      .forEach((technique) => {
+        const item = document.createElement("span");
+        item.className = "names-grid-item";
+        item.textContent = technique.Nome || technique.id;
+        item.addEventListener("click", () => focusNode(null, technique));
+        tecGrid.appendChild(item);
       });
-    container.appendChild(grid);
+    container.appendChild(tecGrid);
   }
-  // Sem botão "Não exibir" para áreas
+
 }
 
-// ===== LISTA DE PESSOAS (técnica focada) =====
-
-let _tecShowNames = true; // estado do toggle
-
 function exibirListaPessoas(nodeData, designers) {
-  _tecShowNames = true; // reset ao abrir nova técnica
   const container = document.getElementById("card-tec-area");
   container.style.display = "block";
   document.getElementById("card-pessoa").style.display = "none";
   container.innerHTML = "";
 
-  const nome = nodeData.Nome || nodeData.id;
-  const desc  = TECNICA_DESCRICOES[nome] || "";
-  const designerIds = new Set(designers.map((d) => d.id));
+  const techniqueId = nodeData.id;
+  const techniqueName = nodeData.Nome || nodeData.id;
+  const description = TECNICA_DESCRICOES[techniqueName] || "";
+  const designerIds = new Set(designers.map((designer) => designer.id));
 
-  // Nome da técnica
-  const h2 = document.createElement("h2");
-  h2.className = "card-ta-nome";
-  h2.textContent = nome;
-  container.appendChild(h2);
-
-  // Descrição
-  if (desc) {
-    const p = document.createElement("p");
-    p.className = "card-desc";
-    p.textContent = desc;
-    container.appendChild(p);
+  if (!techniqueNamesVisibility.has(techniqueId)) {
+    techniqueNamesVisibility.set(techniqueId, false);
   }
 
-  // Nomes das pessoas
-  if (designers.length === 0) {
-    const empty = document.createElement("p");
-    empty.style.cssText = "color:#666;font-size:11px;";
-    empty.textContent = "Nenhum designer conectado.";
-    container.appendChild(empty);
-    return;
+  const title = document.createElement("h2");
+  title.className = "card-ta-nome";
+  title.textContent = techniqueName;
+  container.appendChild(title);
+
+  if (description) {
+    const descriptionEl = document.createElement("p");
+    descriptionEl.className = "card-desc";
+    descriptionEl.textContent = description;
+    container.appendChild(descriptionEl);
   }
+
+  const toggleButton = document.createElement("button");
+  toggleButton.className = "nao-exibir-btn";
+  toggleButton.textContent = techniqueNamesVisibility.get(techniqueId) ? "Nao exibir nomes" : "Exibir nomes";
+  container.appendChild(toggleButton);
 
   const grid = document.createElement("div");
   grid.className = "names-grid";
-  designers
-    .slice()
-    .sort((a, b) => (a.Nome || "").localeCompare(b.Nome || "", "pt"))
-    .forEach((designer) => {
-      const span = document.createElement("span");
-      span.className = "names-grid-item";
-      span.textContent = designer.Nome || designer.id;
-      span.addEventListener("click", () => focusNode(null, designer));
-      grid.appendChild(span);
-    });
-  container.appendChild(grid);
+  grid.style.display = techniqueNamesVisibility.get(techniqueId) ? "" : "none";
 
-  // Estado inicial: nomes visíveis (labels SVG + grid no painel)
-  // Botão toggle: "Não exibir" → esconde nomes / "Exibir nomes" → mostra nomes
-  let showingNames = true;
+  if (designers.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "card-desc";
+    empty.textContent = "Nenhum designer conectado.";
+    container.appendChild(empty);
+  } else {
+    designers
+      .slice()
+      .sort((a, b) => (a.Nome || "").localeCompare(b.Nome || "", "pt"))
+      .forEach((designer) => {
+        const item = document.createElement("span");
+        item.className = "names-grid-item";
+        item.textContent = designer.Nome || designer.id;
+        item.addEventListener("click", () => focusNode(null, designer));
+        item.addEventListener("mouseenter", () => _highlightPersonInGraph(designer, true));
+        item.addEventListener("mouseleave", () => _highlightPersonInGraph(designer, false));
+        grid.appendChild(item);
+      });
 
-  const btn = document.createElement("button");
-  btn.className = "nao-exibir-btn";
-  btn.textContent = "Não exibir";
-  btn.onclick = () => {
-    showingNames = !showingNames;
-    btn.textContent = showingNames ? "Não exibir" : "Exibir nomes";
-    grid.style.display = showingNames ? "" : "none";
+    container.appendChild(grid);
+  }
 
-    if (showingNames) {
-      // Mostrar nomes: sumir círculos, exibir labels
-      nodeGroup.selectAll(".node")
-        .filter((o) => !o.isCategory && !o.isTechnique && designerIds.has(o.id))
-        .transition().duration(400).style("opacity", 0);
-      labelGroup.selectAll(".label")
-        .filter((o) => !o.isCategory && !o.isTechnique && designerIds.has(o.id))
-        .transition().duration(400)
-        .style("visibility", "visible").style("pointer-events", "all");
-    } else {
-      // Mostrar bolinhas: exibir círculos, esconder labels
-      nodeGroup.selectAll(".node")
-        .filter((o) => !o.isCategory && !o.isTechnique && designerIds.has(o.id))
-        .transition().duration(400).style("opacity", 0.85);
-      labelGroup.selectAll(".label")
-        .filter((o) => !o.isCategory && !o.isTechnique && designerIds.has(o.id))
-        .transition().duration(400)
-        .style("visibility", "hidden").style("pointer-events", "none");
-    }
-  };
-  container.appendChild(btn);
+  function syncTechniquePeopleView(showNames) {
+    techniqueNamesVisibility.set(techniqueId, showNames);
+    const nameSizePx = `${window.DBG_PERSON_NAME_SIZE || 10}px`;
+
+    nodeGroup.selectAll(".node")
+      .filter((node) => !node.isCategory && !node.isTechnique && designerIds.has(node.id))
+      .interrupt()
+      .transition()
+      .duration(350)
+      .style("opacity", showNames ? 0 : 0.92);
+
+    labelGroup.selectAll(".label")
+      .filter((node) => designerIds.has(node.id))
+      .interrupt()
+      .text((node) => showNames ? (node.Nome || node.id) : (node.Nome || node.id).split(" ")[0])
+      .attr("dy", showNames ? "0" : (node) => `${nodeRadius(node) + 6}px`)
+      .attr("dominant-baseline", showNames ? "middle" : "hanging")
+      .style("font-size", showNames ? nameSizePx : "9px")
+      .style("visibility", showNames ? "visible" : "hidden")
+      .style("pointer-events", showNames ? "all" : "none");
+  }
+
+  toggleButton.addEventListener("click", () => {
+    const nextState = !techniqueNamesVisibility.get(techniqueId);
+    toggleButton.textContent = nextState ? "Nao exibir nomes" : "Exibir nomes";
+    grid.style.display = nextState ? "" : "none";
+    syncTechniquePeopleView(nextState);
+  });
+
+  syncTechniquePeopleView(techniqueNamesVisibility.get(techniqueId));
 }
-
-// ===== CARD DE PERFIL (pessoa focada) =====
 
 function exibirPerfil(designerData) {
   document.getElementById("card-tec-area").style.display = "none";
-  document.getElementById("card-pessoa").style.display   = "block";
+  document.getElementById("card-pessoa").style.display = "block";
 
-  const nome    = designerData.Nome || designerData.id;
-  const nasc    = designerData["Data de nascimento"];
-  const morte   = designerData["Data de falecimento (se houver)"];
-  const minibio = designerData.Minibio || "";
-  const local   =
-    (designerData.Cidade  && String(designerData.Cidade).trim())  ||
-    (designerData.Estado  && String(designerData.Estado).trim())  ||
-    (designerData.País    && String(designerData.País).trim())    || "";
+  const name = designerData.Nome || designerData.id;
+  const birth = designerData["Data de nascimento"];
+  const death = designerData["Data de falecimento (se houver)"];
+  const miniBio = designerData.Minibio || "";
+  const gender = designerData["Gênero"] || "";
+  const location =
+    (designerData.Cidade && String(designerData.Cidade).trim()) ||
+    (designerData.Estado && String(designerData.Estado).trim()) ||
+    (designerData["País"] && String(designerData["País"]).trim()) ||
+    "";
 
-  // Nome
-  document.getElementById("card-p-nome").textContent = nome;
+  document.getElementById("card-p-nome").textContent = name;
+  document.getElementById("card-p-local").textContent = location;
 
-  // Data de nascimento + idade
-  const nascEl   = document.getElementById("card-p-nasc");
-  const idadeEl  = document.getElementById("card-p-idade");
-  const idadeCampo = document.getElementById("card-p-idade-campo");
-  if (nasc && !isNaN(nasc)) {
-    const anoNasc = Math.floor(nasc);
+  const birthEl = document.getElementById("card-p-nasc");
+  const ageEl = document.getElementById("card-p-idade");
+  const ageField = document.getElementById("card-p-idade-campo");
+
+  if (birth && !isNaN(birth)) {
+    const birthYear = Math.floor(birth);
     const currentYear = new Date().getFullYear();
-    if (morte && !isNaN(morte) && String(morte).trim() !== "") {
-      nascEl.textContent = `${anoNasc} — ${Math.floor(morte)}`;
-      if (idadeCampo) idadeCampo.style.display = "none";
+    if (death && !isNaN(death) && String(death).trim() !== "") {
+      birthEl.textContent = `${birthYear} - ${Math.floor(death)}`;
+      if (ageField) ageField.style.display = "none";
     } else {
-      nascEl.textContent = String(anoNasc);
-      if (idadeEl) idadeEl.textContent = String(currentYear - anoNasc);
-      if (idadeCampo) idadeCampo.style.display = "";
+      birthEl.textContent = String(birthYear);
+      if (ageEl) ageEl.textContent = String(currentYear - birthYear);
+      if (ageField) ageField.style.display = "";
     }
   } else {
-    nascEl.textContent = "";
-    if (idadeCampo) idadeCampo.style.display = "none";
+    birthEl.textContent = "";
+    if (ageField) ageField.style.display = "none";
   }
 
-  // Local
-  document.getElementById("card-p-local").textContent = local;
+  const oldGenderField = document.getElementById("card-p-genero-campo");
+  if (oldGenderField) oldGenderField.remove();
+  if (gender) {
+    const fields = document.querySelector("#card-pessoa .card-p-campos");
+    const genderField = document.createElement("p");
+    genderField.id = "card-p-genero-campo";
+    genderField.className = "card-campo";
+    genderField.innerHTML = `<span class="campo-label">Genero</span><span class="campo-valor">${gender}</span>`;
+    fields.appendChild(genderField);
+  }
 
-  // Técnicas agrupadas por área
-  const tecEl = document.getElementById("card-p-tecnicas");
-  tecEl.innerHTML = "";
+  const techniquesEl = document.getElementById("card-p-tecnicas");
+  techniquesEl.innerHTML = "";
 
-  const tecnicas = (designerData["Técnicas"] || "")
-    .split(",").map(s => s.trim()).filter(Boolean);
+  const techniques = (designerData["Técnicas"] || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
-  // Agrupa por área usando nodeAreaMap
   const areaGroups = {};
-  tecnicas.forEach(tec => {
-    const area = (nodeAreaMap && nodeAreaMap.get("TEC_" + tec)) || "Outro";
+  techniques.forEach((technique) => {
+    const area = (nodeAreaMap && nodeAreaMap.get(`TEC_${technique}`)) || "Outro";
     if (!areaGroups[area]) areaGroups[area] = [];
-    areaGroups[area].push(tec);
+    areaGroups[area].push(technique);
   });
 
-  Object.entries(areaGroups).forEach(([area, tecs]) => {
+  Object.entries(areaGroups).forEach(([area, values]) => {
     if (area === "Outro") return;
     const row = document.createElement("div");
     row.className = "tec-row";
@@ -439,32 +687,70 @@ function exibirPerfil(designerData) {
       row.appendChild(img);
     }
 
-    const namesSpan = document.createElement("span");
-    namesSpan.className = "tec-names";
-    namesSpan.textContent = tecs.join(" / ");
-    row.appendChild(namesSpan);
+    const names = document.createElement("span");
+    names.className = "tec-names";
+    names.textContent = values.join(" / ");
+    row.appendChild(names);
 
-    tecEl.appendChild(row);
+    techniquesEl.appendChild(row);
   });
 
-  // Bio
   const bioEl = document.getElementById("card-p-bio");
-  bioEl.textContent = minibio;
-  bioEl.style.display = minibio ? "block" : "none";
+  bioEl.textContent = miniBio;
+  bioEl.style.display = miniBio ? "block" : "none";
 
-  // Link externo
-  const linkExterno = designerData["Links extras"] || "";
-  const primeiroLink = linkExterno.split(",").map(s => s.trim()).find(s => s.startsWith("http"));
-  const btnLink = document.getElementById("btn-link-externo");
-  if (btnLink) {
-    if (primeiroLink) {
-      btnLink.href    = primeiroLink;
-      btnLink.target  = "_blank";
-      btnLink.rel     = "noopener noreferrer";
-      btnLink.textContent = "Acessar Portfólio";
-      btnLink.style.display = "inline-block";
-    } else {
-      btnLink.style.display = "none";
-    }
+  const oldSocialLinks = document.getElementById("card-p-social");
+  if (oldSocialLinks) oldSocialLinks.remove();
+
+  const socialMap = {
+    "instagram.com": "Instagram",
+    "linkedin.com": "LinkedIn",
+    "twitter.com": "Twitter",
+    "x.com": "Twitter",
+    "behance.net": "Behance",
+    "facebook.com": "Facebook",
+    "youtube.com": "YouTube",
+    "vimeo.com": "Vimeo",
+  };
+
+  const socialLinks = (designerData["Redes sociais"] || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.startsWith("http"));
+
+  const extraLinks = (designerData["Links extras"] || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.startsWith("http"));
+
+  const buttons = [...socialLinks, ...extraLinks].map((url) => {
+    const match = Object.entries(socialMap).find(([domain]) => url.includes(domain));
+    return { url, label: match ? match[1] : "Portfolio" };
+  });
+
+  const deduped = [];
+  const seenLabels = new Set();
+  buttons.forEach((button) => {
+    if (seenLabels.has(button.label)) return;
+    seenLabels.add(button.label);
+    deduped.push(button);
+  });
+
+  if (deduped.length > 0) {
+    const socialWrap = document.createElement("div");
+    socialWrap.id = "card-p-social";
+    socialWrap.className = "card-social-links";
+
+    deduped.forEach(({ url, label }) => {
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "card-social-link";
+      link.textContent = label;
+      socialWrap.appendChild(link);
+    });
+
+    bioEl.insertAdjacentElement("afterend", socialWrap);
   }
 }
