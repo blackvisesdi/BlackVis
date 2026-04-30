@@ -1,30 +1,32 @@
 [
   {
     "area": "Comunicação",
+    "descricao": "Assim como a comunicação que necessita do conhecimento compartilhado para transmitir informações, ideias e valores.",
     "adinkra": {
       "nome": "Funtumfunefu Denkyemfunefu",
-      "descricao": "Crocodilos siameses. Um símbolo de unidade na diversidade que dá um destino comum; compartilhamento; do provérbio, \"Funtumfrafu denkyemfrafu, wowo yafunu koro nanso wonya biribi a wofom efiri se aduane no de no yete no wo menetwitwie mu\", a saber, Funtumfrafu e Denkyemfrafu compartilham um estômago, mas quando conseguem algo (comida), eles se esforçam por isso porque a doçura da comida é sentida quando ela passa pela garganta.",
+      "descricao": "O símbolo Funtumfunefu Denkyemfunefu representa crocodilos siameses que dividem o mesmo estômago, simbolizando, assim, a união e a cooperação apesar da diversidade, em busca dos mesmos objetivos.",
       "fonte": "https://www.adinkrasymbols.org"
     },
     "tecnicas": [
-      { "nome": "Design gráfico",    "descricao": "Prática de combinar tipografia, fotografia, ilustração e layout para comunicação visual." },
-      { "nome": "Ilustração",        "descricao": "Criação de representações visuais para identificar, decorar ou complementar um conceito." },
-      { "nome": "Tipografia",        "descricao": "Criação de famílias e experimentos tipográficos." },
-      { "nome": "Direção de arte",   "descricao": "Supervisão criativa do estilo visual e das imagens em projetos de mídia e publicidade." },
+      { "nome": "Design gráfico",       "descricao": "Prática de combinar tipografia, fotografia, ilustração e layout para comunicação visual." },
+      { "nome": "Ilustração",           "descricao": "Criação de representações visuais para identificar, decorar ou complementar um conceito." },
+      { "nome": "Tipografia",           "descricao": "Criação de famílias e experimentos tipográficos." },
+      { "nome": "Direção de arte",      "descricao": "Supervisão criativa do estilo visual e das imagens em projetos de mídia e publicidade." },
       { "nome": "Produção audiovisual", "descricao": "Criação de imagens em movimento, incluindo filmes, vídeos." },
-      { "nome": "Fotografia",        "descricao": "Arte e prática de criar imagens através do registro da luz." },
-      { "nome": "Videografismo",     "descricao": "Criação de imagens em movimento: motion design, efeitos especiais e animação." },
-      { "nome": "Design editorial",  "descricao": "Estruturar conteúdo para publicação." },
-      { "nome": "Identidade visual", "descricao": "Criação de marcas e suas aplicações." },
+      { "nome": "Fotografia",           "descricao": "Arte e prática de criar imagens através do registro da luz." },
+      { "nome": "Videografismo",        "descricao": "Criação de imagens em movimento: motion design, efeitos especiais e animação." },
+      { "nome": "Design editorial",     "descricao": "Estruturar conteúdo para publicação." },
+      { "nome": "Identidade visual",    "descricao": "Criação de marcas e suas aplicações." },
       { "nome": "Design de superfície", "descricao": "Desenho de padronagens e estampas corridas e aplicadas." },
-      { "nome": "Arte urbana",       "descricao": "Expressão artística no espaço urbano — grafite, murais e intervenções públicas." }
+      { "nome": "Arte urbana",          "descricao": "Expressão artística no espaço urbano — grafite, murais e intervenções públicas." }
     ]
   },
   {
     "area": "Produto",
+    "descricao": "Como em produto que se realiza sob a colaboração e harmonia para que o seu desenvolvimento seja de sucesso, como projetado.",
     "adinkra": {
       "nome": "Kokuromotie",
-      "descricao": "Polegar. Símbolo de cooperação, participação, trabalho em equipe, indispensabilidade e harmonia. Do provérbio \"Yensiane yokokuromotie ho mmo po\", que significa \"Não se ignora o polegar para dar um no\". Qualquer pessoa que tente o exercício de dar um no sem os polegares rapidamente entenderá este provérbio.",
+      "descricao": "Kokuromotie, que significa polegares, é símbolo de colaboração, participação, trabalho em equipe e harmonia. Assim como o polegar é essencial para amarrar um nó, o apoio mútuo de todos é crucial para o sucesso de um grupo.",
       "fonte": "https://www.adinkrasymbols.org"
     },
     "tecnicas": [
@@ -40,9 +42,10 @@
   },
   {
     "area": "Interação",
+    "descricao": "Na interação, o aperfeiçoamento e a colaboração andam juntos na construção de elementos que interagem entre si e com seu público.",
     "adinkra": {
       "nome": "Ese ne Tekrema",
-      "descricao": "Dentes e língua. Símbolo de aperfeiçoamento, progresso, crescimento, necessidade de amizade e interdependência.",
+      "descricao": "Ese ne Tekrema, em seu significado literal, são dentes e língua. É um símbolo que representa amizade, aperfeiçoamento, crescimento e progresso, pois, embora os dentes e a língua possam entrar em conflito na boca, ambos precisam trabalhar juntos para o bem viver.",
       "fonte": "https://www.adinkrasymbols.org"
     },
     "tecnicas": [
@@ -56,9 +59,10 @@
   },
   {
     "area": "Serviço",
+    "descricao": "Em serviço, a engenhosidade no planejamento e na organização de recursos, pessoas e infraestrutura estimula a superação de desafios e gera excelência para a realização do impossível.",
     "adinkra": {
       "nome": "Owo Fôrum Adobe",
-      "descricao": "Uma cobra sobe em uma palmeira de ráfia. Um símbolo de engenhosidade, excelência, desempenho e realização do incomum ou impossível.",
+      "descricao": "Owo Fórum Adobe, ilustra uma cobra que sobe em uma palmeira de ráfia. Esse símbolo representa a engenhosidade, excelência no desempenho e realização do impossível por meio do esforço contínuo.",
       "fonte": "https://www.adinkrasymbols.org"
     },
     "tecnicas": [
@@ -71,17 +75,18 @@
   },
   {
     "area": "Teórico",
+    "descricao": "Em estudos teóricos, na busca por tais e tantos conhecimentos e práticas, a partir das pesquisas e do que delas se forma, compreende-se a importância de olhar para o passado para construir o presente.",
     "adinkra": {
       "nome": "Sankofa",
-      "descricao": "Este coração estilizado com espirais é uma representação alternativa do símbolo Sankofa. As espirais representam o retorno ao passado, às raízes, para extrair lições para o presente e o futuro.",
+      "descricao": "Sankofa é um coração estilizado com espirais, sendo uma representação alternativa do símbolo Sankofa, que significa \"Volte e busque!\". É um alerta para retornar ao passado, enquanto as espirais representam as raízes, dando a devida importância às lições e práticas do passado para orientar o presente e o futuro.",
       "fonte": "https://www.adinkrasymbols.org/symbols/sankofa"
     },
     "tecnicas": [
-      { "nome": "Educação",               "descricao": "Formação da próxima geração de designers e de instituições acadêmicas." },
-      { "nome": "Escrita e publicação",   "descricao": "Autoria de textos críticos, histórico e teórico do design." },
-      { "nome": "Ativismo e justiça social", "descricao": "Uso do design como ferramenta para advocacy e mudança social." },
-      { "nome": "Relações étnico-raciais","descricao": "Questionamento e desmantelamento das fundações eurocêntricas do design." },
-      { "nome": "Design e gênero",        "descricao": "Ampliar as narrativas e questionar as hegemonias presentes no design." }
+      { "nome": "Educação",                "descricao": "Formação da próxima geração de designers e de instituições acadêmicas." },
+      { "nome": "Escrita e publicação",    "descricao": "Autoria de textos críticos, histórico e teórico do design." },
+      { "nome": "Ativismo e justiça social","descricao": "Uso do design como ferramenta para advocacy e mudança social." },
+      { "nome": "Relações étnico-raciais", "descricao": "Questionamento e desmantelamento das fundações eurocêntricas do design." },
+      { "nome": "Design e gênero",         "descricao": "Ampliar as narrativas e questionar as hegemonias presentes no design." }
     ]
   }
 ]

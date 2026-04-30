@@ -96,13 +96,12 @@ function _renderCategoryHighlights() {
     .attr("stroke-opacity", (link) => {
       const srcId = _linkNodeId(link.source);
       const tgtId = _linkNodeId(link.target);
+      const baseOp = (window._linkOpacity ? window._linkOpacity(link) : 0.6);
       if (link.type === "technique-category-link") {
-        // Linha área→técnica: só se a área está selecionada
-        return (selected.has(srcId) || selected.has(tgtId)) ? 0.72 : 0;
+        return (selected.has(srcId) || selected.has(tgtId)) ? baseOp : 0;
       }
       if (link.type === "person-technique-link") {
-        // Linha técnica→pessoa: só se ambos os extremos são vizinhos de uma área selecionada
-        return (allNeighbors.has(srcId) && allNeighbors.has(tgtId)) ? 0.28 : 0;
+        return (allNeighbors.has(srcId) && allNeighbors.has(tgtId)) ? baseOp : 0;
       }
       return 0;
     });
@@ -190,21 +189,55 @@ function _setPersonLabelVisibility(personId, visible, fullName = false) {
 
 function _highlightPersonInGraph(person, highlighted) {
   const factor = highlighted ? 1.85 : 1;
-  nodeGroup.selectAll(".node")
-    .filter((node) => node.id === person.id)
-    .selectAll("circle")
+  const personSel = nodeGroup.selectAll(".node").filter((node) => node.id === person.id);
+  const r = nodeRadius(person);
+  const techActive = activeNode && activeNode.isTechnique && _isPersonLinkedToTechnique(person.id, activeNode.id);
+
+  if (techActive) {
+    const showingNames = window._areTechniqueNamesVisible(activeNode.id);
+
+    if (highlighted) {
+      personSel.interrupt().style("opacity", 1);
+      const iw = Math.max(r * 2 * factor, 26);
+      const ih = iw * (23 / 43);
+      // Posiciona label abaixo da bandeirinha no hover
+      const nameSizePx = `${window.DBG_PERSON_NAME_SIZE || 10}px`;
+      labelGroup.selectAll(".label")
+        .filter((node) => node.id === person.id)
+        .attr("dy", `${ih / 2 + 6}px`)
+        .attr("dominant-baseline", "hanging")
+        .style("font-size", nameSizePx)
+        .style("visibility", "visible")
+        .style("pointer-events", "none")
+        .text((node) => node.Nome || node.id);
+      personSel.selectAll(".node-nat-img")
+        .interrupt()
+        .transition().duration(180)
+        .attr("width", iw)
+        .attr("height", ih)
+        .attr("x", -iw / 2)
+        .attr("y", -ih / 2)
+        .style("opacity", 1);
+    } else {
+      // Restaura ao estado anterior ao hover: se nomes estavam visíveis, mantém o label
+      _setPersonLabelVisibility(person.id, showingNames, showingNames);
+      personSel
+        .interrupt()
+        .transition().duration(180)
+        .style("opacity", showingNames ? 0 : 0.92);
+      personSel.selectAll(".node-nat-img")
+        .interrupt()
+        .transition().duration(180)
+        .style("opacity", 0);
+    }
+    return;
+  }
+
+  // Caso normal: apenas aumenta o raio
+  personSel.selectAll("circle")
     .transition()
     .duration(highlighted ? 140 : 180)
-    .attr("r", nodeRadius(person) * factor);
-
-  if (activeNode && activeNode.isTechnique && _isPersonLinkedToTechnique(person.id, activeNode.id)) {
-    _setPersonLabelVisibility(person.id, highlighted, true);
-    nodeGroup.selectAll(".node")
-      .filter((node) => node.id === person.id)
-      .transition()
-      .duration(140)
-      .style("opacity", highlighted ? 1 : (window._areTechniqueNamesVisible(activeNode.id) ? 0 : 0.92));
-  }
+    .attr("r", r * factor);
 }
 
 function _showCard() {
@@ -227,13 +260,15 @@ function _restoreNodeSizes() {
     const r = nodeRadius(node);
     el.selectAll("circle")
       .interrupt()
-      .style("opacity", null)   // limpa opacity inline presa
+      .style("opacity", null)
       .transition().duration(220).attr("r", r);
     el.selectAll(".node-icon-img").interrupt().transition().duration(220)
       .attr("width", r * 2)
       .attr("height", r * 2)
       .attr("x", -r)
       .attr("y", -r);
+    el.selectAll(".node-nat-img").interrupt().transition().duration(220)
+      .style("opacity", 0);
   });
 }
 
@@ -263,13 +298,30 @@ function _setFocusedNodeScale(node) {
   nodeGroup.selectAll(".node").each(function(candidate) {
     if (candidate.id !== node.id) return;
     const el = d3.select(this);
+    const isPerson = !node.isCategory && !node.isTechnique;
     el.selectAll("circle")
       .interrupt()
-      .style("opacity", null)   // limpa opacity inline (pode estar 0 por hover de técnica)
+      .style("opacity", isPerson ? 0 : null)
       .transition()
       .duration(300)
       .ease(d3.easeCubicOut)
       .attr("r", focusRadius);
+    if (isPerson) {
+      const natW = Math.max(focusRadius * 2, 22);
+      const natH = natW * (23 / 43);
+      el.selectAll(".node-nat-img")
+        .interrupt()
+        .transition()
+        .duration(300)
+        .ease(d3.easeCubicOut)
+        .attr("width", natW)
+        .attr("height", natH)
+        .attr("x", -natW / 2)
+        .attr("y", -natH / 2)
+        .style("opacity", 1);
+    } else {
+      el.selectAll(".node-nat-img").interrupt().style("opacity", 0);
+    }
     el.selectAll(".node-icon-img")
       .interrupt()
       .transition()
@@ -356,24 +408,20 @@ function _renderGraphFocus(node, neighbors, options = {}) {
       const isDirect = sourceId === node.id || targetId === node.id;
       const isVisibleNetwork = neighbors.has(sourceId) && neighbors.has(targetId);
 
+      const baseOp = meta?.isPrimary ? 0.8 : 0.5;
+
       if (node.isCategory) {
-        if (link.type === "technique-category-link" && isVisibleNetwork) return meta?.isPrimary ? 0.72 : 0.42;
-        if (link.type === "person-technique-link" && isVisibleNetwork) return meta?.isPrimary ? 0.2 : 0.09;
+        if (link.type === "technique-category-link" && isVisibleNetwork) return baseOp;
+        if (link.type === "person-technique-link" && isVisibleNetwork) return baseOp;
         return 0;
       }
 
       if (node.isTechnique) {
-        if (isDirect) {
-          if (link.type === "technique-category-link") return 0.75;
-          return meta?.isPrimary ? 0.78 : 0.28;
-        }
+        if (isDirect) return baseOp;
         return 0;
       }
 
-      if (isDirect) {
-        if (link.type === "technique-category-link") return 0.18;
-        return meta?.isPrimary ? 0.74 : 0.26;
-      }
+      if (isDirect) return baseOp;
 
       return 0;
     });
@@ -407,9 +455,119 @@ function _renderGraphFocus(node, neighbors, options = {}) {
   _hideCard();
 }
 
+function _clearBouquetForce() {
+  if (!simulation) return;
+  simulation.force("focus-bouquet", null);
+  // Restaura orbit e center padrões
+  if (typeof forceOrbit === "function") {
+    simulation.force("orbit", forceOrbit(graphData.links, 38, 0.9));
+  }
+  const graphAreaEl = document.querySelector(".graph-area");
+  const w = Math.min(graphAreaEl ? graphAreaEl.clientWidth : window.innerWidth, 2000);
+  const h = Math.min(graphAreaEl ? graphAreaEl.clientHeight : window.innerHeight, 1200);
+  simulation.force("center", d3.forceCenter(w / 2, h / 2));
+}
+
+function _radialFocusForce(focused, R1, R2, strength = 1.5) {
+  // Layout radial 360° ao redor do nó focado
+  // R1 = raio dos vizinhos diretos; R2 = raio das pessoas (estendendo-se para fora a partir das técnicas)
+  return function(alpha) {
+    if (focused.x == null) return;
+
+    // Vizinhos diretos
+    const direct = [];
+    graphData.links.forEach((link) => {
+      const sId = typeof link.source === "object" ? link.source.id : link.source;
+      const tId = typeof link.target === "object" ? link.target.id : link.target;
+      if (sId === focused.id) direct.push(link.target);
+      else if (tId === focused.id) direct.push(link.source);
+    });
+
+    if (direct.length === 0) return;
+
+    // Ordena para distribuição estável
+    direct.sort((a, b) => (a.id < b.id ? -1 : 1));
+
+    const angleStep = (2 * Math.PI) / direct.length;
+    const angleByNode = new Map();
+
+    direct.forEach((node, i) => {
+      const angle = i * angleStep;
+      angleByNode.set(node.id, angle);
+      const tx = focused.x + Math.cos(angle) * R1;
+      const ty = focused.y + Math.sin(angle) * R1;
+      node.vx += (tx - node.x) * alpha * strength;
+      node.vy += (ty - node.y) * alpha * strength;
+    });
+
+    // Para foco em ÁREA: pessoas estendem-se para fora, a partir de suas técnicas, em forma de raios
+    if (focused.isCategory) {
+      const techNodes = direct.filter((n) => n.isTechnique);
+      const techIds = new Set(techNodes.map((n) => n.id));
+      const peopleByTech = new Map();
+
+      graphData.links.forEach((link) => {
+        if (link.type !== "person-technique-link") return;
+        const sId = typeof link.source === "object" ? link.source.id : link.source;
+        const tId = typeof link.target === "object" ? link.target.id : link.target;
+        let techId = null;
+        let personNode = null;
+        if (techIds.has(sId)) { techId = sId; personNode = link.target; }
+        else if (techIds.has(tId)) { techId = tId; personNode = link.source; }
+        if (!techId || !personNode || personNode.isCategory || personNode.isTechnique) return;
+        if (!peopleByTech.has(techId)) peopleByTech.set(techId, []);
+        peopleByTech.get(techId).push(personNode);
+      });
+
+      peopleByTech.forEach((people, techId) => {
+        const techNode = techNodes.find((n) => n.id === techId);
+        const techAngle = angleByNode.get(techId);
+        if (!techNode || techAngle === undefined) return;
+        const SPREAD = Math.PI * 0.45; // ±40°
+        people.sort((a, b) => (a.id < b.id ? -1 : 1));
+        people.forEach((p, i) => {
+          const t = people.length === 1 ? 0.5 : i / (people.length - 1);
+          const a = techAngle - SPREAD / 2 + t * SPREAD;
+          // Pessoa fica para FORA: técnica.x + R2 na direção radial
+          const px = techNode.x + Math.cos(a) * R2;
+          const py = techNode.y + Math.sin(a) * R2;
+          p.vx += (px - p.x) * alpha * (strength * 0.85);
+          p.vy += (py - p.y) * alpha * (strength * 0.85);
+        });
+      });
+    }
+  };
+}
+
+function _applyBouquetForce(node, _neighbors, svgW, svgH) {
+  if (!simulation) return;
+  simulation.force("orbit", null);
+  simulation.force("center", null);
+  simulation.force("x", null);
+  simulation.force("y", null);
+
+  const minDim = Math.min(svgW, svgH);
+  const R1 = node.isCategory ? Math.max(minDim * 0.32, 180) : Math.max(minDim * 0.22, 120);
+  const R2 = Math.max(minDim * 0.14, 70);
+
+  simulation.force("focus-bouquet", _radialFocusForce(node, R1, R2, 1.6));
+  simulation.alpha(0.95).alphaTarget(0.2).restart();
+  clearTimeout(window.__bouquetCool);
+  window.__bouquetCool = setTimeout(() => {
+    if (simulation) simulation.alphaTarget(0);
+  }, 3500);
+}
+
 function focusNode(event, d, options = {}) {
   if (activeNode && (!d || activeNode.id !== d.id)) {
-    if (!activeNode.isCategory) {
+    if (activeNode.isCategory && typeof CATEGORY_POSITIONS !== "undefined" && CATEGORY_POSITIONS[activeNode.id]) {
+      const pos = CATEGORY_POSITIONS[activeNode.id];
+      const vb = svg.attr("viewBox").split(" ");
+      const w = +vb[2] || window.innerWidth;
+      const h = +vb[3] || window.innerHeight;
+      activeNode.fx = pos.rx * w;
+      activeNode.fy = pos.ry * h;
+    } else {
       activeNode.fx = null;
       activeNode.fy = null;
     }
@@ -420,7 +578,8 @@ function focusNode(event, d, options = {}) {
     activeNode = null;
     _hideCard();
     _resetGraphState();
-    if (simulation) simulation.alpha(0.06).restart();
+    _clearBouquetForce();
+    if (simulation) simulation.alphaTarget(0).alpha(0.4).restart();
     return;
   }
 
@@ -440,19 +599,30 @@ function focusNode(event, d, options = {}) {
   const svgW = +viewBox[2] || window.innerWidth;
   const svgH = +viewBox[3] || window.innerHeight;
 
-  if (!d.isCategory) {
-    // Move para o canto superior-esquerdo para dar espaço ao card
-    d.fx = svgW * 0.18;
-    d.fy = svgH * 0.2;
-    d.x = d.fx;
-    d.y = d.fy;
-  }
+  // Centro do grafo (com pequeno deslocamento à esquerda para folga do card)
+  d.fx = svgW * 0.42;
+  d.fy = svgH * 0.5;
+  d.x = d.fx;
+  d.y = d.fy;
 
   _setFocusedNodeScale(d);
   const neighbors = d.isCategory ? _twohopNeighbors(d) : _neighborsForNode(d);
+  _applyBouquetForce(d, neighbors, svgW, svgH);
   _renderGraphFocus(d, neighbors, options);
 
-  if (simulation) simulation.alpha(0.08).restart();
+  if (simulation) simulation.alpha(0.5).restart();
+}
+
+function _applyCategoryColors(container, area) {
+  const card = document.getElementById("card");
+  const c1 = (typeof CATEGORY_COLORS !== "undefined" && CATEGORY_COLORS[area]) || "#CCCCCC";
+  const c55 = (typeof CATEGORY_COLORS_55 !== "undefined" && CATEGORY_COLORS_55[area]) || c1;
+  const c30 = (typeof CATEGORY_COLORS_30 !== "undefined" && CATEGORY_COLORS_30[area]) || c1;
+  [container, card].filter(Boolean).forEach((el) => {
+    el.style.setProperty("--cat-color", c1);
+    el.style.setProperty("--cat-color-55", c55);
+    el.style.setProperty("--cat-color-30", c30);
+  });
 }
 
 function exibirAreaCard(nodeData, techniques) {
@@ -462,6 +632,7 @@ function exibirAreaCard(nodeData, techniques) {
   container.innerHTML = "";
 
   const area = nodeData.Nome || nodeData.id;
+  _applyCategoryColors(container, area);
   const adinkraInfo = (typeof ADINKRA_INFO !== "undefined" && ADINKRA_INFO[area]) || {};
   const areaDescription = AREA_DESCRICOES[area] || "";
 
@@ -495,11 +666,10 @@ function exibirAreaCard(nodeData, techniques) {
   }
 
   if (techniques.length > 0) {
-    const tecTitle = document.createElement("p");
-    tecTitle.className = "card-desc";
-    tecTitle.style.fontWeight = "600";
-    tecTitle.style.marginTop = "12px";
-    tecTitle.textContent = "Técnicas";
+    const tecTitle = document.createElement("h2");
+    tecTitle.className = "card-ta-nome";
+    tecTitle.style.marginTop = "20px";
+    tecTitle.textContent = "Técnicas correlacionadas";
     container.appendChild(tecTitle);
 
     const tecGrid = document.createElement("div");
@@ -529,6 +699,9 @@ function exibirListaPessoas(nodeData, designers) {
   const techniqueName = nodeData.Nome || nodeData.id;
   const description = TECNICA_DESCRICOES[techniqueName] || "";
   const designerIds = new Set(designers.map((designer) => designer.id));
+
+  const techArea = (typeof nodeAreaMap !== "undefined" && nodeAreaMap.get(techniqueId)) || null;
+  if (techArea) _applyCategoryColors(container, techArea);
 
   if (!techniqueNamesVisibility.has(techniqueId)) {
     techniqueNamesVisibility.set(techniqueId, false);
@@ -597,6 +770,20 @@ function exibirListaPessoas(nodeData, designers) {
       .style("font-size", showNames ? nameSizePx : "9px")
       .style("visibility", showNames ? "visible" : "hidden")
       .style("pointer-events", showNames ? "all" : "none");
+
+    // Aumenta o raio do bouquet ao exibir nomes para reduzir sobreposição de labels
+    if (simulation && activeNode?.isTechnique) {
+      const graphAreaEl = document.querySelector(".graph-area");
+      const svgW = Math.min(graphAreaEl?.clientWidth || window.innerWidth, 2000);
+      const svgH = Math.min(graphAreaEl?.clientHeight || window.innerHeight, 1200);
+      const minDim = Math.min(svgW, svgH);
+      const R1 = showNames ? Math.max(minDim * 0.30, 200) : Math.max(minDim * 0.22, 120);
+      const R2 = Math.max(minDim * 0.14, 70);
+      simulation.force("focus-bouquet", _radialFocusForce(activeNode, R1, R2, showNames ? 1.4 : 1.6));
+      simulation.alpha(0.7).restart();
+      clearTimeout(window.__bouquetCool);
+      window.__bouquetCool = setTimeout(() => { if (simulation) simulation.alphaTarget(0); }, 3500);
+    }
   }
 
   toggleButton.addEventListener("click", () => {
@@ -610,8 +797,13 @@ function exibirListaPessoas(nodeData, designers) {
 }
 
 function exibirPerfil(designerData) {
+  const personCard = document.getElementById("card-pessoa");
   document.getElementById("card-tec-area").style.display = "none";
-  document.getElementById("card-pessoa").style.display = "block";
+  personCard.style.display = "block";
+
+  const personAreas = String(designerData["Área do design"] || "")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  if (personAreas[0]) _applyCategoryColors(personCard, personAreas[0]);
 
   const name = designerData.Nome || designerData.id;
   const birth = designerData["Data de nascimento"];
@@ -628,23 +820,16 @@ function exibirPerfil(designerData) {
   document.getElementById("card-p-local").textContent = location;
 
   const birthEl = document.getElementById("card-p-nasc");
-  const ageEl = document.getElementById("card-p-idade");
-  const ageField = document.getElementById("card-p-idade-campo");
 
   if (birth && !isNaN(birth)) {
     const birthYear = Math.floor(birth);
-    const currentYear = new Date().getFullYear();
     if (death && !isNaN(death) && String(death).trim() !== "") {
-      birthEl.textContent = `${birthYear} - ${Math.floor(death)}`;
-      if (ageField) ageField.style.display = "none";
+      birthEl.textContent = `${birthYear}-${Math.floor(death)}`;
     } else {
       birthEl.textContent = String(birthYear);
-      if (ageEl) ageEl.textContent = String(currentYear - birthYear);
-      if (ageField) ageField.style.display = "";
     }
   } else {
     birthEl.textContent = "";
-    if (ageField) ageField.style.display = "none";
   }
 
   const oldGenderField = document.getElementById("card-p-genero-campo");

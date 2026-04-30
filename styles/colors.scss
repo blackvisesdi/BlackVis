@@ -1,0 +1,201 @@
+// ============================================================
+// COLORS.SCSS — Sistema de cores do BlackVIS
+// ============================================================
+//
+// HIERARQUIA DE CORES POR CATEGORIA:
+//
+//   Principal (100% sat) → adinkra, bordas de técnicas, linhas eixo-técnicas
+//                          NÃO usar em textos
+//   Sub 1     (55% sat)  → textos H2 / títulos
+//   Sub 2     (30% sat)  → textos H3 / hover de nomes / adinkras selecionados / listas
+//
+// HIERARQUIA DE TEXTO (sem categoria):
+//
+//   Branco #eeece7       → textos em geral: nomes, legenda dinâmica, textos selecionados
+//   Cinza  #8C8C8C       → textos de botões não selecionados
+//
+// ============================================================
+
+
+// ────────────────────────────────────────────────────────────
+// TEXTO GERAL (independente de categoria)
+// ────────────────────────────────────────────────────────────
+
+// Textos em geral: nomes, legenda dinâmica, textos selecionados
+$color-text-primary:    #eeece7;
+
+// Hierarquia de cinzas para conteúdo do card
+$color-text-secondary:  #aaa;    // descrições / subtextos
+$color-text-muted:      #999;    // mini-bio, textos de apoio
+$color-text-dim:        #555;    // rótulos de campos (País, Período…)
+$color-text-light:      #ccc;    // valores de campos
+$color-text-soft:       #bbb;    // nomes de técnicas no card pessoa
+
+// ────────────────────────────────────────────────────────────
+// FUNDOS
+// ────────────────────────────────────────────────────────────
+
+$color-bg-app:          #000000;              // body: fundo geral
+$color-bg-panel:        rgba(5, 5, 10, 0.97); // .info-panel: painel lateral
+
+
+// ────────────────────────────────────────────────────────────
+// COMUNICAÇÃO
+// ────────────────────────────────────────────────────────────
+
+// Principal → adinkra, bordas de técnicas, linhas eixo-técnicas
+$color-comunicacao:     #226AFF;
+
+// Sub 1 → textos H2 / títulos
+$color-comunicacao-55:  #628CD9;
+
+// Sub 2 → textos H3 / hover de nomes / adinkras selecionados / listas
+$color-comunicacao-30:  #98AFD9;
+
+
+// ────────────────────────────────────────────────────────────
+// PRODUTO
+// ────────────────────────────────────────────────────────────
+
+// Principal → adinkra, bordas de técnicas, linhas eixo-técnicas
+$color-produto:         #FACB32;
+
+// Sub 1 → textos H2 / títulos
+$color-produto-55:      #FADA71;
+
+// Sub 2 → textos H3 / hover de nomes / adinkras selecionados / listas
+$color-produto-30:      #FAE8AF;
+
+
+// ────────────────────────────────────────────────────────────
+// TEÓRICO
+// ────────────────────────────────────────────────────────────
+
+// Principal → adinkra, bordas de técnicas, linhas eixo-técnicas
+$color-teorico:         #45CC3E;
+
+// Sub 1 → textos H2 / títulos
+$color-teorico-55:      #56B250;
+
+// Sub 2 → textos H3 / hover de nomes / adinkras selecionados / listas
+$color-teorico-30:      #92CC8F;
+
+
+// ────────────────────────────────────────────────────────────
+// INTERAÇÃO
+// ────────────────────────────────────────────────────────────
+
+// Principal → adinkra, bordas de técnicas, linhas eixo-técnicas
+$color-interacao:       #E51792;
+
+// Sub 1 → textos H2 / títulos
+$color-interacao-55:    #E578BA;
+
+// Sub 2 → textos H3 / hover de nomes / adinkras selecionados / listas
+$color-interacao-30:    #CC8FB3;
+
+
+// ────────────────────────────────────────────────────────────
+// SERVIÇO
+// ────────────────────────────────────────────────────────────
+
+// Principal → adinkra, bordas de técnicas, linhas eixo-técnicas
+$color-servico:         #E55E2D;
+
+// Sub 1 → textos H2 / títulos
+$color-servico-55:      #E58967;
+
+// Sub 2 → textos H3 / hover de nomes / adinkras selecionados / listas
+$color-servico-30:      #E1AF9D;
+
+// ────────────────────────────────────────────────────────────
+// NAVBAR
+// ────────────────────────────────────────────────────────────
+
+$color-nav-link-bg:          #121212;
+$color-nav-link-bg-active:   #232323;
+$color-nav-link-text:        #8C8787;
+$color-nav-link-text-active: #FFFFFF;
+$color-nav-logo:             #CCCCCC;
+$color-nav-logo-hover:       #eeece7;
+
+
+// ────────────────────────────────────────────────────────────
+// BOTTOM BAR
+// ────────────────────────────────────────────────────────────
+
+$color-nat-icon-opacity:     0.55;   // ícone de nacionalidade inativo
+
+
+// ────────────────────────────────────────────────────────────
+// SEARCH
+// ────────────────────────────────────────────────────────────
+
+$color-search-bg-start:      #232323;
+$color-search-bg-end:        #4B4A4A;
+$color-search-border:        rgba(255, 255, 255, 0.18);
+$color-search-input:         #eee;
+$color-search-placeholder:   #999;
+
+
+// ────────────────────────────────────────────────────────────
+// SLIDER (controle de período)
+// ────────────────────────────────────────────────────────────
+
+$color-slider-active-start:  #D3CBCB;
+$color-slider-active-end:    #6E6A6A;
+$color-slider-handle:        #ffffff;
+$color-slider-handle-stroke: rgba(0, 0, 0, 0.55);
+
+
+// ────────────────────────────────────────────────────────────
+// CARD — ADINKRA
+// .adinkra-nome, .card-adinkra-nome-inline, #card-p-nome, .names-grid-item:hover
+// ────────────────────────────────────────────────────────────
+
+$color-adinkra-nome:         #edd7ab;
+
+
+// ────────────────────────────────────────────────────────────
+// CARD — LISTA DE DESIGNERS (grid de nomes no card de técnica)
+// ────────────────────────────────────────────────────────────
+
+$color-names-grid:           #9ab8cc;  // Sub 2 genérico (azul frio) para nomes na lista
+
+
+// ────────────────────────────────────────────────────────────
+// CARD — SOCIAL / LINKS
+// ────────────────────────────────────────────────────────────
+
+$color-social-border:        rgba(255, 255, 255, 0.16);
+$color-social-text:          #ddd1bf;
+$color-social-hover-border:  rgba(241, 184, 79, 0.55);
+$color-social-hover-text:    #edd7ab;
+$color-social-hover-bg:      rgba(241, 184, 79, 0.07);
+
+
+// ────────────────────────────────────────────────────────────
+// CARD — BOTÃO EXTERNO ("Ver mais")
+// ────────────────────────────────────────────────────────────
+
+$color-btn-external:         #e2b05b;
+$color-btn-external-hover:   #ba924e;
+
+
+// ────────────────────────────────────────────────────────────
+// SCROLLBAR
+// ────────────────────────────────────────────────────────────
+
+$color-scrollbar-track:      transparent;
+$color-scrollbar-thumb:      rgba(255, 255, 255, 0.15);
+$color-scrollbar-bg:         rgba(255, 255, 255, 0.1);
+
+
+// ────────────────────────────────────────────────────────────
+// GRAFO — NÓS (usadas via JS no draw.js)
+// ────────────────────────────────────────────────────────────
+
+$color-person-base:          #A8A8A8;  // cor base da bolinha de pessoa
+$color-person-brightness:    0.66;     // fator de brilho aplicado
+
+$color-fallback:             #ffffff;

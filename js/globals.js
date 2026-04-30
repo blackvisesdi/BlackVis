@@ -103,7 +103,7 @@ Object.defineProperty(window, "currentPeriod", {
 });
 
 // ============================================================
-// UTILS (de utils.js)
+// UTILS 
 // ============================================================
 function normalizeKey(s) {
   if (!s && s !== 0) return "";
@@ -118,14 +118,32 @@ function normalizeKey(s) {
 const getId = (v) => (typeof v === "object" ? v.id : v);
 
 // ============================================================
-// COLORS (de colors.js)
+// COLORS
 // ============================================================
 const CATEGORY_COLORS = {
-  Serviço: "#F14505",
-  Interação: "#D930AC",
-  Produto: "#FFD417",
-  Comunicação: "#0511F2",
-  Teórico: "#22CC1D",
+  Serviço: "#E55E2D",
+  Interação: "#E51792",
+  Produto: "#FACB32",
+  Comunicação: "#226AFF",
+  Teórico: "#45CC3E",
+};
+
+// Cores secundárias por categoria (saturação 55% - textos grandes)
+const CATEGORY_COLORS_55 = {
+  Serviço: "#E58967",
+  Interação: "#E578BA",
+  Produto: "#FADA71",
+  Comunicação: "#628CD9",
+  Teórico: "#56B250",
+};
+
+// Cores terciárias por categoria (saturação 30% - textos menores)
+const CATEGORY_COLORS_30 = {
+  Serviço: "#E1AF9D",
+  Interação: "#CC8FB3",
+  Produto: "#FAE8AF",
+  Comunicação: "#98AFD9",
+  Teórico: "#92CC8F",
 };
 const FALLBACK_COLOR = "#fff";
 
@@ -146,80 +164,9 @@ const CATEGORY_PALETTE_MAP = {
 };
 
 const TECHNIQUE_BRIGHTNESS = 0.6;
-const PERSON_BRIGHTNESS = 1.2;
 
-// ============================================================
-// DESCRIÇÕES DE TÉCNICAS E ÁREAS
-// ============================================================
-const TECNICA_DESCRICOES = {
-  "Design gráfico":               "Prática de combinar tipografia, fotografia, ilustração e layout para comunicação visual.",
-  "Ilustração":                   "Criação de representações visuais para identificar, decorar ou complementar um conceito.",
-  "Tipografia":                   "Criação de famílias e experimentos tipográficos.",
-  "Direção de arte":              "Supervisão criativa do estilo visual e das imagens em projetos de mídia e publicidade.",
-  "Produção audiovisual":         "Criação de imagens em movimento, incluindo filmes, vídeos.",
-  "Fotografia":                   "Arte e prática de criar imagens através do registro da luz.",
-  "Videografismo":                "Criação de imagens em movimento: motion design, efeitos especiais e animação.",
-  "Design editorial":             "Estruturar conteúdo para publicação.",
-  "Identidade visual":            "Criação de marcas e suas aplicações.",
-  "Design de superfície":         "Desenho de padronagens e estampas corridas e aplicadas.",
-  "Arte urbana":                  "Expressão artística no espaço urbano — grafite, murais e intervenções públicas.",
-  "Design de objetos industriais":"Projeto de bens de consumo para produção em massa.",
-  "Design de mobiliário":         "Projeto de móveis.",
-  "Moda e têxtil":                "Projeto de tecidos, padronagens, roupas e figurinos.",
-  "Escultura":                    "Criação de formas de arte tridimensionais manuais.",
-  "Prática 3D":                   "Criação de arte tridimensional digital.",
-  "Design de interiores":         "Organização de espaços internos.",
-  "Design de adereços":           "Design de adornos como bolsas, sapatos, joias.",
-  "Embalagem":                    "Estrutura tridimensional da embalagem com escolha de materiais e a ergonomia.",
-  "UI Design de interface":       "Design da interface gráfica de produtos digitais.",
-  "Programação":                  "Implementação técnica de projetos digitais usando linguagens de programação.",
-  "Instalações interativas":      "Criação de ambientes que respondem à interação do usuário.",
-  "Arte digital":                 "Criação de obras que respondem à interação do usuário.",
-  "UX Experiência do usuário":    "Projetos de pesquisa, análise e conceituação de produtos digitais.",
-  "Realidades mistas":            "Projetos em realidade virtual e aumentada.",
-  "CX Experiência do Cliente":    "Planejamento das percepções e sentimentos de uma cliente em suas interações com uma empresa.",
-  "Design para impacto social":   "Aplicação do design para resolver problemas sociais e serviços públicos complexos na promoção do bem-estar cívico.",
-  "Branding":                     "Gestão estratégica da identidade de uma marca.",
-  "Curadoria":                    "Experiência de visitação em projetos expográficos.",
-  "Economia criativa":            "Se utiliza da criatividade para conceber novos modelos, oferecer soluções, proporcionar rentabilidade e lucro social.",
-  "Educação":                     "Formação da próxima geração de designers e de instituições acadêmicas.",
-  "Escrita e publicação":         "Autoria de textos críticos, histórico e teórico do design.",
-  "Ativismo e justiça social":    "Uso do design como ferramenta para advocacy e mudança social.",
-  "Relações étnico-raciais":      "Questionamento e desmantelamento das fundações eurocêntricas do design.",
-  "Design e gênero":              "Ampliar as narrativas e questionar as hegemonias presentes no design.",
-};
-
-const AREA_DESCRICOES = {
-  "Comunicação": "Área que reúne práticas visuais orientadas à transmissão de mensagens — design gráfico, tipografia, fotografia e produção audiovisual.",
-  "Produto":     "Área focada na criação de objetos, vestuário e espaços físicos que unem função e estética.",
-  "Interação":   "Área dedicada à criação de experiências digitais e interfaces entre pessoas e tecnologias.",
-  "Serviço":     "Área que projeta experiências e sistemas orientados ao relacionamento entre pessoas e organizações.",
-  "Teórico":     "Área que desenvolve conhecimento crítico, histórico e pedagógico sobre design e cultura visual.",
-};
-
-// Informações sobre os adinkras de cada área
-const ADINKRA_INFO = {
-  "Comunicação": {
-    nome: "Funtumfunefu Denkyemfunefu",
-    descricao: "Crocodilos siameses. Um símbolo de unidade na diversidade que dá um destino comum; compartilhamento; do provérbio, \"Funtumfrafu denkyemfrafu, wowo yafunu koro nanso wonya biribi a wofom efiri se aduane no de no yete no wo menetwitwie mu\", a saber, Funtumfrafu e Denkyemfrafu compartilham um estômago, mas quando conseguem algo (comida), eles se esforçam por isso porque a doçura da comida é sentida quando ela passa pela garganta.",
-  },
-  "Produto": {
-    nome: "Kokuromotie",
-    descricao: "Polegar. Símbolo de cooperação, participação, trabalho em equipe, indispensabilidade e harmonia. Do provérbio \"Yensiane yokokuromotie ho mmo po\", que significa \"Não se ignora o polegar para dar um no\". Qualquer pessoa que tente o exercício de dar um no sem os polegares rapidamente entenderá este provérbio.",
-  },
-  "Interação": {
-    nome: "Ese ne Tekrema",
-    descricao: "Dentes e língua. Símbolo de aperfeiçoamento, progresso, crescimento, necessidade de amizade e interdependência.",
-  },
-  "Serviço": {
-    nome: "Owo Fôrum Adobe",
-    descricao: "Uma cobra sobe em uma palmeira de ráfia. Um símbolo de engenhosidade, excelência, desempenho e realização do incomum ou impossível.",
-  },
-  "Teórico": {
-    nome: "Sankofa",
-    descricao: "Este coração estilizado com espirais é uma representação alternativa do símbolo Sankofa. As espirais representam o retorno ao passado, às raízes, para extrair lições para o presente e o futuro.",
-  },
-};
+// TECNICA_DESCRICOES, AREA_DESCRICOES e ADINKRA_INFO são carregados
+// a partir de data/areas.json pelo data.js e expostos em window.
 
 // Ícones das categorias (usados no filtro e nos nós do grafo)
 const CATEGORY_ICON_PATH = {
@@ -229,8 +176,6 @@ const CATEGORY_ICON_PATH = {
   "Interação":   "./assets/icons/intera/Adinkra_Interação.png",
   "Serviço":     "./assets/icons/servi/Adinkra_Serviço.png",
 };
-
-const color = d3.scaleOrdinal(d3.schemeCategory10);
 
 const axisColorsNormalized = {};
 Object.keys(CATEGORY_COLORS).forEach((k) => {
@@ -296,170 +241,11 @@ function getBaseColorForNode(node) {
 }
 
 // ============================================================
-// DEBUG PANEL — campo de teste para o designer
+// CONFIGURAÇÕES DE VISUALIZAÇÃO
 // ============================================================
 window.DBG_TECH_RADIUS_MULT = 1.0;
-window.DBG_LINK_WIDTH_MULT  = 2.0;  // padrão mais espesso
-
-window.DBG_TECH_RADIUS_MULT = window.DBG_TECH_RADIUS_MULT || 1.0;
-window.DBG_AREA_RADIUS_MULT = window.DBG_AREA_RADIUS_MULT || 1.0;
-window.DBG_LINK_WIDTH_MULT = window.DBG_LINK_WIDTH_MULT || 1.6;
-
-document.addEventListener("DOMContentLoaded", () => {
-  const TECH_BASE_PX = 24;   // FIXED_RADIUS_TECHNIQUE
-  const LINE_BASE_PX = 1.1;  // largura base da linha primária
-
-  const panel = document.createElement("div");
-  panel.id = "debug-panel";
-  panel.innerHTML = `
-    <div class="dbg-header">
-      <span class="dbg-title">Tamanhos</span>
-      <button class="dbg-toggle" id="dbg-toggle">−</button>
-    </div>
-    <div class="dbg-body">
-      <label>Técnicas <span id="dbg-tech-val">${TECH_BASE_PX}px</span>
-        <input type="range" id="dbg-tech-slider" min="0.5" max="3" step="0.1" value="1">
-      </label>
-      <label>Linhas <span id="dbg-line-val">${(LINE_BASE_PX * 2.0).toFixed(1)}px</span>
-        <input type="range" id="dbg-line-slider" min="0.5" max="8" step="0.1" value="2">
-      </label>
-    </div>
-  `;
-  document.body.appendChild(panel);
-
-  let collapsed = false;
-  document.getElementById("dbg-toggle").addEventListener("click", () => {
-    collapsed = !collapsed;
-    document.getElementById("dbg-toggle").textContent = collapsed ? "+" : "−";
-    panel.classList.toggle("collapsed", collapsed);
-  });
-
-  document.getElementById("dbg-tech-slider").addEventListener("input", function () {
-    window.DBG_TECH_RADIUS_MULT = parseFloat(this.value);
-    const px = Math.round(TECH_BASE_PX * parseFloat(this.value));
-    document.getElementById("dbg-tech-val").textContent = `${px}px`;
-    if (window.applyAllFilters) window.applyAllFilters();
-  });
-
-  document.getElementById("dbg-line-slider").addEventListener("input", function () {
-    window.DBG_LINK_WIDTH_MULT = parseFloat(this.value);
-    const px = (LINE_BASE_PX * parseFloat(this.value)).toFixed(1);
-    document.getElementById("dbg-line-val").textContent = `${px}px`;
-    if (window.applyAllFilters) window.applyAllFilters();
-  });
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const panelBody = document.querySelector("#debug-panel .dbg-body");
-  if (!panelBody || document.getElementById("dbg-area-slider")) return;
-
-  const areaBasePx = 38;
-  const areaLabel = document.createElement("label");
-  areaLabel.innerHTML = `Areas <span id="dbg-area-val">${areaBasePx}px</span>
-    <input type="range" id="dbg-area-slider" min="0.5" max="2.5" step="0.1" value="1">`;
-  panelBody.insertBefore(areaLabel, panelBody.children[1] || null);
-
-  const lineSlider = document.getElementById("dbg-line-slider");
-  const lineValue = document.getElementById("dbg-line-val");
-  if (lineSlider && lineValue) {
-    lineSlider.value = String(window.DBG_LINK_WIDTH_MULT);
-    lineValue.textContent = `${(1.1 * window.DBG_LINK_WIDTH_MULT).toFixed(1)}px`;
-  }
-
-  document.getElementById("dbg-area-slider").addEventListener("input", function() {
-    window.DBG_AREA_RADIUS_MULT = parseFloat(this.value);
-    document.getElementById("dbg-area-val").textContent = `${Math.round(areaBasePx * parseFloat(this.value))}px`;
-    if (window.applyAllFilters) window.applyAllFilters();
-  });
-});
-
-window.DBG_TECH_RADIUS_MULT = 1.0;
-window.DBG_AREA_RADIUS_MULT = window.DBG_AREA_RADIUS_MULT || 1.0;
-window.DBG_LINK_WIDTH_MULT = 1.6;
+window.DBG_AREA_RADIUS_MULT = 1.0;
+window.DBG_LINK_WIDTH_MULT = 2.09;
 window.DBG_HOVER_NAMES = true;
-window.DBG_PERSON_NAME_SIZE = 10;
+window.DBG_PERSON_NAME_SIZE = 14;
 window.DBG_ALL_NAMES_VISIBLE = false;
-
-document.addEventListener("DOMContentLoaded", () => {
-  const oldPanel = document.getElementById("debug-panel");
-  if (oldPanel) oldPanel.remove();
-
-  const TECH_BASE_PX = 24;
-  const AREA_BASE_PX = 38;
-  const LINE_BASE_PX = 1.1;
-
-  const panel = document.createElement("div");
-  panel.id = "debug-panel";
-  panel.innerHTML = `
-    <div class="dbg-header">
-      <span class="dbg-title">Tamanhos</span>
-      <button class="dbg-toggle" id="dbg-toggle">-</button>
-    </div>
-    <div class="dbg-body">
-      <label>Tecnicas <span id="dbg-tech-val">${TECH_BASE_PX}px</span>
-        <input type="range" id="dbg-tech-slider" min="0.5" max="3" step="0.1" value="1">
-      </label>
-      <label>Areas <span id="dbg-area-val">${AREA_BASE_PX}px</span>
-        <input type="range" id="dbg-area-slider" min="0.5" max="2.5" step="0.1" value="1">
-      </label>
-      <label>Linhas <span id="dbg-line-val">${(LINE_BASE_PX * window.DBG_LINK_WIDTH_MULT).toFixed(1)}px</span>
-        <input type="range" id="dbg-line-slider" min="0.5" max="8" step="0.1" value="${window.DBG_LINK_WIDTH_MULT}">
-      </label>
-      <div class="dbg-section-divider">Pessoas</div>
-      <label class="dbg-checkbox-label">
-        <input type="checkbox" id="dbg-hover-names" checked>
-        Hover → nome
-      </label>
-      <label>Tamanho nomes <span id="dbg-name-size-val">10px</span>
-        <input type="range" id="dbg-name-size-slider" min="7" max="20" step="0.5" value="10">
-      </label>
-      <button id="dbg-show-all-names" class="dbg-names-btn">Exibir todos os nomes</button>
-    </div>
-  `;
-  document.body.appendChild(panel);
-
-  let collapsed = false;
-  document.getElementById("dbg-toggle").addEventListener("click", () => {
-    collapsed = !collapsed;
-    document.getElementById("dbg-toggle").textContent = collapsed ? "+" : "-";
-    panel.classList.toggle("collapsed", collapsed);
-  });
-
-  document.getElementById("dbg-tech-slider").addEventListener("input", function() {
-    window.DBG_TECH_RADIUS_MULT = parseFloat(this.value);
-    document.getElementById("dbg-tech-val").textContent = `${Math.round(TECH_BASE_PX * parseFloat(this.value))}px`;
-    if (window.applyAllFilters) window.applyAllFilters();
-  });
-
-  document.getElementById("dbg-area-slider").addEventListener("input", function() {
-    window.DBG_AREA_RADIUS_MULT = parseFloat(this.value);
-    document.getElementById("dbg-area-val").textContent = `${Math.round(AREA_BASE_PX * parseFloat(this.value))}px`;
-    if (window.applyAllFilters) window.applyAllFilters();
-  });
-
-  document.getElementById("dbg-line-slider").addEventListener("input", function() {
-    window.DBG_LINK_WIDTH_MULT = parseFloat(this.value);
-    document.getElementById("dbg-line-val").textContent = `${(LINE_BASE_PX * parseFloat(this.value)).toFixed(1)}px`;
-    if (window.applyAllFilters) window.applyAllFilters();
-  });
-
-  document.getElementById("dbg-hover-names").addEventListener("change", function() {
-    window.DBG_HOVER_NAMES = this.checked;
-  });
-
-  document.getElementById("dbg-name-size-slider").addEventListener("input", function() {
-    window.DBG_PERSON_NAME_SIZE = parseFloat(this.value);
-    document.getElementById("dbg-name-size-val").textContent = `${parseFloat(this.value)}px`;
-    // Atualiza nomes já visíveis em tempo real
-    if (window.DBG_ALL_NAMES_VISIBLE && window._setAllNamesVisible) {
-      window._setAllNamesVisible(true);
-    }
-  });
-
-  document.getElementById("dbg-show-all-names").addEventListener("click", function() {
-    const next = !window.DBG_ALL_NAMES_VISIBLE;
-    this.textContent = next ? "Ocultar nomes" : "Exibir todos os nomes";
-    this.classList.toggle("active", next);
-    if (window._setAllNamesVisible) window._setAllNamesVisible(next);
-  });
-});
