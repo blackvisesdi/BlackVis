@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste BlackVIS</title>
+    <title>BlackVis</title>
 
-    <link rel="stylesheet" href="./styles/style.css?v=51">
+    <link rel="stylesheet" href="./styles/style.css?v=58">
     <link rel="icon" href="./assets/Adinkra-01.png" type="image/png">
 </head>
 <body>
 
     <nav class="top-nav">
-        <span class="nav-link">Home</span>
+        <span class="nav-link" id="nav-home">Home</span>
         <div class="nav-center">
-            <img src="assets/Adinkra-01.png" alt="BlackVIS" width="36" height="36" style="display:block">
+            <div class="nav-logo-flip" id="nav-logo">
+                <span class="nav-logo-text">BlackVis</span>
+                <img src="assets/Adinkra-01.png" alt="BlackVIS" class="nav-logo-img" width="36" height="36">
+            </div>
         </div>
-        <span class="nav-link">Sobre</span>
+        <span class="nav-link" id="nav-sobre">Sobre</span>
     </nav>
 
     <div id="content-wrapper">
@@ -45,10 +48,6 @@
                                 <span class="campo-label">Nascimento</span>
                                 <span id="card-p-nasc" class="campo-valor"></span>
                             </p>
-                            <p class="card-campo" id="card-p-idade-campo">
-                                <span class="campo-label">Idade</span>
-                                <span id="card-p-idade" class="campo-valor"></span>
-                            </p>
                             <p class="card-campo">
                                 <span class="campo-label">Local</span>
                                 <span id="card-p-local" class="campo-valor"></span>
@@ -65,40 +64,40 @@
 
     </div>
 
-    <div class="bottom-bar">
+    <footer class="bottom-bar">
 
         <div class="bb-left">
-            <p class="bb-description">BlackVIS é uma visualização de designers negros brasileiros e estrangeiros, conectando pessoas, técnicas e áreas do design.</p>
+            <p class="bb-description" id="bb-description"></p>
             <div class="nationality-filters">
                 <button class="nat-btn" data-value="Brasileira">
-                    <span class="nat-icon">?</span>
+                    <img src="assets/icons/iconBR.svg" class="nat-icon" alt="Brasileiro">
                     <span>Brasileiro</span>
                 </button>
                 <button class="nat-btn" data-value="Estrangeira">
-                    <span class="nat-icon">?</span>
+                    <img src="assets/icons/iconEXT.svg" class="nat-icon" alt="Estrangeiro">
                     <span>Estrangeiro</span>
                 </button>
             </div>
         </div>
 
         <div class="bb-center">
-            <button class="category-btn" data-value="Comunicação" style="--cat-color: #0511F2">
+            <button class="category-btn" data-value="Comunicação" style="--cat-color: #628CD9">
                 <img src="assets/icons/comunica/Adinkra_Comunicação.png" alt="comunicação">
                 <span>comunicação</span>
             </button>
-            <button class="category-btn" data-value="Produto" style="--cat-color: #FFD417">
+            <button class="category-btn" data-value="Produto" style="--cat-color: #FADA71">
                 <img src="assets/icons/produ/Adinkra-05.png" alt="produto">
                 <span>produto</span>
             </button>
-            <button class="category-btn" data-value="Teórico" style="--cat-color: #22CC1D">
+            <button class="category-btn" data-value="Teórico" style="--cat-color: #56B250">
                 <img src="assets/icons/teori/Adinkra_Teórico.png" alt="teórico">
                 <span>teórico</span>
             </button>
-            <button class="category-btn" data-value="Interação" style="--cat-color: #D930AC">
+            <button class="category-btn" data-value="Interação" style="--cat-color: #E578BA">
                 <img src="assets/icons/intera/Adinkra_Interação.png" alt="interação">
                 <span>interação</span>
             </button>
-            <button class="category-btn" data-value="Serviço" style="--cat-color: #F14505">
+            <button class="category-btn" data-value="Serviço" style="--cat-color: #E58967">
                 <img src="assets/icons/servi/Adinkra_Serviço.png" alt="serviço">
                 <span>serviço</span>
             </button>
@@ -107,10 +106,10 @@
         <div class="bb-right">
             <div class="search-wrapper">
                 <svg class="search-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none">
-                    <circle cx="11" cy="11" r="7" stroke="rgba(0,0,0,0.4)" stroke-width="2"/>
-                    <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="rgba(0,0,0,0.4)" stroke-width="2.2" stroke-linecap="round"/>
+                    <circle cx="11" cy="11" r="7" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="rgba(255,255,255,0.6)" stroke-width="2.2" stroke-linecap="round"/>
                 </svg>
-                <input type="text" id="search-input" placeholder=""
+                <input type="text" id="search-input" placeholder="texto de pesquisa"
                        onkeypress="if(event.key === 'Enter') applyAllFilters()">
             </div>
             <div id="year-slider">
@@ -118,19 +117,15 @@
                 <svg id="dual-slider"></svg>
                 <span id="value-max"></span>
             </div>
-            <div class="period-labels">
-                <span>clássico</span>
-                <span>contemporâneo</span>
-            </div>
         </div>
 
-    </div>
+    </footer>
 
     <script src="https://d3js.org/d3.v7.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
-    <script src="js/globals.js?v=51"></script>
-    <script src="js/interactions.js?v=51"></script>
-    <script src="js/draw.js?v=51"></script>
-    <script src="js/data.js?v=51"></script>
+    <script src="js/globals.js?v=58"></script>
+    <script src="js/interactions.js?v=58"></script>
+    <script src="js/draw.js?v=58"></script>
+    <script src="js/data.js?v=58"></script>
 
 </body>
 </html>

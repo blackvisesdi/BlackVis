@@ -167,26 +167,28 @@ function initSlider(minYear, maxYear) {
     .attr("width", sliderWidthConfig + sliderMarginConfig.left + sliderMarginConfig.right)
     .attr("height", 30);
 
-  // Gradiente clássico (esquerda) → contemporâneo (direita)
+  // Gradientes
   const defs = sliderSvgEl.append("defs");
-  const grad = defs.append("linearGradient")
+
+  const bgGrad = defs.append("linearGradient")
     .attr("id", "slider-track-gradient")
     .attr("x1", "0%").attr("y1", "0%")
     .attr("x2", "100%").attr("y2", "0%");
-  grad.append("stop").attr("offset", "0%")
-    .attr("stop-color", "#0d0700").attr("stop-opacity", 1);
-  grad.append("stop").attr("offset", "50%")
-    .attr("stop-color", "#6b4c1e").attr("stop-opacity", 1);
-  grad.append("stop").attr("offset", "100%")
-    .attr("stop-color", "#f5d07a").attr("stop-opacity", 1);
+  bgGrad.append("stop").attr("offset", "0%").attr("stop-color", "#232323");
+  bgGrad.append("stop").attr("offset", "100%").attr("stop-color", "#4B4A4A");
+
+  const activeGrad = defs.append("linearGradient")
+    .attr("id", "slider-track-active-gradient")
+    .attr("x1", "0%").attr("y1", "0%")
+    .attr("x2", "100%").attr("y2", "0%");
+  activeGrad.append("stop").attr("offset", "0%").attr("stop-color", "#D3CBCB");
+  activeGrad.append("stop").attr("offset", "100%").attr("stop-color", "#6E6A6A");
 
   const sliderSvg = sliderSvgEl
     .append("g")
     .attr("transform", `translate(${sliderMarginConfig.left}, 16)`);
 
   const g = sliderSvg.append("g").attr("class", "slider");
-
-  const midpointYear = Math.max(minYear, Math.min(1970, maxYear));
 
   // Track com gradiente (rect em vez de line)
   g.append("rect")
@@ -197,15 +199,6 @@ function initSlider(minYear, maxYear) {
     .attr("height", 5)
     .attr("fill", "url(#slider-track-gradient)")
     .attr("rx", 3);
-
-  g.selectAll(".track-division")
-    .data([midpointYear])
-    .join("line")
-    .attr("class", "track-division")
-    .attr("x1", (d) => xSlider(d))
-    .attr("x2", (d) => xSlider(d))
-    .attr("y1", -7)
-    .attr("y2", 7);
 
   g.append("line").attr("class", "track").attr("x1", xSlider.range()[0]).attr("x2", xSlider.range()[1]);
 
@@ -218,8 +211,8 @@ function initSlider(minYear, maxYear) {
   const handleMax = g.append("circle").attr("class", "handle handle-max").attr("r", 5).attr("cx", xSlider(window.currentMax)).attr("cy", 0)
     .call(d3.drag().on("start", dragstarted).on("drag", draggedMax).on("end", dragendedSlider));
 
-  function dragendedSlider() { d3.select(this).attr("stroke", "#2b1403").attr("r", 5); }
-  function dragstarted() { d3.select(this).attr("r", 6).attr("stroke", "#fff3cf"); }
+  function dragendedSlider() { d3.select(this).attr("stroke", "rgba(0,0,0,0.55)").attr("r", 5); }
+  function dragstarted() { d3.select(this).attr("r", 6).attr("stroke", "#fff"); }
 
   function draggedMin(event) {
     let v = Math.max(minYear, Math.min(window.currentMax - 1, xSlider.invert(event.x)));
@@ -267,17 +260,46 @@ function setupCategoryFilter() {
   if (DEBUG) console.log("Listener de categoria configurado.");
 }
 
+function _setLegendDesc(htmlOrText) {
+  const el = document.getElementById("bb-description");
+  if (!el) return;
+  if (htmlOrText.includes("<")) el.innerHTML = htmlOrText;
+  else el.textContent = htmlOrText;
+}
+window._setLegendDesc = _setLegendDesc;
+
+function _natLegendFor(val) {
+  const key = val === "Brasileira" ? "nationalityBR" : val === "Estrangeira" ? "nationalityEXT" : null;
+  if (!key) return null;
+  const raw = (window._legendDescriptions && window._legendDescriptions[key]) || "";
+  return raw.replace(/\*(.*?)\*/g, "<strong>$1</strong>");
+}
+
+window.selectedNationalities = new Set();
+
 function setupNationalityFilter() {
   document.querySelectorAll(".nat-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const val = btn.dataset.value;
-      if (window.currentNationality === val) {
-        window.currentNationality = "all";
+      if (window.selectedNationalities.has(val)) {
+        window.selectedNationalities.delete(val);
         btn.classList.remove("active");
       } else {
-        document.querySelectorAll(".nat-btn").forEach((b) => b.classList.remove("active"));
-        window.currentNationality = val;
+        window.selectedNationalities.add(val);
         btn.classList.add("active");
+      }
+      // Keep legacy currentNationality in sync for other code that reads it
+      if (window.selectedNationalities.size === 1) {
+        window.currentNationality = [...window.selectedNationalities][0];
+      } else {
+        window.currentNationality = window.selectedNationalities.size === 0 ? "all" : "both";
+      }
+      if (window.selectedNationalities.size === 0) {
+        _setLegendDesc(LEGEND_DEFAULT);
+      } else if (window.selectedNationalities.size === 1) {
+        _setLegendDesc(_natLegendFor([...window.selectedNationalities][0]) || LEGEND_DEFAULT);
+      } else {
+        _setLegendDesc(LEGEND_DEFAULT);
       }
       window.applyAllFilters();
     });
@@ -326,6 +348,7 @@ function setupLogoReset() {
     // Reseta filtros
     window.currentCategory = "all";
     window.currentNationality = "all";
+    if (window.selectedNationalities) window.selectedNationalities.clear();
     document.querySelectorAll(".category-btn, .nat-btn").forEach((b) => b.classList.remove("active"));
     // Limpa busca
   const searchEl = document.getElementById("search-input");
@@ -344,17 +367,31 @@ function setupLogoReset() {
 
 Promise.all([
   d3.json("data/areas.json"),
-  d3.json("data/data.json"),
+  d3.json("data/designers.json"),
 ]).then(([areasData, data]) => {
   // Constrói mapa técnica → área canônica a partir de areas.json
   const techniqueAreaMap = new Map();
   const areaTechniqueOrder = new Map();
+  const tecnicaDescricoes = {};
+  const areaDescricoes = {};
+  const adinkraInfo = {};
+
   areasData.forEach((areaEntry) => {
     areaTechniqueOrder.set(areaEntry.area, areaEntry.tecnicas.map((tec) => tec.nome));
-    areaEntry.tecnicas.forEach((tec) => techniqueAreaMap.set(tec.nome, areaEntry.area));
+    areaEntry.tecnicas.forEach((tec) => {
+      techniqueAreaMap.set(tec.nome, areaEntry.area);
+      tecnicaDescricoes[tec.nome] = tec.descricao || "";
+    });
+    areaDescricoes[areaEntry.area] = areaEntry.descricao || "";
+    if (areaEntry.adinkra) adinkraInfo[areaEntry.area] = areaEntry.adinkra;
   });
+
   window._techniqueAreaMap = techniqueAreaMap;
   window._areaTechniqueOrder = areaTechniqueOrder;
+  // Expõe como globais para uso em interactions.js
+  window.TECNICA_DESCRICOES = tecnicaDescricoes;
+  window.AREA_DESCRICOES = areaDescricoes;
+  window.ADINKRA_INFO = adinkraInfo;
 
   let processedData = preprocessGraphData(data);
   processedData.nodes = calculateNodeDegree(processedData.nodes, processedData.links);
@@ -390,26 +427,41 @@ Promise.all([
 // ===== APPLY ALL FILTERS =====
 
 function applyAllFilters(centerNodes = false) {
-  const searchTerm = normalizeKey(document.getElementById("search-input")?.value || "");
+  const rawSearchTerm = document.getElementById("search-input")?.value || "";
+  const searchTerm = normalizeKey(rawSearchTerm);
   const isNameSearch = searchTerm !== "";
 
   let filteredNodes;
 
   switch (true) {
 
-    // ── Busca por nome: mostra APENAS pessoas que batem ──
+    // ── Busca por nome: mostra apenas as pessoas encontradas ──
     case isNameSearch: {
-      const matched = allNodes.filter((d) => {
-        if (d.isCategory || d.isTechnique) return false;
-        return normalizeKey(d.Nome || "").split(" ").some((part) => part.startsWith(searchTerm));
-      });
+      const catFilter = window.currentCategory;
+      let searchPool = allNodes.filter((d) => !d.isCategory && !d.isTechnique);
+
+      if (catFilter && catFilter !== "all" && catFilter !== "Todas") {
+        searchPool = searchPool.filter((d) => {
+          const areas = String(d["Área do design"] || "").split(",").map((s) => s.trim());
+          return areas.includes(catFilter);
+        });
+      }
+
+      const matched = searchPool.filter((d) =>
+        normalizeKey(d.Nome || "").split(" ").some((part) => part.startsWith(searchTerm))
+      );
 
       if (matched.length === 0) {
         showToast("Designer não encontrado", "erro");
         return;
       }
 
-      filteredNodes = matched;
+      filteredNodes = [...matched];
+
+      const legendHtml = `Exibindo resultados para "<strong>${rawSearchTerm}</strong>". Encontramos <strong>${matched.length} designer${matched.length !== 1 ? "s" : ""}</strong> correspondentes à sua busca.`;
+      _setLegendDesc(legendHtml);
+
+      window._currentSearchTerm = searchTerm;
       break;
     }
 
@@ -446,11 +498,11 @@ function applyAllFilters(centerNodes = false) {
         });
       }
 
-      // Filtro de nacionalidade
-      if (nationalityFilter !== "all" && nationalityFilter !== "Todos") {
+      // Filtro de nacionalidade (aditivo)
+      if (window.selectedNationalities && window.selectedNationalities.size > 0) {
         filteredNodes = filteredNodes.filter((d) => {
           if (d.isCategory || d.isTechnique) return true;
-          return d["Nacionalidade"] === nationalityFilter;
+          return window.selectedNationalities.has(d["Nacionalidade"]);
         });
       }
 
@@ -470,6 +522,7 @@ function applyAllFilters(centerNodes = false) {
         return birthYear >= minYear && birthYear <= maxYear;
       });
 
+      window._currentSearchTerm = "";
       break;
     }
   }
@@ -514,6 +567,13 @@ function applyAllFilters(centerNodes = false) {
 
   drawForceGraph({ nodes: filteredNodes, links: filteredLinks }, isNameSearch || centerNodes);
 
+  if (typeof window._applySearchLabels === "function") {
+    window._applySearchLabels(window._currentSearchTerm || "");
+  }
+  if (typeof window._applyNatVisuals === "function") {
+    window._applyNatVisuals();
+  }
+
   if (window._pendingAreaCard && typeof focusNode === "function") {
     // Clicar no filtro → abre card
     const areaNode = filteredNodes.find((node) => node.isCategory && node.id === window._pendingAreaCard);
@@ -525,3 +585,58 @@ function applyAllFilters(centerNodes = false) {
 }
 
 window.applyAllFilters = applyAllFilters;
+
+// ===== LEGENDA DINÂMICA =====
+
+const LEGEND_DEFAULT = "BlackVIS é uma visualização de designers negros brasileiros e estrangeiros, conectando pessoas, técnicas e áreas do design.";
+
+function setupDynamicLegend() {
+  fetch("data/legend-descriptions.json")
+    .then((r) => r.json())
+    .then((descriptions) => {
+      window._legendDescriptions = descriptions;
+      const descEl = document.getElementById("bb-description");
+      if (!descEl) return;
+
+      descEl.textContent = LEGEND_DEFAULT;
+
+      function showDesc(key) {
+        const text = descriptions[key];
+        if (!text) return;
+        descEl.innerHTML = text.replace(/\*(.*?)\*/g, "<strong>$1</strong>");
+      }
+
+      function hideDesc() {
+        descEl.textContent = LEGEND_DEFAULT;
+      }
+
+      const bindings = [
+        { selector: ".nav-link:first-child", key: "home" },
+        { selector: ".nav-link:last-child", key: "sobre" },
+        { selector: "#nav-logo", key: "logo" },
+        { selector: ".nat-btn", key: "nationality", multiple: true },
+        { selector: ".category-btn", key: "adinkras", multiple: true },
+        { selector: ".search-wrapper", key: "search" },
+        { selector: "#year-slider", key: "yearSlider" },
+      ];
+
+      bindings.forEach(({ selector, key, multiple }) => {
+        const targets = multiple
+          ? Array.from(document.querySelectorAll(selector))
+          : [document.querySelector(selector)].filter(Boolean);
+        targets.forEach((target) => {
+          target.addEventListener("mouseenter", () => showDesc(key));
+          target.addEventListener("mouseleave", hideDesc);
+        });
+      });
+    })
+    .catch(() => {});
+}
+
+let _resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => { if (window.applyAllFilters) window.applyAllFilters(); }, 220);
+});
+
+document.addEventListener("DOMContentLoaded", setupDynamicLegend);

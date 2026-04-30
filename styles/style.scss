@@ -1,3 +1,5 @@
+@use './colors' as *;
+
 @font-face {
   font-family: "Bellucci";
   src: url("../assets/fonts/fonnts.com-Bellucci_Regular.otf") format("opentype");
@@ -22,64 +24,59 @@
   font-display: swap;
 }
 
-$background: hsl(0, 0%, 0%);
-$border: hsl(40, 65%, 80%);
-$text: hsl(43, 16%, 92%);
-$button: #e2b05b;
-$button-hover: #ba924e;
-
 * { box-sizing: border-box; }
 
+// === BASE ===
 body {
   margin: 0;
   padding: 0;
   height: 100vh;
   width: 100vw;
-  color: $text;
-  background-color: $background;
+  color: $color-text-primary;       // texto padrão global
+  background-color: $color-bg-app;  // fundo preto da aplicação
   overflow: hidden;
 }
 
 // === LAYOUT ===
 #content-wrapper {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  padding-top: 68px;
-  padding-bottom: 76px;
-  box-sizing: border-box;
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  bottom: 76px;
+  overflow: hidden;
 }
 
 .graph-area {
-  flex: 1 1 auto;
-  min-width: 0;
-  position: relative;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  transition: flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+// === INFO PANEL (painel lateral direito) ===
 .info-panel {
-  flex: 0 0 0px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
   width: 0;
   overflow: hidden;
-  position: relative;
-  height: 100%;
-  background: rgba(5, 5, 10, 0.97);
-  transition: flex 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: $color-bg-panel;      // fundo escuro semiopaco do painel
+  z-index: 5;
+  transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: $color-scrollbar-bg $color-scrollbar-track;
 
   &.is-open {
-    flex: 0 0 30%;
+    width: 30%;
     min-width: 280px;
     max-width: 400px;
     overflow-y: auto;
   }
 
   &::-webkit-scrollbar       { width: 3px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+  &::-webkit-scrollbar-track { background: $color-scrollbar-track; }
+  &::-webkit-scrollbar-thumb { background: $color-scrollbar-thumb; border-radius: 2px; }
 }
 
 // === GRAFICO CONTAINER ===
@@ -98,7 +95,7 @@ body {
   }
 }
 
-// Card fills the panel
+// === CARD (container geral do painel) ===
 #card.card {
   display: flex;
   flex-direction: column;
@@ -112,8 +109,11 @@ body {
 // === TOP NAV ===
 .top-nav {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
+  max-width: 1400px;
   z-index: 10;
   display: flex;
   justify-content: space-between;
@@ -123,41 +123,81 @@ body {
 
   .nav-link {
     pointer-events: all;
-    color: $text;
+    background: $color-nav-link-bg;
+    color: $color-nav-link-text;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3px;
     text-decoration: none;
-    font-size: 14px;
-    letter-spacing: 1px;
-    cursor: default;
+    padding: 7px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+      background: $color-nav-link-bg-active;
+      color: $color-nav-link-text-active;
+    }
+
+    &.active {
+      background: $color-nav-link-bg-active;
+      color: $color-nav-link-text-active;
+    }
   }
 
   .nav-center {
-    overflow: hidden;
-    width: 36px;
-    height: 36px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    overflow: visible;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     pointer-events: all;
-
-    img {
-      width: 36px;
-      height: 36px;
-      display: block;
-      max-width: 36px;
-      max-height: 36px;
-      transition: opacity 0.2s;
-    }
-
-    &:hover img { opacity: 0.7; }
   }
+}
+
+.nav-logo-flip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  cursor: pointer;
+
+  .nav-logo-text {
+    font-family: "Inter", sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: $color-text-primary;     // texto "BlackVis" na nav
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    line-height: 1;
+    transition: opacity 0.18s ease;
+  }
+
+  .nav-logo-img {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+
+  &:hover .nav-logo-text { opacity: 0; }
+  &:hover .nav-logo-img  { opacity: 1; pointer-events: all; }
 }
 
 // === BOTTOM BAR ===
 .bottom-bar {
   position: fixed;
-  bottom: 0; left: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
+  max-width: 1400px;
   z-index: 10;
   display: flex;
   align-items: flex-end;
@@ -177,10 +217,15 @@ body {
 
   .bb-description {
     font-size: 10px;
-    color: #aaa;
+    color: $color-text-secondary;   // texto da legenda (Brasileiro / Estrangeiro)
     line-height: 1.5;
     margin: 0;
-    max-width: 140px;
+    max-width: 160px;
+
+    strong {
+      font-weight: 700;
+      color: $color-text-primary;   // destaque no texto de legenda
+    }
   }
 
   .nationality-filters {
@@ -196,27 +241,23 @@ body {
     gap: 8px;
     background: none;
     border: none;
-    color: $text;
+    color: $color-text-primary;     // rótulo do filtro de nacionalidade
     cursor: pointer;
     font-size: 12px;
     padding: 0;
 
     .nat-icon {
-      width: 22px;
-      height: 22px;
-      border: 1px solid $border;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
+      width: 34px;
+      height: 24px;
       flex-shrink: 0;
+      display: block;
+      object-fit: contain;
+      opacity: $color-nat-icon-opacity; // ícone inativo
+      transition: opacity 0.2s;
     }
 
-    &.active .nat-icon {
-      background-color: $button;
-      color: #000;
-      border-color: $button;
-    }
+    &:hover .nat-icon { opacity: 0.85; }
+    &.active .nat-icon { opacity: 1; }
   }
 }
 
@@ -246,7 +287,7 @@ body {
 
     span {
       font-size: 10px;
-      color: $text;
+      color: $color-text-primary;   // rótulo do botão de categoria
       text-transform: lowercase;
     }
 
@@ -254,7 +295,7 @@ body {
 
     &.active {
       opacity: 1;
-      span { color: var(--cat-color); }
+      span { color: var(--cat-color); } // cor dinâmica da categoria ativa (JS)
     }
   }
 }
@@ -272,8 +313,8 @@ body {
   display: flex;
   align-items: center;
   gap: 7px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(to right, $color-search-bg-start, $color-search-bg-end);
+  border: 1px solid $color-search-border;
   border-radius: 20px;
   padding: 5px 12px;
   width: 180px;
@@ -284,12 +325,12 @@ body {
 #search-input {
   background: transparent;
   border: none;
-  color: #222;
+  color: $color-search-input;       // texto digitado na busca
   font-size: 12px;
   width: 100%;
   outline: none;
 
-  &::placeholder { color: #aaa; }
+  &::placeholder { color: $color-search-placeholder; }
 }
 
 // === YEAR SLIDER ===
@@ -300,75 +341,41 @@ body {
   font-size: 11px;
 }
 
-.period-labels {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-  width: 120px;
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.35);
-  letter-spacing: 0.6px;
-  padding: 0 2px;
-  margin-top: -4px;
-}
-
 #dual-slider {
   height: 30px;
   width: 120px;
 }
 
 .track         { stroke: transparent; stroke-width: 0; }
-.track-active  { stroke: #f1b84f; stroke-width: 3px; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(241, 184, 79, 0.35)); }
-.track-division { stroke: rgba(255, 245, 224, 0.75); stroke-width: 1px; }
-.track-gradient-bg { filter: drop-shadow(0 0 6px rgba(241, 184, 79, 0.12)); }
+.track-active  { stroke: url(#slider-track-active-gradient); stroke-width: 3px; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.18)); }
+.track-gradient-bg { filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4)); }
 .handle {
-  stroke: #2b1403;
-  stroke-width: 1.5px;
-  fill: #ffd36b;
+  stroke: $color-slider-handle-stroke; // borda da bolinha do slider
+  stroke-width: 1px;
+  fill: $color-slider-handle;          // bolinha branca do slider
   cursor: ew-resize;
-  filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.55));
 }
 
-// === CARD: adinkra ===
-.card-adinkra-section {
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-}
-
-.sobre-adinkra-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.35);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin: 0 0 6px 0;
-}
-
+// === CARD: adinkra (símbolo decorativo no topo) ===
 .card-sobre-adinkra-titulo { margin-bottom: 12px !important; }
 
 .card-adinkra-nome-inline {
   font-family: "Inter", sans-serif;
   font-size: 11px;
   font-weight: 400;
-  color: $border;
+  color: $color-adinkra-nome;       // nome do adinkra em itálico (dourado)
   font-style: italic;
   margin: 0 0 6px 0;
 }
 
-.adinkra-nome {
-  font-family: "Poiret One", sans-serif;
-  font-size: 24px;
-  font-weight: 400;
-  color: $border;
-  margin: 0 0 8px 0;
-}
-
-// === CARD: técnica/área ===
+// === CARD: técnica / área ===
 .card-ta-nome {
   font-family: "Bellucci", sans-serif;
   font-size: 29px;
   font-weight: 700;
   font-synthesis: none;
-  color: $text;
+  color: $color-text-primary;       // nome da técnica ou área
   letter-spacing: -0.4px;
   line-height: 1;
   text-transform: none;
@@ -379,7 +386,7 @@ body {
   font-family: "Inter", sans-serif;
   font-size: 12px;
   font-weight: 400;
-  color: #aaa;
+  color: $color-text-secondary;     // descrição da técnica/área
   line-height: 1.6;
   margin: 0 0 14px 0;
 }
@@ -404,7 +411,7 @@ body {
   }
 }
 
-// Grid de nomes
+// Grid de nomes (lista de designers no card de técnica/área)
 .names-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -413,21 +420,21 @@ body {
 
 .names-grid-item {
   font-size: 10px;
-  color: #9ab8cc;
+  color: $color-names-grid;         // nome de designer na lista
   cursor: pointer;
   line-height: 1.7;
   transition: color 0.15s;
 
-  &:hover { color: $border; }
+  &:hover { color: $color-adinkra-nome; } // hover: dourado
 }
 
 // === CARD: perfil pessoa ===
 #card-p-nome {
   font-family: "Bellucci", sans-serif;
   font-size: 29px;
-  font-weight: 700;
+  font-weight: 400;
   font-synthesis: none;
-  color: $border;
+  color: $color-adinkra-nome;       // nome do designer (dourado)
   letter-spacing: -0.4px;
   margin: 0 0 16px 0;
   line-height: 1;
@@ -464,8 +471,8 @@ body {
   gap: 6px;
 }
 
-.campo-label { color: #555; flex-shrink: 0; }
-.campo-valor { color: #ccc; }
+.campo-label { color: $color-text-dim; }    // rótulos: País, Período, Gênero…
+.campo-valor { color: $color-text-light; }  // valores dos campos
 
 #card-p-tecnicas { margin-bottom: 14px; }
 
@@ -487,20 +494,20 @@ body {
   font-family: "Inter", sans-serif;
   font-size: 12px;
   font-weight: 400;
-  color: #bbb;
+  color: $color-text-soft;          // nomes das técnicas no card de pessoa
 }
 
 #card-p-bio {
   font-family: "Inter", sans-serif;
   font-size: 12px;
   font-weight: 400;
-  color: #999;
+  color: $color-text-muted;         // mini-bio do designer
   line-height: 1.65;
   margin: 0 0 16px 0;
 }
 
 #btn-link-externo {
-  background-color: $button;
+  background-color: $color-btn-external;      // botão "Ver mais" (dourado)
   color: #000;
   padding: 8px 14px;
   border-radius: 4px;
@@ -512,7 +519,7 @@ body {
   border: none;
   display: inline-block;
 
-  &:hover { background-color: $button-hover; }
+  &:hover { background-color: $color-btn-external-hover; }
 }
 
 // === SOCIAL LINKS NO CARD ===
@@ -526,127 +533,18 @@ body {
     font-family: "Inter", sans-serif;
     font-size: 11px;
     padding: 7px 11px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid $color-social-border;        // borda dos links sociais
     border-radius: 999px;
-    color: #ddd1bf;
+    color: $color-social-text;                      // texto dos links sociais
     text-decoration: none;
     letter-spacing: 0.2px;
     background: rgba(255, 255, 255, 0.03);
     transition: border-color 0.15s, color 0.15s, background-color 0.15s;
 
     &:hover {
-      border-color: rgba(241, 184, 79, 0.55);
-      color: $border;
-      background: rgba(241, 184, 79, 0.07);
+      border-color: $color-social-hover-border;
+      color: $color-social-hover-text;
+      background: $color-social-hover-bg;
     }
   }
-}
-
-// === DEBUG PANEL ===
-#debug-panel {
-  position: fixed;
-  top: 82px;
-  right: 16px;
-  background: rgba(8, 8, 12, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 10px 12px 12px;
-  z-index: 100;
-  font-size: 11px;
-  color: #bbb;
-  min-width: 210px;
-  pointer-events: all;
-  backdrop-filter: blur(12px);
-
-  .dbg-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-
-    .dbg-title {
-      font-size: 11px;
-      letter-spacing: 0.04em;
-      text-transform: none;
-      color: $text;
-    }
-
-    .dbg-toggle {
-      width: 24px;
-      height: 24px;
-      border: none;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: $text;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 0;
-      line-height: 1;
-
-      &:hover { color: #aaa; }
-    }
-  }
-
-  .dbg-body {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin-bottom: 0;
-      font-size: 11px;
-      white-space: nowrap;
-      cursor: default;
-      color: rgba(255, 255, 255, 0.8);
-
-      input[type="range"] {
-        width: 100%;
-        accent-color: $border;
-        cursor: pointer;
-      }
-    }
-
-    .dbg-section-divider {
-      font-size: 9px;
-      color: rgba(255, 255, 255, 0.28);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding-top: 6px;
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
-      margin-top: 2px;
-    }
-
-    label.dbg-checkbox-label {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-
-      input[type="checkbox"] {
-        width: auto;
-        cursor: pointer;
-        accent-color: $border;
-      }
-    }
-
-    .dbg-names-btn {
-      background: none;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      color: rgba(255, 255, 255, 0.35);
-      font-size: 10px;
-      padding: 4px 8px;
-      cursor: pointer;
-      text-align: left;
-      transition: color 0.15s, border-color 0.15s;
-
-      &:hover { color: rgba(255, 255, 255, 0.7); border-color: rgba(255, 255, 255, 0.22); }
-      &.active { color: hsl(40, 65%, 72%); border-color: rgba(241, 184, 79, 0.4); }
-    }
-  }
-
-  &.collapsed .dbg-body { display: none; }
 }
