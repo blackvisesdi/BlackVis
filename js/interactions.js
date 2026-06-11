@@ -260,8 +260,9 @@ function _restoreNodeSizes() {
     const r = nodeRadius(node);
     el.selectAll("circle")
       .interrupt()
-      .style("opacity", null)
-      .transition().duration(220).attr("r", r);
+      .transition().duration(220)
+      .attr("r", r)
+      .style("opacity", (!node.isCategory && !node.isTechnique) ? 0.92 : null);
     el.selectAll(".node-icon-img").interrupt().transition().duration(220)
       .attr("width", r * 2)
       .attr("height", r * 2)
@@ -274,14 +275,18 @@ function _restoreNodeSizes() {
 
 function _resetGraphState() {
   if (window.selectedCategoryHighlights) window.selectedCategoryHighlights.clear();
+  _restoreNodeSizes();
   nodeGroup.selectAll(".node").interrupt().transition().duration(220).style("opacity", 1);
-  labelGroup.selectAll(".label")
-    .interrupt()
-    .transition()
-    .duration(180)
-    .style("visibility", "hidden")
-    .style("pointer-events", "none")
-    .text((node) => (node.Nome || node.id).split(" ")[0]);
+  // Em modo de busca os labels são gerenciados por _applySearchLabels
+  if (!window._currentSearchTerm) {
+    labelGroup.selectAll(".label")
+      .interrupt()
+      .transition()
+      .duration(180)
+      .style("visibility", "hidden")
+      .style("pointer-events", "none")
+      .text((node) => (node.Nome || node.id).split(" ")[0]);
+  }
   linkGroup.selectAll(".link")
     .interrupt()
     .transition()
@@ -426,6 +431,11 @@ function _renderGraphFocus(node, neighbors, options = {}) {
       return 0;
     });
 
+  // Aplica visuais de nationalidade sobre o foco (se filtro ativo)
+  if (window.selectedNationalities?.size > 0 && typeof window._applyNatVisuals === "function") {
+    window._applyNatVisuals();
+  }
+
   if (options.areaFromFilter && node.isCategory) {
     if (options.noCard) {
       _hideCard();
@@ -567,7 +577,8 @@ function focusNode(event, d, options = {}) {
       const h = +vb[3] || window.innerHeight;
       activeNode.fx = pos.rx * w;
       activeNode.fy = pos.ry * h;
-    } else {
+    } else if (!window._currentSearchTerm) {
+      // Em modo de busca mantém os pins do layout em grade
       activeNode.fx = null;
       activeNode.fy = null;
     }
@@ -575,17 +586,40 @@ function focusNode(event, d, options = {}) {
   }
 
   if (!d) {
+    window._lastDeselectedId = activeNode ? activeNode.id : null;
+    window._lastDeselectedAt = Date.now();
     activeNode = null;
     _hideCard();
     _resetGraphState();
     _clearBouquetForce();
     if (simulation) simulation.alphaTarget(0).alpha(0.4).restart();
+    // Re-aplica labels e visuais de busca ao desfocar
+    if (window._currentSearchTerm) {
+      if (typeof window._applySearchLabels === "function") window._applySearchLabels(window._currentSearchTerm);
+      if (typeof window._applyNatVisuals === "function") window._applyNatVisuals();
+    }
     return;
   }
 
   if (d.isCategory && !options.areaFromFilter) {
     // Clique direto no grafo → multi-seleção de highlights (sem filtrar, sem card)
     window._toggleCategoryHighlight(d.id);
+    return;
+  }
+
+  // Modo de busca: foco simples sem reorganizar layout
+  if (window._currentSearchTerm && !d.isCategory && !d.isTechnique) {
+    activeNode = d;
+    nodeGroup.selectAll(".node").filter((node) => node.id === d.id).raise();
+    const baseR = nodeRadius(d);
+    nodeGroup.selectAll(".node").filter((node) => node.id === d.id)
+      .selectAll("circle")
+      .interrupt()
+      .transition().duration(200)
+      .attr("r", baseR * 1.5)
+      .style("opacity", 1);
+    exibirPerfil(d);
+    _showCard();
     return;
   }
 
@@ -685,6 +719,64 @@ function exibirAreaCard(nodeData, techniques) {
         tecGrid.appendChild(item);
       });
     container.appendChild(tecGrid);
+  }
+
+  // Designers conectados a esta área
+  const connectedPeopleSet = new Set();
+  techniques.forEach((tec) => {
+    graphData.links.forEach((link) => {
+      if (link.type !== "person-technique-link") return;
+      const srcId = _linkNodeId(link.source);
+      const tgtId = _linkNodeId(link.target);
+      if (srcId === tec.id) {
+        const p = graphData.nodes.find((n) => n.id === tgtId && !n.isCategory && !n.isTechnique);
+        if (p) connectedPeopleSet.add(p);
+      }
+      if (tgtId === tec.id) {
+        const p = graphData.nodes.find((n) => n.id === srcId && !n.isCategory && !n.isTechnique);
+        if (p) connectedPeopleSet.add(p);
+      }
+    });
+  });
+
+  const sortedPeople = [...connectedPeopleSet].sort((a, b) => (a.Nome || "").localeCompare(b.Nome || "", "pt"));
+  if (sortedPeople.length > 0) {
+    const peopleHeader = document.createElement("div");
+    peopleHeader.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-top:20px;cursor:pointer;";
+
+    const peopleTitle = document.createElement("h2");
+    peopleTitle.className = "card-ta-nome";
+    peopleTitle.style.margin = "0";
+    peopleTitle.textContent = `Designers (${sortedPeople.length})`;
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.className = "card-toggle-btn";
+    toggleBtn.textContent = "▼";
+    toggleBtn.style.cssText = "background:none;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0 4px;opacity:0.7;";
+
+    peopleHeader.appendChild(peopleTitle);
+    peopleHeader.appendChild(toggleBtn);
+    container.appendChild(peopleHeader);
+
+    const peopleGrid = document.createElement("div");
+    peopleGrid.className = "names-grid";
+    peopleGrid.style.display = "none";
+    sortedPeople.forEach((person) => {
+      const item = document.createElement("span");
+      item.className = "names-grid-item";
+      item.textContent = person.Nome || person.id;
+      item.addEventListener("click", () => focusNode(null, person));
+      peopleGrid.appendChild(item);
+    });
+    container.appendChild(peopleGrid);
+
+    let open = false;
+    const toggle = () => {
+      open = !open;
+      peopleGrid.style.display = open ? "" : "none";
+      toggleBtn.textContent = open ? "▲" : "▼";
+    };
+    peopleHeader.addEventListener("click", toggle);
   }
 
 }

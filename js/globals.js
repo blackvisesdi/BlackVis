@@ -243,6 +243,8 @@ function getBaseColorForNode(node) {
 // ============================================================
 // CONFIGURAÇÕES DE VISUALIZAÇÃO
 // ============================================================
+window.selectedCategories = new Set();
+
 window.DBG_TECH_RADIUS_MULT = 1.0;
 window.DBG_AREA_RADIUS_MULT = 1.0;
 window.DBG_LINK_WIDTH_MULT = 2.09;

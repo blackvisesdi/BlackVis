@@ -1,25 +1,6 @@
 // ============================================================
 // COLORS.SCSS — Sistema de cores do BlackVIS
 // ============================================================
-//
-// HIERARQUIA DE CORES POR CATEGORIA:
-//
-//   Principal (100% sat) → adinkra, bordas de técnicas, linhas eixo-técnicas
-//                          NÃO usar em textos
-//   Sub 1     (55% sat)  → textos H2 / títulos
-//   Sub 2     (30% sat)  → textos H3 / hover de nomes / adinkras selecionados / listas
-//
-// HIERARQUIA DE TEXTO (sem categoria):
-//
-//   Branco #eeece7       → textos em geral: nomes, legenda dinâmica, textos selecionados
-//   Cinza  #8C8C8C       → textos de botões não selecionados
-//
-// ============================================================
-
-
-// ────────────────────────────────────────────────────────────
-// TEXTO GERAL (independente de categoria)
-// ────────────────────────────────────────────────────────────
 
 // Textos em geral: nomes, legenda dinâmica, textos selecionados
 $color-text-primary:    #eeece7;
@@ -36,7 +17,7 @@ $color-text-soft:       #bbb;    // nomes de técnicas no card pessoa
 // ────────────────────────────────────────────────────────────
 
 $color-bg-app:          #000000;              // body: fundo geral
-$color-bg-panel:        rgba(5, 5, 10, 0.97); // .info-panel: painel lateral
+$color-bg-panel:        #121212; // .info-panel: painel lateral
 
 
 // ────────────────────────────────────────────────────────────
