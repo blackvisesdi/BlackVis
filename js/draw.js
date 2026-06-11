@@ -30,6 +30,7 @@ function getNodeField(node, fieldName) {
 function nodeRadius(node) {
   if (node.isCategory) return FIXED_RADIUS_CATEGORY * (window.DBG_AREA_RADIUS_MULT || 1);
   if (node.isTechnique) return FIXED_RADIUS_TECHNIQUE * (window.DBG_TECH_RADIUS_MULT || 1);
+  if (window._currentSearchTerm) return 14; // tamanho uniforme no modo de busca
   const base = Math.max(radiusScale(node.degree || 1), 1);
   return Math.max(base * MULT_PERSON, MIN_RADIUS_PERSON);
 }
@@ -129,6 +130,10 @@ function drawForceGraph(data, centerNodes = false) {
       node.fx = position.rx * currentWidth;
       node.fy = position.ry * currentHeight;
     } else if (node.isCategory) {
+      node.fx = null;
+      node.fy = null;
+    } else if (!window._currentSearchTerm) {
+      // Limpa pins de buscas anteriores ao voltar ao modo normal
       node.fx = null;
       node.fy = null;
     }
@@ -320,28 +325,22 @@ function drawForceGraph(data, centerNodes = false) {
         return;
       }
 
-      // ── Técnica ativa: hover em pessoa conectada → ícone nat + nome abaixo ──
+      // ── Técnica ativa: hover em pessoa conectada → nome + destaque ──
       if (activeNode?.isTechnique && !nodeData.isTechnique &&
           _isPersonLinkedToTechnique(nodeData.id, activeNode.id) &&
           window.DBG_HOVER_NAMES !== false) {
-        // Garante que o nó da pessoa está visível mesmo com fade global de nomes
         d3.select(event.currentTarget)
           .interrupt()
           .style("opacity", 1);
+        const _rp = nodeRadius(nodeData);
         d3.select(event.currentTarget).selectAll("circle")
           .interrupt()
-          .transition().duration(300)
-          .style("opacity", 0);
-        d3.select(event.currentTarget).selectAll(".node-nat-img")
-          .interrupt()
-          .transition().duration(300)
-          .style("opacity", 1);
-        const _rp = nodeRadius(nodeData);
-        const _iw = Math.max(_rp * 2, 22);
-        const _ih = _iw * (23 / 43);
+          .transition().duration(180)
+          .style("opacity", 0.92)
+          .attr("r", _rp * 1.5);
         labelGroup.selectAll(".label")
           .filter((c) => c.id === nodeData.id)
-          .attr("dy", `${_ih / 2 + 4}px`)
+          .attr("dy", `${_rp * 1.5 + 4}px`)
           .attr("dominant-baseline", "hanging")
           .style("font-size", `${window.DBG_PERSON_NAME_SIZE || 10}px`)
           .style("visibility", "visible")
@@ -350,28 +349,68 @@ function drawForceGraph(data, centerNodes = false) {
         return;
       }
 
-      // ── Pessoa: swap círculo → ícone de nacionalidade + nome abaixo ──
+      // ── Guard: ignora hover imediatamente após desfocar o mesmo nó ──
+      if (!nodeData.isTechnique && !nodeData.isCategory &&
+          window._lastDeselectedId === nodeData.id &&
+          Date.now() - (window._lastDeselectedAt || 0) < 400) {
+        window._lastDeselectedId = null;
+        return;
+      }
+
+      // ── Pessoa: hover ──────────────────────────────────────────
       if (!nodeData.isTechnique && !(activeNode && activeNode.id === nodeData.id)) {
-        if (window.DBG_HOVER_NAMES !== false && !window.DBG_ALL_NAMES_VISIBLE) {
+        const _rHov = nodeRadius(nodeData);
+        const _natFilterActive = window.selectedNationalities?.size > 0;
+
+        if (_natFilterActive && !window._currentSearchTerm) {
+          // Nat filter ativo: swap círculo → bandeirinha
           d3.select(event.currentTarget).selectAll("circle")
-            .interrupt()
-            .transition().duration(300)
-            .style("opacity", 0);
+            .interrupt().transition().duration(150).style("opacity", 0);
+          const _nw = Math.max(_rHov * 2.4, 24);
+          const _nh = _nw * (23 / 43);
           d3.select(event.currentTarget).selectAll(".node-nat-img")
-            .interrupt()
-            .transition().duration(300)
+            .interrupt().transition().duration(150)
+            .attr("width", _nw).attr("height", _nh)
+            .attr("x", -_nw / 2).attr("y", -_nh / 2)
             .style("opacity", 1);
-          const _r = nodeRadius(nodeData);
-          const _iconW = Math.max(_r * 2, 22);
-          const _iconH = _iconW * (23 / 43);
+        } else if (!window._currentSearchTerm) {
+          // Sem filtro nat: apenas cresce o círculo
+          d3.select(event.currentTarget).selectAll("circle")
+            .interrupt().transition().duration(150)
+            .attr("r", _rHov * 1.3).style("opacity", 0.92);
+        }
+
+        if (window.DBG_HOVER_NAMES !== false && !window.DBG_ALL_NAMES_VISIBLE && !window._currentSearchTerm) {
           labelGroup.selectAll(".label")
             .filter((candidate) => candidate.id === nodeData.id)
-            .attr("dy", `${_iconH / 2 + 4}px`)
+            .attr("dy", `${_rHov + 4}px`)
             .attr("dominant-baseline", "hanging")
             .style("font-size", `${window.DBG_PERSON_NAME_SIZE || 10}px`)
             .style("visibility", "visible")
             .style("pointer-events", "none")
             .text(nodeData.Nome || nodeData.id);
+        }
+
+        // Hover no modo de busca: mostra nome completo acima e destaca círculo
+        if (window._currentSearchTerm) {
+          const _sr = nodeRadius(nodeData);
+          d3.select(event.currentTarget).selectAll("circle")
+            .interrupt()
+            .transition().duration(150)
+            .attr("r", _sr * 1.3)
+            .style("opacity", 1);
+          const lbl = labelGroup.selectAll(".label").filter((c) => c.id === nodeData.id);
+          lbl.text(null);
+          lbl.append("tspan")
+            .attr("font-weight", "700")
+            .attr("fill", "#ffffff")
+            .attr("stroke", "rgba(0,0,0,0.9)")
+            .attr("stroke-width", "2.5px")
+            .text(nodeData.Nome || nodeData.id);
+          lbl.attr("dy", `-${_sr * 1.3 + 6}px`)
+            .attr("dominant-baseline", "auto")
+            .style("font-size", "11px")
+            .style("visibility", "visible");
         }
 
         if (!activeNode && !(window.selectedCategoryHighlights && window.selectedCategoryHighlights.size > 0)) {
@@ -441,9 +480,10 @@ function drawForceGraph(data, centerNodes = false) {
           .interrupt()
           .transition().duration(200)
           .style("opacity", 0);
-        d3.select(event.currentTarget).selectAll(".node-nat-img")
+        d3.select(event.currentTarget).selectAll("circle")
           .interrupt()
           .transition().duration(200)
+          .attr("r", nodeRadius(nodeData))
           .style("opacity", 0);
         return;
       }
@@ -454,14 +494,16 @@ function drawForceGraph(data, centerNodes = false) {
           !window._areTechniqueNamesVisible(activeNode.id) &&
           !window.DBG_ALL_NAMES_VISIBLE) {
         const _natSel1 = window.selectedNationalities?.has(nodeData["Nacionalidade"]);
+        const _natActive1 = window.selectedNationalities?.size > 0;
         d3.select(event.currentTarget).selectAll("circle")
           .interrupt()
           .transition().duration(300)
-          .style("opacity", _natSel1 ? 0 : 0.92);
+          .attr("r", nodeRadius(nodeData))
+          .style("opacity", (_natActive1 && _natSel1) ? 0 : 0.92);
         d3.select(event.currentTarget).selectAll(".node-nat-img")
           .interrupt()
           .transition().duration(300)
-          .style("opacity", _natSel1 ? 1 : 0);
+          .style("opacity", (_natActive1 && _natSel1) ? 1 : 0);
         labelGroup.selectAll(".label")
           .filter((c) => c.id === nodeData.id)
           .attr("dy", `${nodeRadius(nodeData) + 6}px`)
@@ -473,26 +515,53 @@ function drawForceGraph(data, centerNodes = false) {
         return;
       }
 
-      // ── Pessoa: restaura círculo, esconde ícone e nome ────────
+      // ── Pessoa: restaura círculo / ícone nat ao sair ────────────
       if (!nodeData.isTechnique && !(activeNode && activeNode.id === nodeData.id)) {
+        const _isNatFiltered = window.selectedNationalities?.has(nodeData["Nacionalidade"]);
+        const _natActive2 = window.selectedNationalities?.size > 0;
         if (!window.DBG_ALL_NAMES_VISIBLE) {
-          const _natSel2 = window.selectedNationalities?.has(nodeData["Nacionalidade"]);
-          d3.select(event.currentTarget).selectAll("circle")
-            .interrupt()
-            .transition().duration(300)
-            .style("opacity", _natSel2 ? 0 : 0.92);
-          d3.select(event.currentTarget).selectAll(".node-nat-img")
-            .interrupt()
-            .transition().duration(300)
-            .style("opacity", _natSel2 ? 1 : 0);
-          labelGroup.selectAll(".label")
-            .filter((candidate) => candidate.id === nodeData.id)
-            .attr("dy", `${nodeRadius(nodeData) + 6}px`)
-            .attr("dominant-baseline", "hanging")
-            .style("font-size", "9px")
-            .style("visibility", "hidden")
-            .style("pointer-events", "none")
-            .text((candidate) => (candidate.Nome || candidate.id).split(" ")[0]);
+          // Modo de busca: restaura círculo e label compacto do nó
+          if (window._currentSearchTerm) {
+            const _sr2 = nodeRadius(nodeData);
+            d3.select(event.currentTarget).selectAll("circle")
+              .interrupt()
+              .transition().duration(180)
+              .attr("r", _sr2)
+              .style("opacity", (_natActive2 && _isNatFiltered) ? 0 : 0.92);
+            d3.select(event.currentTarget).selectAll(".node-nat-img")
+              .interrupt().transition().duration(180).style("opacity", (_natActive2 && _isNatFiltered) ? 1 : 0);
+            // Restaura label compacto (palavra do match)
+            const searchTerm = window._currentSearchTerm;
+            const searchLen = searchTerm.length;
+            const lbl2 = labelGroup.selectAll(".label").filter((c) => c.id === nodeData.id);
+            lbl2.text(null);
+            const fullName = nodeData.Nome || nodeData.id;
+            const matchWord = fullName.split(" ").find((w) => normalizeKey(w).startsWith(searchTerm)) || fullName.split(" ")[0];
+            const normMatch = normalizeKey(matchWord);
+            if (normMatch.startsWith(searchTerm)) {
+              lbl2.append("tspan").attr("font-weight", "700").attr("fill", "#fff").attr("stroke", "rgba(0,0,0,0.8)").attr("stroke-width", "2.5px").text(matchWord.slice(0, searchLen));
+              lbl2.append("tspan").attr("font-weight", "normal").attr("fill", "rgba(255,255,255,0.55)").attr("stroke", "none").text(matchWord.slice(searchLen));
+            } else {
+              lbl2.append("tspan").attr("fill", "rgba(255,255,255,0.55)").attr("stroke", "none").text(matchWord);
+            }
+            lbl2.attr("dy", `${_sr2 + 4}px`).attr("dominant-baseline", "hanging").style("font-size", "11px").style("visibility", "visible");
+          } else {
+            // Modo normal: esconde label e restaura círculo/nat
+            labelGroup.selectAll(".label")
+              .filter((candidate) => candidate.id === nodeData.id)
+              .attr("dy", (candidate) => `${nodeRadius(candidate) + 6}px`)
+              .attr("dominant-baseline", "hanging")
+              .style("font-size", "9px")
+              .style("visibility", "hidden")
+              .style("pointer-events", "none")
+              .text((candidate) => (candidate.Nome || candidate.id).split(" ")[0]);
+            d3.select(event.currentTarget).selectAll("circle")
+              .interrupt().transition().duration(200)
+              .attr("r", nodeRadius(nodeData))
+              .style("opacity", (_natActive2 && _isNatFiltered) ? 0 : 0.92);
+            d3.select(event.currentTarget).selectAll(".node-nat-img")
+              .interrupt().transition().duration(200).style("opacity", (_natActive2 && _isNatFiltered) ? 1 : 0);
+          }
         }
 
         if (!activeNode && !(window.selectedCategoryHighlights && window.selectedCategoryHighlights.size > 0)) {
@@ -688,62 +757,33 @@ function drawForceGraph(data, centerNodes = false) {
       event.stopPropagation();
       focusNode(event, nodeData);
     })
-    // Hover sobre o NOME → exibe ícone de nacionalidade da pessoa
+    // Hover sobre o NOME → destaca círculo da pessoa (sem trocar ícone de nat)
     .on("mouseenter.natswap", (event, nodeData) => {
-      const personEl = nodeGroup
-        .selectAll(".node")
-        .filter((cand) => cand.id === nodeData.id);
-      personEl.interrupt().style("opacity", 1);
-      personEl
-        .selectAll("circle")
-        .interrupt()
-        .transition()
-        .duration(160)
-        .style("opacity", 0);
+      const personEl = nodeGroup.selectAll(".node").filter((cand) => cand.id === nodeData.id);
       const r = nodeRadius(nodeData);
-      const iw = Math.max(r * 2 * 1.7, 30);
-      const ih = iw * (23 / 43);
-      personEl
-        .selectAll(".node-nat-img")
+      const techActive = activeNode?.isTechnique && _isPersonLinkedToTechnique(nodeData.id, activeNode.id);
+      const showingNames = techActive && window._areTechniqueNamesVisible(activeNode.id);
+      personEl.interrupt().style("opacity", 1);
+      personEl.selectAll("circle")
         .interrupt()
-        .transition()
-        .duration(180)
-        .attr("width", iw)
-        .attr("height", ih)
-        .attr("x", -iw / 2)
-        .attr("y", -ih / 2)
-        .style("opacity", 1);
+        .transition().duration(160)
+        .attr("r", r * 1.4)
+        .style("opacity", showingNames ? 0.92 : 0.92);
     })
     .on("mouseleave.natswap", (event, nodeData) => {
-      const personEl = nodeGroup
-        .selectAll(".node")
-        .filter((cand) => cand.id === nodeData.id);
+      const personEl = nodeGroup.selectAll(".node").filter((cand) => cand.id === nodeData.id);
       const r = nodeRadius(nodeData);
-      const natSel = window.selectedNationalities?.has(nodeData["Nacionalidade"]);
-      const techActive =
-        activeNode &&
-        activeNode.isTechnique &&
-        _isPersonLinkedToTechnique(nodeData.id, activeNode.id);
-      const showing =
-        techActive && window._areTechniqueNamesVisible(activeNode.id);
-      personEl
-        .selectAll(".node-nat-img")
+      const techActive = activeNode?.isTechnique && _isPersonLinkedToTechnique(nodeData.id, activeNode.id);
+      const showingNames = techActive && window._areTechniqueNamesVisible(activeNode.id);
+      personEl.selectAll("circle")
         .interrupt()
-        .transition()
-        .duration(180)
-        .style("opacity", natSel ? 1 : 0);
-      personEl
-        .selectAll("circle")
-        .interrupt()
-        .transition()
-        .duration(180)
+        .transition().duration(180)
         .attr("r", r)
-        .style("opacity", (natSel || showing) ? 0 : 0.92);
+        .style("opacity", showingNames ? 0 : 0.92);
       personEl
         .interrupt()
-        .transition()
-        .duration(180)
-        .style("opacity", showing ? 0 : 1);
+        .transition().duration(180)
+        .style("opacity", showingNames ? 0 : 1);
     });
 
   simulation.on("tick", () => {
@@ -764,14 +804,14 @@ function drawForceGraph(data, centerNodes = false) {
 
       let d;
       if (isSecondary) {
-        // Arco suave: sai da pessoa perpendicular, c2 na linha reta → retorna direto à técnica
         const nx = -dy / dist;
         const ny = dx / dist;
-        const hook = Math.min(dist * 0.3, 30);
+        const isActive = activeNode != null;
+        const hook = isActive ? Math.min(dist * 0.55, 80) : Math.min(dist * 0.38, 45);
         const c1x = sx + nx * hook;
         const c1y = sy + ny * hook;
-        const c2x = sx + dx * 0.7;
-        const c2y = sy + dy * 0.7;
+        const c2x = sx + dx * 0.65;
+        const c2y = sy + dy * 0.65;
         d = `M${sx},${sy} C${c1x},${c1y} ${c2x},${c2y} ${tx},${ty}`;
       } else {
         d = `M${sx},${sy} L${tx},${ty}`;
@@ -810,15 +850,20 @@ function getNodeFillColor(node) {
   const baseHex = getBaseColorForNode(node);
   if (node.isCategory) return baseHex;
   if (!node.isTechnique) {
-    // Pessoa: cor neutra #A8A8A8 com brilho 66%
+    // Em modo de busca: usa nível 1 (cor mais saturada da área)
+    if (window._currentSearchTerm) {
+      const rawArea = node["Área do design"] || inferredPersonArea.get(node.id) || nodeAreaMap.get(node.id);
+      const areaName = String(rawArea || "").split(",")[0].trim();
+      const paletteName = CATEGORY_PALETTE_MAP[areaName];
+      return (paletteName && SATURATION_PALETTE[paletteName]) ? SATURATION_PALETTE[paletteName][1] : baseHex;
+    }
+    // Modo normal: cor neutra #A8A8A8 com brilho 66%
     try { return d3.rgb("#A8A8A8").brighter(0.66).toString(); }
     catch (_e) { return "#A8A8A8"; }
   }
-  try {
-    return d3.rgb(baseHex).brighter(TECHNIQUE_BRIGHTNESS).toString();
-  } catch (_error) {
-    return baseHex;
-  }
+  const rawArea = node["Área do design"] || inferredPersonArea.get(node.id) || nodeAreaMap.get(node.id);
+  const areaName = String(rawArea || "").split(",")[0].trim();
+  return CATEGORY_COLORS[areaName] || baseHex;
 }
 
 function getNodeStrokeColor(node) {
@@ -876,6 +921,80 @@ window.getAreaIconPath = function(area) {
   return CATEGORY_ICON_PATH[area] || null;
 };
 
+window._setupSearchLayout = function(matched) {
+  if (!simulation || !matched || matched.length === 0) return;
+  const vb = svg.attr("viewBox")?.split(" ") || [];
+  const w = +vb[2] || 950;
+  const h = +vb[3] || 500;
+
+  // Agrupa por área e ordena alfabeticamente dentro de cada grupo
+  const AREA_ORDER = ["Comunicação", "Interação", "Produto", "Serviço", "Teórico"];
+  const groups = {};
+  matched.forEach((node) => {
+    const area = String(node["Área do design"] || "").split(",")[0].trim() || "Outro";
+    if (!groups[area]) groups[area] = [];
+    groups[area].push(node);
+  });
+  const sortedAreas = Object.keys(groups).sort((a, b) => {
+    const ia = AREA_ORDER.indexOf(a), ib = AREA_ORDER.indexOf(b);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return a.localeCompare(b, "pt");
+  });
+  sortedAreas.forEach((area) => {
+    groups[area].sort((a, b) => (a.Nome || "").localeCompare(b.Nome || "", "pt"));
+  });
+
+  const SEARCH_R   = 14;
+  const PAD_X      = 72;  // espaço horizontal entre nós
+  const LABEL_H    = 20;
+  const BAND_H     = SEARCH_R * 2 + LABEL_H + 16; // fileira reta + espaço para label abaixo
+  const GROUP_GAP  = 32; // espaço extra entre grupos de área
+
+  const maxPerBand = Math.max(2, Math.floor(w * 0.90 / PAD_X));
+
+  // Calcula altura total para centralizar
+  let totalH = 0;
+  sortedAreas.forEach((area, ai) => {
+    const numBands = Math.ceil(groups[area].length / maxPerBand);
+    totalH += numBands * BAND_H;
+    if (ai < sortedAreas.length - 1) totalH += GROUP_GAP;
+  });
+
+  let curY = (h - totalH) / 2 + BAND_H / 2;
+
+  sortedAreas.forEach((area, ai) => {
+    const persons = groups[area];
+    const numBands = Math.ceil(persons.length / maxPerBand);
+
+    persons.forEach((node, i) => {
+      const band        = Math.floor(i / maxPerBand);
+      const posInBand   = i % maxPerBand;
+      const countInBand = Math.min(maxPerBand, persons.length - band * maxPerBand);
+
+      const rowW   = countInBand * PAD_X;
+      const startX = (w - rowW) / 2 + PAD_X / 2;
+
+      node.fx = startX + posInBand * PAD_X;
+      node.fy = curY + band * BAND_H; // fileira reta, sem zigzag
+      node.x  = node.fx;
+      node.y  = node.fy;
+      node.vx = 0;
+      node.vy = 0;
+    });
+
+    curY += numBands * BAND_H + (ai < sortedAreas.length - 1 ? GROUP_GAP : 0);
+  });
+
+  simulation.force("x", null);
+  simulation.force("y", null);
+  simulation.force("center", null);
+  simulation.force("orbit", null);
+  simulation.force("charge", d3.forceManyBody().strength(-8));
+  simulation.alpha(0.1).restart();
+};
+
 window._applyNatVisuals = function() {
   const selected = window.selectedNationalities;
   nodeGroup.selectAll(".node").each(function(nodeData) {
@@ -926,37 +1045,37 @@ window._applySearchLabels = function(searchTerm) {
 
   const searchLen = searchTerm.length;
 
+  // Em busca: mostra só a palavra que fez match, abaixo do nó (sem sobrescrever vizinhos)
   sel.each(function(nodeData) {
     const el = d3.select(this);
     el.text(null);
 
     const fullName = nodeData.Nome || nodeData.id;
     const words = fullName.split(" ");
+    const matchIdx = words.findIndex((w) => normalizeKey(w).startsWith(searchTerm));
+    const matchWord = matchIdx >= 0 ? words[matchIdx] : words[0];
 
-    words.forEach((word, i) => {
-      const normWord = normalizeKey(word);
-      const prefix = i === 0 ? "" : " ";
-
-      if (normWord.startsWith(searchTerm)) {
-        if (prefix) el.append("tspan").attr("fill", "rgba(255,255,255,0.38)").attr("stroke", "none").text(prefix);
-        el.append("tspan")
-          .attr("font-weight", "700")
-          .attr("fill", "#ffffff")
-          .attr("stroke", "rgba(0,0,0,0.8)")
-          .attr("stroke-width", "2.5px")
-          .text(word.slice(0, searchLen));
-        el.append("tspan")
-          .attr("font-weight", "normal")
-          .attr("fill", "rgba(255,255,255,0.38)")
-          .attr("stroke", "none")
-          .text(word.slice(searchLen));
-      } else {
-        el.append("tspan").attr("fill", "rgba(255,255,255,0.38)").attr("stroke", "none").text(prefix + word);
-      }
-    });
+    if (matchIdx >= 0) {
+      el.append("tspan")
+        .attr("font-weight", "700")
+        .attr("fill", "#ffffff")
+        .attr("stroke", "rgba(0,0,0,0.8)")
+        .attr("stroke-width", "2.5px")
+        .text(matchWord.slice(0, searchLen));
+      el.append("tspan")
+        .attr("font-weight", "normal")
+        .attr("fill", "rgba(255,255,255,0.75)")
+        .attr("stroke", "none")
+        .text(matchWord.slice(searchLen));
+    } else {
+      el.append("tspan")
+        .attr("fill", "rgba(255,255,255,0.75)")
+        .attr("stroke", "none")
+        .text(matchWord);
+    }
   })
-    .attr("dy", (d) => `-${nodeRadius(d) + 8}px`)
-    .attr("dominant-baseline", "auto")
-    .style("font-size", `${window.DBG_PERSON_NAME_SIZE || 10}px`)
+    .attr("dy", (d) => `${nodeRadius(d) + 4}px`)
+    .attr("dominant-baseline", "hanging")
+    .style("font-size", "11px")
     .style("visibility", "visible");
 };

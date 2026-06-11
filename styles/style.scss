@@ -241,10 +241,13 @@ body {
     gap: 8px;
     background: none;
     border: none;
-    color: $color-text-primary;     // rótulo do filtro de nacionalidade
+    color: rgba(255,255,255,0.45);
     cursor: pointer;
     font-size: 12px;
-    padding: 0;
+    font-weight: normal;
+    padding: 2px 6px 2px 2px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
 
     .nat-icon {
       width: 34px;
@@ -252,12 +255,19 @@ body {
       flex-shrink: 0;
       display: block;
       object-fit: contain;
-      opacity: $color-nat-icon-opacity; // ícone inativo
+      opacity: 0.4;
       transition: opacity 0.2s;
     }
 
-    &:hover .nat-icon { opacity: 0.85; }
-    &.active .nat-icon { opacity: 1; }
+    &:hover {
+      color: rgba(255,255,255,0.75);
+      .nat-icon { opacity: 0.75; }
+    }
+
+    &.active {
+      color: #ffffff;
+      .nat-icon { opacity: 1; }
+    }
   }
 }
 
@@ -325,7 +335,7 @@ body {
 #search-input {
   background: transparent;
   border: none;
-  color: $color-search-input;       // texto digitado na busca
+  color: $color-search-input;
   font-size: 12px;
   width: 100%;
   outline: none;
@@ -426,6 +436,22 @@ body {
   transition: color 0.15s;
 
   &:hover { color: $color-adinkra-nome; } // hover: dourado
+}
+
+// === CARD: área do design — cores de categoria ===
+#card-tec-area {
+  .card-ta-nome {
+    color: var(--cat-color-55);
+  }
+
+  .card-adinkra-nome-inline {
+    color: var(--cat-color-55);
+  }
+
+  .names-grid-item {
+    color: var(--cat-color-30);
+    &:hover { color: $color-text-primary; }
+  }
 }
 
 // === CARD: perfil pessoa ===

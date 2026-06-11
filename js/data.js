@@ -308,10 +308,14 @@ function setupNationalityFilter() {
 }
 
 window.selectCategoryFilter = function(categoryValue, openCard = true) {
-  // Filtro via botão: limpa multi-seleção de highlights (modos distintos)
   if (window.selectedCategoryHighlights) window.selectedCategoryHighlights.clear();
 
   const isSameCategory = window.currentCategory === categoryValue;
+
+  if (window.selectedCategories) {
+    window.selectedCategories.clear();
+    if (!isSameCategory) window.selectedCategories.add(categoryValue);
+  }
 
   document.querySelectorAll(".category-btn").forEach((button) => {
     button.classList.toggle("active", !isSameCategory && button.dataset.value === categoryValue);
@@ -349,6 +353,7 @@ function setupLogoReset() {
     window.currentCategory = "all";
     window.currentNationality = "all";
     if (window.selectedNationalities) window.selectedNationalities.clear();
+    if (window.selectedCategories) window.selectedCategories.clear();
     document.querySelectorAll(".category-btn, .nat-btn").forEach((b) => b.classList.remove("active"));
     // Limpa busca
   const searchEl = document.getElementById("search-input");
@@ -435,16 +440,13 @@ function applyAllFilters(centerNodes = false) {
 
   switch (true) {
 
-    // ── Busca por nome: mostra apenas as pessoas encontradas ──
+    // ── Busca por nome: sempre global — ignora filtro de área ──
     case isNameSearch: {
-      const catFilter = window.currentCategory;
       let searchPool = allNodes.filter((d) => !d.isCategory && !d.isTechnique);
 
-      if (catFilter && catFilter !== "all" && catFilter !== "Todas") {
-        searchPool = searchPool.filter((d) => {
-          const areas = String(d["Área do design"] || "").split(",").map((s) => s.trim());
-          return areas.includes(catFilter);
-        });
+      const natSel = window.selectedNationalities;
+      if (natSel && natSel.size > 0) {
+        searchPool = searchPool.filter((d) => natSel.has(d["Nacionalidade"]));
       }
 
       const matched = searchPool.filter((d) =>
@@ -457,6 +459,7 @@ function applyAllFilters(centerNodes = false) {
       }
 
       filteredNodes = [...matched];
+      window._searchMatched = matched;
 
       const legendHtml = `Exibindo resultados para "<strong>${rawSearchTerm}</strong>". Encontramos <strong>${matched.length} designer${matched.length !== 1 ? "s" : ""}</strong> correspondentes à sua busca.`;
       _setLegendDesc(legendHtml);
@@ -475,34 +478,27 @@ function applyAllFilters(centerNodes = false) {
       const minYear           = window.currentMin;
       const maxYear           = window.currentMax;
 
-      // Filtro de categoria
-      if (categoryFilter !== "all" && categoryFilter !== "Todas") {
-        const techsInCategory = new Set(
+      // Filtro de categoria (suporta multi-seleção)
+      const selectedCats = window.selectedCategories;
+      if (selectedCats && selectedCats.size > 0) {
+        const techsInCategories = new Set(
           allLinks
             .filter((l) => {
               const t = typeof l.target === "object" ? l.target.id : l.target;
-              return t === categoryFilter && l.type === "technique-category-link";
+              return selectedCats.has(t) && l.type === "technique-category-link";
             })
             .map((l) => (typeof l.source === "object" ? l.source.id : l.source))
         );
 
         filteredNodes = filteredNodes.filter((d) => {
           switch (true) {
-            case d.isCategory:  return d.id === categoryFilter;
-            case d.isTechnique: return techsInCategory.has(d.id);
+            case d.isCategory:  return selectedCats.has(d.id);
+            case d.isTechnique: return techsInCategories.has(d.id);
             default: {
               const areas = String(d["Área do design"] || "").split(",").map((s) => s.trim());
-              return areas.includes(categoryFilter);
+              return areas.some((a) => selectedCats.has(a));
             }
           }
-        });
-      }
-
-      // Filtro de nacionalidade (aditivo)
-      if (window.selectedNationalities && window.selectedNationalities.size > 0) {
-        filteredNodes = filteredNodes.filter((d) => {
-          if (d.isCategory || d.isTechnique) return true;
-          return window.selectedNationalities.has(d["Nacionalidade"]);
         });
       }
 
@@ -555,7 +551,7 @@ function applyAllFilters(centerNodes = false) {
     );
 
     const keptByCategory = new Set(
-      window.currentCategory !== "all" && window.currentCategory !== "Todas"
+      (window.selectedCategories && window.selectedCategories.size > 0)
         ? filteredNodes.filter((d) => !d.isCategory && !d.isTechnique).map((d) => d.id)
         : []
     );
@@ -565,7 +561,13 @@ function applyAllFilters(centerNodes = false) {
     );
   }
 
+  if (!isNameSearch) window._searchMatched = null;
+
   drawForceGraph({ nodes: filteredNodes, links: filteredLinks }, isNameSearch || centerNodes);
+
+  if (isNameSearch && window._searchMatched && typeof window._setupSearchLayout === "function") {
+    window._setupSearchLayout(window._searchMatched);
+  }
 
   if (typeof window._applySearchLabels === "function") {
     window._applySearchLabels(window._currentSearchTerm || "");

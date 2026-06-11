@@ -55,7 +55,7 @@ body {
   bottom: 0;
   width: 0;
   overflow: hidden;
-  background: rgba(5, 5, 10, 0.97);
+  background: #121212;
   z-index: 5;
   transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   scrollbar-width: thin;
@@ -232,10 +232,13 @@ body {
   gap: 8px;
   background: none;
   border: none;
-  color: #eeece7;
+  color: rgba(255, 255, 255, 0.45);
   cursor: pointer;
   font-size: 12px;
-  padding: 0;
+  font-weight: normal;
+  padding: 2px 6px 2px 2px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
 }
 .bb-left .nat-btn .nat-icon {
   width: 34px;
@@ -243,11 +246,17 @@ body {
   flex-shrink: 0;
   display: block;
   object-fit: contain;
-  opacity: 0.55;
+  opacity: 0.4;
   transition: opacity 0.2s;
 }
+.bb-left .nat-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
 .bb-left .nat-btn:hover .nat-icon {
-  opacity: 0.85;
+  opacity: 0.75;
+}
+.bb-left .nat-btn.active {
+  color: #ffffff;
 }
 .bb-left .nat-btn.active .nat-icon {
   opacity: 1;
@@ -430,6 +439,19 @@ body {
 }
 .names-grid-item:hover {
   color: #edd7ab;
+}
+
+#card-tec-area .card-ta-nome {
+  color: var(--cat-color-55);
+}
+#card-tec-area .card-adinkra-nome-inline {
+  color: var(--cat-color-55);
+}
+#card-tec-area .names-grid-item {
+  color: var(--cat-color-30);
+}
+#card-tec-area .names-grid-item:hover {
+  color: #eeece7;
 }
 
 #card-p-nome {
