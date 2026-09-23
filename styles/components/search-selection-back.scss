@@ -1,0 +1,43 @@
+// BOTÃO DE RETORNO — seta compartilhada pelos cards de pessoa, técnica e adinkra.
+// A imagem escura é o estado normal; a imagem clara aparece durante o hover.
+
+.graph-area {
+  position: absolute;
+  inset: 0;
+}
+
+#search-results-back {
+  position: absolute;
+  left: 24px;
+  top: 62px;
+  z-index: 20;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover img {
+    content: url("../../assets/icons/back-on.svg");
+  }
+
+  &:focus-visible {
+    outline: 2px solid #8c8787;
+    outline-offset: 2px;
+    border-radius: 50%;
+  }
+}
+
+@media (max-width: 840px) {
+  #search-results-back {
+    left: 12px;
+    top: 12px;
+  }
+}

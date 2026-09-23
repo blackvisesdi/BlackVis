@@ -1,0 +1,11 @@
+// TOKENS DE DESIGN DO SASS
+// Reúne raios, fontes e transições compartilhados pelos novos componentes.
+// Os valores de cor continuam centralizados em colors.scss.
+
+@use "colors" as *;
+
+// Shared design tokens for new modules.
+$font-family-ui: "Inter", sans-serif;
+$radius-control: 18px;
+$radius-card: 14px;
+$transition-ui: 180ms ease;

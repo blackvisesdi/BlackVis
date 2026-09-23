@@ -1,0 +1,20 @@
+// PONTO DE ENTRADA DO SASS
+// Importa os módulos-fonte na ordem de dependência. O navegador consome styles/css,
+// que é a saída compilada vinculada pelo index.html.
+
+// Este ponto de entrada mantém a organização do projeto e pode ser compilado
+// como uma folha única quando uma etapa de build do Sass for adicionada.
+
+@use "base/colors";
+@use "base/variables";
+@use "base/reset";
+@use "layout/page";
+@use "layout/navigation";
+@use "base/style";
+@use "components/buttons";
+@use "components/cards";
+@use "components/search-selection-back";
+@use "graph/states";
+
+// Filter styles remain separated by responsibility in styles/filters/.
+// They are linked individually in index.html to preserve the current cascade.

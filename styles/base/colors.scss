@@ -1,6 +1,7 @@
-// ============================================================
-// COLORS.SCSS — Sistema de cores do BlackVIS
-// ============================================================
+// TOKENS DE CORES
+// Paleta central da aplicação. Altere os tokens aqui em vez de editar cada
+// componente; os estilos de base, layout, filtros e grafo usam este arquivo.
+// Defines the reusable color tokens consumed by the Sass stylesheets.
 
 // Textos em geral: nomes, legenda dinâmica, textos selecionados
 $color-text-primary:    #eeece7;

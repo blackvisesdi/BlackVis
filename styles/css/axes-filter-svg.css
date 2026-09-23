@@ -1,0 +1,14 @@
+/* Layout do Filtro do eixo off.svg (600 × 189). */
+/* Define as dimensões de referência e o tratamento visual do filtro de adinkras. */
+.menu-axes{width:600px!important;min-width:600px!important}
+.menu-axes .menu-section-title{position:relative;width:600px!important;height:45px!important;box-sizing:border-box!important;padding:0 12px!important;border:1px solid #232323!important;border-radius:22px!important;background:#0D0D0D!important}
+.menu-axes .menu-section-title>.menu-count{position:absolute;right:11px;top:7.5px;width:57px;min-width:57px;height:30px;padding:0;border-radius:15px;background:#0D0D0D;color:#CCC}
+.menu-axes .menu-section-title>.menu-reset{position:absolute;right:7.5px;top:7.5px;z-index:2}
+.menu-axes .bb-center{display:grid!important;grid-template-columns:repeat(5,95px)!important;column-gap:31px!important;width:600px!important;height:133px!important;margin-top:10.5px!important}
+.menu-axes .category-btn{width:95px!important;height:133px!important;box-sizing:border-box!important;padding:7.5px 5px 9px!important;border:1px solid #232323!important;border-radius:24.5px!important;background:#0D0D0D!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
+.menu-axes .category-btn .menu-count{width:57px!important;min-width:57px!important;height:30px!important;padding:0!important;border-radius:15px!important;background:#0D0D0D!important;color:#CCC}
+.menu-axes .category-btn img{width:84px!important;height:50px!important;padding:0!important;object-fit:contain!important}
+.menu-axes .category-btn b{font:400 12px "Inter",sans-serif!important;color:#8C8787!important;text-transform:lowercase!important}
+.menu-axes .category-btn.active{background:#0D0D0D!important}
+.menu-axes .category-btn.active b{color:var(--cat-color)!important}
+@media(max-width:840px){.menu-axes{width:600px!important;min-width:600px!important;margin-left:-20px!important}}

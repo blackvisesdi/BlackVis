@@ -1,0 +1,93 @@
+/* AJUSTE DE LARGURA DOS FILTROS
+   Mantém os filtros lado a lado em telas intermediárias sem permitir
+   que uma div invada a área da próxima. */
+
+@media (min-width: 841px) and (max-width: 1180px) {
+  .bottom-bar.menu {
+    gap: 8px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .bottom-bar.menu > .menu-nationality {
+    width: 28% !important;
+    min-width: 0 !important;
+    flex: 1 1 28% !important;
+  }
+
+  .bottom-bar.menu > .menu-axes {
+    width: 42% !important;
+    min-width: 0 !important;
+    flex: 1 1 42% !important;
+  }
+
+  .bottom-bar.menu > .menu-controls {
+    width: 30% !important;
+    min-width: 0 !important;
+    flex: 1 1 30% !important;
+  }
+
+  .menu-nationality .menu-section-title,
+  .menu-nationality .nationality-filters,
+  .menu-controls .search-wrapper {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .menu-nationality .nationality-filters {
+    display: flex !important;
+    position: relative !important;
+    gap: 4px !important;
+    padding: 10px 5px !important;
+  }
+
+  .menu-nationality .nat-btn {
+    position: static !important;
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 0 !important;
+    gap: 2px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+    font-size: clamp(9px, 1.15vw, 13px) !important;
+  }
+
+  .menu-nationality .nat-btn .nat-icon {
+    width: clamp(27px, 3.2vw, 40px) !important;
+    flex: 0 1 auto !important;
+  }
+
+  .menu-nationality .menu-reset {
+    position: static !important;
+    width: clamp(28px, 3.5vw, 38px) !important;
+    min-width: 28px !important;
+    flex: 0 0 clamp(28px, 3.5vw, 38px) !important;
+  }
+
+  .menu-axes .menu-section-title,
+  .menu-axes .bb-center {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .menu-axes .bb-center {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  .menu-axes .category-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  .menu-axes .category-btn b {
+    font-size: clamp(8px, 1vw, 12px) !important;
+  }
+
+  .menu-controls #dual-slider {
+    max-width: calc(100% - 70px) !important;
+  }
+}

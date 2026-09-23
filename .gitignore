@@ -21,8 +21,19 @@ npm-debug.log*
 .env.local
 .env.*.local
 
+# Credenciais do Google Drive e contas de serviço
+secrets/
+*.pem
+*.key
+credentials.json
+token.json
+service-account*.json
+
 # Build / SCSS map
 styles/style.css.map
 
 # Claude Code
 .claude/
+
+# Dados sensiveis
+.secrets/

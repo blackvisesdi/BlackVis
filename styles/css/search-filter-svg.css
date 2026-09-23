@@ -1,0 +1,15 @@
+/* Pesquisa por nome.svg (373 × 50). */
+/* Estiliza a pesquisa por nome, o contador, a linha e o controle de visibilidade. */
+.menu-controls{width:min(373px,100%)!important;min-width:0!important;box-sizing:border-box}
+.menu-controls .search-wrapper{position:relative!important;width:100%!important;height:50px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;gap:10px!important;padding:0 12px!important;border:1px solid #232323!important;border-radius:24.5px!important;background:#0D0D0D!important}
+.menu-controls .search-wrapper{--search-line-width:236px}
+.menu-controls .search-wrapper::after{content:"";position:absolute;left:12px;bottom:14px;width:236px;max-width:calc(100% - 125px);height:1px;background:linear-gradient(90deg,#B4B4B4 0%,#242424 var(--search-line-width),#242424 236px);pointer-events:none}
+.menu-controls #search-input{min-width:0!important;height:100%!important;flex:1 1 auto!important;transform:translateY(-2px);font:16px "Inter",sans-serif!important;color:#CCC!important;background:transparent!important}
+.menu-controls #search-input::placeholder{color:#8C8787!important;opacity:1}
+.menu-controls .search-wrapper>.menu-count{width:30px!important;min-width:30px!important;height:30px!important;padding:0!important;border-radius:15px!important;background:#0D0D0D!important;color:#CCC!important;font-size:14px!important}
+.menu-controls #toggle-all-names{width:44px!important;min-width:44px!important;height:30px!important;padding:0!important;border-radius:15px!important;background:#232323!important}
+.menu-controls #toggle-all-names .names-icon{display:block;width:44px!important;height:30px!important}
+.menu-controls #toggle-all-names .names-icon-on{display:none}
+.menu-controls #toggle-all-names.active .names-icon-off{display:none}
+.menu-controls #toggle-all-names.active .names-icon-on{display:block}
+@media(max-width:840px){.menu-controls{width:100%!important}.menu-controls .search-wrapper{max-width:373px!important}}

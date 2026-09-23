@@ -1,0 +1,2 @@
+/* Teste solicitado: Estrangeiro usa o mesmo estado visual de Brasileiro. */
+.menu-nationality .nat-btn[data-value=Estrangeira].active{height:35px!important;border:0!important;background:#232323!important;color:#ccc!important}.location-filters.is-foreign .location-group-button.active{background:#232323!important;border-color:#232323!important;color:#ccc!important}

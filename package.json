@@ -3,10 +3,15 @@
   "version": "1.0.0",
   "description": "Visualização interativa de designers negros com D3.js",
   "scripts": {
-    "dev": "npx live-server --port=5500 --open=index.html",
+    "works": "node --env-file-if-exists=.env server/works.cjs",
+    "dev": "concurrently --kill-others-on-fail \"npm run sass:watch\" \"node --env-file-if-exists=.env server/dev.cjs\"",
+    "sass": "sass styles/main.scss styles/css/style.css --no-source-map",
+    "sass:watch": "sass --watch styles/main.scss:styles/css/style.css --no-source-map",
     "deploy": "git push origin HEAD:gh-pages"
   },
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "concurrently": "^10.0.5",
+    "live-server": "^1.2.2",
+    "sass": "^1.105.0"
   }
 }

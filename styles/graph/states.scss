@@ -1,0 +1,11 @@
+// ESTADOS DO GRAFO
+// Utilitários de estado compartilhados pelos elementos do grafo; posicionamento
+// e renderização continuam sob responsabilidade do renderizador e do layout.
+
+.is-hidden {
+  display: none !important;
+}
+
+.is-active {
+  pointer-events: auto;
+}
