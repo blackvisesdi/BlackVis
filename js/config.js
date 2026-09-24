@@ -1,7 +1,7 @@
 // CONFIGURAÇÃO PÚBLICA — define o endereço da API usada pela interface.
 // Não coloque chaves, senhas ou arquivos de credenciais aqui.
 // Em produção, substitua o valor vazio pela URL pública do backend Node.
-window.BLACKVIS_API_URL = "";
+window.BLACKVIS_API_URL = "https://blackvis-api.onrender.com";
 
 // Descobre a porta da galeria quando outra instância já estiver usando a 5501.
 window.getBlackvisApiBase = (() => {
