@@ -1,0 +1,5 @@
+/* Controls visibility of person counters for the birth-year filter. */
+
+/* Controla quais contadores de pessoas aparecem no menu de filtros. */
+
+.menu-axes #axes-count { display: none !important; }

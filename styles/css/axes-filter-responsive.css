@@ -1,0 +1,15 @@
+/* Filtro dos eixos proporcional ao Filtro do eixo off.svg (600 × 189). */
+/* Mantém o filtro de adinkras utilizável em telas menores que a referência. */
+.menu-axes{width:min(600px,100%)!important;max-width:100%!important;min-width:0!important;flex:1 1 540px!important;box-sizing:border-box;overflow:hidden}
+.menu-axes .menu-section-title{position:relative;width:100%!important;height:52px!important;aspect-ratio:auto!important;box-sizing:border-box;padding:0 2%!important;border:1px solid #232323!important;border-radius:22px!important;background:#0D0D0D!important}
+.menu-axes .menu-section-title>.menu-count{position:absolute;right:9.5%;top:16.6667%;width:9.5%;min-width:0;height:66.6667%;padding:0;border-radius:999px;background:#0D0D0D;color:#CCC;font-size:clamp(10px,1.2vw,14px)}
+.menu-axes .menu-section-title>.menu-reset{position:absolute;right:1.25%;top:16.6667%;width:6.6667%;min-width:0;height:66.6667%;z-index:2}
+.menu-axes .menu-section-title>.menu-reset svg{width:100%;height:100%}
+.menu-axes .bb-center{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;column-gap:2%!important;width:100%!important;max-width:100%!important;height:auto!important;margin-top:10px!important;box-sizing:border-box!important}
+.menu-axes .category-btn{width:100%!important;height:auto!important;aspect-ratio:95/133;box-sizing:border-box!important;padding:5.64% 5.26% 6.77%!important;border:1px solid #232323!important;border-radius:20%!important;background:#0D0D0D!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
+.menu-axes .category-btn .menu-count{width:60%!important;min-width:0!important;height:22.56%!important;padding:0!important;border-radius:999px!important;background:#0D0D0D!important;color:#CCC;font-size:clamp(9px,1.1vw,14px)}
+.menu-axes .category-btn img{width:88.42%!important;height:37.55%!important;padding:0!important;object-fit:contain!important}
+.menu-axes .category-btn b{font:400 clamp(8px,1vw,12px) "Inter",sans-serif!important;color:#8C8787!important;text-transform:lowercase!important;white-space:nowrap}
+.menu-axes .category-btn.active{background:#0D0D0D!important;border-color:var(--cat-color)!important}
+.menu-axes .category-btn.active b{color:var(--cat-color)!important}
+@media(max-width:840px){.menu-axes{width:100%!important;flex-basis:100%!important;margin-left:0!important}.menu-axes .menu-section-title>.menu-count{font-size:11px}.menu-axes .category-btn b{font-size:9px}}

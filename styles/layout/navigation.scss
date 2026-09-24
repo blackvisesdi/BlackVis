@@ -1,0 +1,61 @@
+// LAYOUT DA NAVEGAÇÃO
+// Posiciona a navegação fixa superior, os links e o logotipo BlackVis centralizado.
+
+@use "../base/colors" as *;
+
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1400px;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  pointer-events: none;
+
+  .nav-link {
+    pointer-events: all;
+    background: $color-nav-link-bg;
+    color: $color-nav-link-text;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    padding: 7px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover,
+    &.active { background: $color-nav-link-bg-active; color: $color-nav-link-text-active; }
+  }
+
+  .nav-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: all;
+  }
+}
+
+.nav-logo-flip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  cursor: pointer;
+
+  .nav-logo-text { font-family: "Inter", sans-serif; font-size: 18px; font-weight: 400; color: $color-text-primary; letter-spacing: 0.5px; white-space: nowrap; line-height: 1; transition: opacity 0.18s ease; }
+  .nav-logo-img { position: absolute; width: 36px; height: 36px; opacity: 0; pointer-events: none; transition: opacity 0.18s ease; }
+  &:hover .nav-logo-text { opacity: 0; }
+  &:hover .nav-logo-img { opacity: 1; pointer-events: all; }
+}

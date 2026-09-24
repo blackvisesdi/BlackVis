@@ -1,0 +1,9 @@
+/* Seta compartilhada pelos cards de pessoas, técnicas e adinkras.
+   A visibilidade é controlada por _showCard e _hideCard em interactions.js. */
+
+.graph-area{position:absolute;inset:0}
+#search-results-back{position:absolute;left:24px;top:62px;z-index:20;width:64px;height:64px;padding:0;border:0;background:transparent;cursor:pointer}
+#search-results-back img{display:block;width:100%;height:100%}
+#search-results-back:hover img{content:url("../../assets/icons/back-on.svg")}
+#search-results-back:focus-visible{outline:2px solid #8C8787;outline-offset:2px;border-radius:50%}
+@media(max-width:840px){#search-results-back{left:12px;top:12px}}

@@ -1,0 +1,12 @@
+// RESET BÁSICO
+// Padroniza o dimensionamento e os espaçamentos antes do carregamento dos componentes.
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}

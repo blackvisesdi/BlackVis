@@ -1,0 +1,7 @@
+/* Estados visuais de limpar.svg e limpar off.svg. */
+.menu-reset { padding: 0 !important; border: 0 !important; background: transparent !important; color: inherit !important; overflow: hidden; }
+.menu-reset svg { display: block; width: 40px; height: 30px; }
+.menu-reset .reset-background { fill: #0D0D0D; }
+.menu-reset .reset-symbol { fill: #8C8787; }
+.menu-reset:active .reset-background { fill: #303030; }
+.menu-reset:active .reset-symbol { fill: #757575; }

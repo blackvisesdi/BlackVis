@@ -1,94 +1,30 @@
 # BlackVis
 
-Visualização interativa de designers negros e suas áreas de atuação, construída com D3.js v7.
+Visualização interativa de designers negros e suas áreas de atuação, construída com D3.js.
+O BlackVis é uma visualização interativa de designers negros, suas áreas de atuação, técnicas e conexões.
 
-## O que é
+## Requisitos
 
-BlackVis exibe um grafo de força interativo onde cada nó representa um designer, uma técnica ou uma área do design. Os nós se conectam por afinidade e área, e o usuário pode filtrar por ano de nascimento, área do design, nacionalidade, período ou nome.
+- Node.js 22 ou superior
+- npm
 
-## Como rodar
+## Instalação
 
-O projeto usa `fetch` para carregar o `data.json`, então precisa de um servidor local (não funciona abrindo `index.html` diretamente pelo sistema de arquivos).
+Na pasta do projeto, execute:
 
-**Recomendado — live-server com hot reload:**
-
-```bash
+```powershell
 npm install
+```
+
+## Executar localmente
+
+```powershell
 npm run dev
 ```
 
-Abre automaticamente em `http://localhost:5500`.
+## Organização do projeto
 
-**Alternativas:**
-
-```bash
-# npx sem instalar
-npx live-server --port=5500
-
-# Python
-python -m http.server 5500
-```
-
-## Estrutura de arquivos
-
-```
-BlackVis/
-├── index.html
-├── data.json                  (dados dos designers)
-├── js/
-│   ├── globals.js             (estado global, utilitários, sistema de cores)
-│   ├── draw.js                (renderização D3, simulação de forças, ícones)
-│   ├── interactions.js        (drag, foco de nó, card de perfil)
-│   └── data.js                (carregamento, pré-processamento, filtros)
-├── styles/
-│   ├── style.scss             (source)
-│   └── style.css              (CSS compilado)
-└── assets/icons/              (SVGs das técnicas)
-```
-
-## Schema do data.json
-
-```json
-{
-  "nodes": [
-    {
-      "id": "designer-001",
-      "Nome": "Nome Completo",
-      "Área do design": "Comunicação, Produto",
-      "Técnicas atualizadas": "Design gráfico, Tipografia",
-      "Data de nascimento": 1985,
-      "Data de falecimento (se houver)": null,
-      "Nacionalidade": "Brasileira",
-      "Período": "Contemporâneo",
-      "Cidade": "São Paulo",
-      "Estado": "SP",
-      "Minibio": "Breve descrição do designer.",
-      "Links extras": "https://portfolio.com"
-    }
-  ],
-  "links": []
-}
-```
-
-## Áreas do design suportadas
-
-| Área | Cor |
-|------|-----|
-| Comunicação | Azul |
-| Produto | Amarelo |
-| Interação | Rosa |
-| Serviço | Laranja |
-| Teórico | Verde |
-
-## Dependências
-
-- [D3.js v7](https://d3js.org/) — via CDN com SRI, sem instalação necessária
-
-## Compilar o SCSS
-
-Se editar `style.scss`, recompile para `style.css`:
-
-```bash
-npm install -g sass
-sass styles/style.scss styles/style.css
-```
+- `data/`: dados públicos de apoio, como as áreas e técnicas do design.
+- `js/`: lógica da aplicação, filtros, interações e visualização do grafo.
+- `styles/`: estilos SCSS e CSS gerados.
+- `assets/`: imagens, ícones e outros recursos visuais.

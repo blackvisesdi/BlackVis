@@ -1,0 +1,2 @@
+/* Regiões e continentes fechados compartilham a mesma linha quando couberem. */
+.menu-nationality .location-filters{display:flex!important;flex-wrap:wrap!important;align-content:flex-start!important;gap:10px 8px!important}.menu-nationality .location-group{flex:0 0 auto!important;margin:0!important}.menu-nationality .location-group:has(.location-options:not([hidden])){flex:1 0 100%!important}.menu-nationality .location-group:has(.location-options:not([hidden])) .location-options{display:flex!important;flex-wrap:wrap!important;padding-left:10px!important}

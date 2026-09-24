@@ -1,0 +1,22 @@
+/* Espaçamento do SVG Nacionalidade.svg (356 × 55). */
+/* Alinha os controles brasileiro, estrangeiro e limpar à referência SVG. */
+@media(max-width:900px){.menu-nationality .nationality-filters{width:calc(100% + 40px)!important;min-width:calc(100% + 40px)!important}}
+@media(min-width:421px){.menu-nationality .nationality-filters{position:relative!important;display:block!important;height:55px!important;padding:0!important}.menu-nationality .nat-btn{position:absolute!important;top:10.5px!important;min-width:0!important;height:34px!important;padding:0 10px!important}.menu-nationality .nat-btn[data-value=Brasileira]{left:10.6045px!important;width:127.399px!important}.menu-nationality .nat-btn[data-value=Estrangeira]{left:151.004px!important;width:141.393px!important}.menu-nationality .menu-reset{position:absolute!important;top:12.5px!important;left:305.896px!important;width:40px!important;height:30px!important;min-width:40px!important;margin:0!important}.menu-nationality .nat-btn.active{top:10px!important}}
+
+/* Em menus estreitos, o grupo se ajusta sem deixar o limpar escapar da barra. */
+@media(max-width:420px){.menu-nationality .nationality-filters{box-sizing:border-box!important}}
+
+/* Composição da referência Nacionalidade OFF.png em telas compactas. */
+@media(max-width:840px){
+  .menu-nationality{width:356px!important;min-width:356px!important;flex:0 0 356px!important;margin-left:-20px!important}
+  .menu-nationality .menu-section-title{width:356px!important;height:52px!important;box-sizing:border-box!important}
+  .menu-nationality .nationality-filters{position:relative!important;display:block!important;width:356px!important;min-width:356px!important;height:55px!important;margin-top:10px!important;padding:0!important;box-sizing:border-box!important;background:#0D0D0D!important;border:1px solid #232323!important;border-radius:27.5px!important}
+  .menu-nationality .nat-btn{position:absolute!important;top:10.5px!important;height:34px!important;min-width:0!important;padding:0 10px!important}
+  .menu-nationality .nat-btn[data-value=Brasileira]{left:10.6045px!important;width:127.399px!important}
+  .menu-nationality .nat-btn[data-value=Estrangeira]{left:151.004px!important;width:141.393px!important}
+  .menu-nationality .menu-reset{position:absolute!important;top:12.5px!important;left:305.896px!important;width:40px!important;min-width:40px!important;height:30px!important;margin:0!important}
+}
+
+/* A barra segue a largura exata do Nacionalidade OFF.svg. */
+.menu-nationality .nationality-filters{width:356px!important;min-width:356px!important}
+.menu-nationality .menu-section-title{width:356px!important;height:52px!important;box-sizing:border-box!important}

@@ -1,0 +1,13 @@
+// COMPONENTES DE CARD
+// Define o container externo compartilhado. Regras específicas de conteúdo ficam
+// na base até poderem ser extraídas sem alterar o layout.
+
+#card.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  padding: 28px 24px 40px;
+  background: transparent;
+  border: none;
+}
