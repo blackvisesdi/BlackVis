@@ -11,10 +11,10 @@ function forceNameCollision(bounds, dimensions) {
     const passes = focusedCategoryNames ? 6 : 4;
     const impulse = focusedCategoryNames ? 0.72 : 0.6;
     const retention = dimensions().retention ?? 0.32;
+    // Os limites dos rótulos não mudam durante as passagens deste tick.
+    const boxes = namedNodes.map(bounds);
 
     for (let pass = 0; pass < passes; pass++) {
-      const boxes = namedNodes.map(bounds);
-
       for (let i = 0; i < namedNodes.length; i++) {
         for (let j = i + 1; j < namedNodes.length; j++) {
           const a = namedNodes[i];
@@ -22,14 +22,17 @@ function forceNameCollision(bounds, dimensions) {
           const aa = boxes[i];
           const bb = boxes[j];
           const ax = a.fx ?? (a.x + a.vx * retention);
-          const ay = a.fy ?? (a.y + a.vy * retention);
           const bx = b.fx ?? (b.x + b.vx * retention);
-          const by = b.fy ?? (b.y + b.vy * retention);
           const left = ax + aa.right - bx - bb.left;
           const right = bx + bb.right - ax - aa.left;
+          // A maioria dos pares já está separada no eixo horizontal.
+          if (left <= 0 || right <= 0) continue;
+
+          const ay = a.fy ?? (a.y + a.vy * retention);
+          const by = b.fy ?? (b.y + b.vy * retention);
           const top = ay + aa.bottom - by - bb.top;
           const bottom = by + bb.bottom - ay - aa.top;
-          if (Math.min(left, right, top, bottom) <= 0) continue;
+          if (top <= 0 || bottom <= 0) continue;
 
           const axis = Math.min(left, right) < Math.min(top, bottom) ? "x" : "y";
           const delta = axis === "x"

@@ -1,0 +1,71 @@
+/* Ícones laterais e painel de atualização da visualização 2.1. */
+.bottom-bar.menu .menu-tools {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  width: 54px;
+  height: 100%;
+  min-width: 54px;
+  align-self: stretch;
+  overflow: visible;
+  pointer-events: auto;
+}
+.bottom-bar.menu .menu-tools .menu-help-slot { position: relative; left: auto; bottom: auto; align-self: auto; width: 54px; height: 54px; }
+.bottom-bar.menu .menu-tools .menu-help,
+.bottom-bar.menu .menu-tools .nav-icon { position: relative; display: block; width: 54px; height: 54px; flex: 0 0 54px; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.bottom-bar.menu .menu-tools .menu-help img { width: 54px; height: 54px; }
+.bottom-bar.menu .menu-tools .nav-icon img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.bottom-bar.menu .menu-tools .nav-icon-hover { opacity: 0; }
+.bottom-bar.menu .menu-tools .nav-icon:is(:hover,:focus-visible,[aria-expanded="true"]) .nav-icon-hover { opacity: 1; }
+.bottom-bar.menu .menu-tools .nav-icon:is(:hover,:focus-visible,[aria-expanded="true"]) .nav-icon-default { opacity: 0; }
+.bottom-bar.menu .menu-tools #nav-tutorial:not(:hover) .nav-icon-default { opacity: 1; }
+.bottom-bar.menu .menu-tools #nav-tutorial:not(:hover) .nav-icon-hover { opacity: 0; }
+.bottom-bar.menu .menu-tools .nav-updates[hidden] { display: none; }
+.bottom-bar.menu .menu-tools .nav-updates {
+  position: absolute;
+  left: -20px;
+  bottom: calc(100% + 34px);
+  width: 342px;
+  min-height: 166px;
+  padding: 20px;
+  border: 1px solid #666;
+  border-radius: 12px;
+  background: #232323;
+  color: #ddd;
+  font-family: "Inter", sans-serif;
+  z-index: 25;
+  pointer-events: auto;
+}
+.bottom-bar.menu .menu-tools .nav-updates-heading { display: flex; align-items: center; gap: 15px; min-height: 26px; font-size: 20px; }
+.bottom-bar.menu .menu-tools .nav-updates-close { order: 2; display: block; width: 22px; height: 30px; margin-left: auto; padding: 0; border: 0; background: transparent; color: #fff; font: 22px/.47 "Inter", sans-serif; cursor: pointer; }
+.bottom-bar.menu .menu-tools .nav-updates p { margin: 16px 0 12px; color: #ddd; font: 13px/1.25 "Inter", sans-serif; }
+.bottom-bar.menu .menu-tools .nav-updates-filtered { display: flex; justify-content: space-between; align-items: center; min-height: 32px; padding: 4px 10px; border: 1px solid #aaa; border-radius: 4px; color: #eee; font: 13px/1.2 "Inter", sans-serif; }
+.bottom-bar.menu .menu-tools .nav-updates-filtered span { font-size: 16px; }
+.bottom-bar.menu #axes-count { display: none !important; }
+
+@media (min-width: 1901px) {
+  .bottom-bar.menu { grid-template-columns: 54px minmax(0, 400px) minmax(0, 584px) minmax(0, 585px); }
+}
+@media (min-width: 1201px) and (max-width: 1900px) {
+  .bottom-bar.menu { grid-template-columns: 54px minmax(250px, 1fr) minmax(0, 584px) minmax(250px, 1fr); }
+}
+@media (max-width: 1900px) {
+  .bottom-bar.menu .menu-tools { gap: 7px; width: 44px; min-width: 44px; }
+  .bottom-bar.menu .menu-tools .menu-help-slot { width: 44px; height: 44px; }
+  .bottom-bar.menu .menu-tools .menu-help,
+  .bottom-bar.menu .menu-tools .nav-icon { width: 44px; height: 44px; flex-basis: 44px; }
+  .bottom-bar.menu .menu-tools .menu-help img { width: 44px; height: 44px; }
+  .bottom-bar.menu .menu-tools .nav-updates { left: 0; bottom: calc(100% + 20px); }
+}
+@media (max-width: 1200px) {
+  .bottom-bar.menu .menu-tools { position: fixed; left: 12px; bottom: calc(var(--filter-height) + 12px); height: auto; align-self: auto; }
+  .bottom-bar.menu .menu-tools .menu-help-slot { position: relative; left: auto; bottom: auto; }
+  .bottom-bar.menu .menu-tools .nav-updates { bottom: calc(100% + 12px); }
+}
+@media (max-width: 600px) {
+  .bottom-bar.menu .menu-tools { left: 8px; gap: 2px; }
+  .bottom-bar.menu .menu-tools .nav-updates { width: min(342px, calc(100vw - 24px)); }
+}

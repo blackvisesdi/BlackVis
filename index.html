@@ -1,169 +1,178 @@
-<!DOCTYPE html>
+<!doctype html>
+<!-- Página inicial do acervo, com equipe, publicações e acesso ao grafo. -->
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackVis</title>
-
-    <link rel="stylesheet" href="./styles/css/style.css?v=79">
-    <link rel="stylesheet" href="./styles/css/nationality-filter.css?v=1">
-    <link rel="stylesheet" href="./styles/css/nationality-fixes.css?v=1">
-    <link rel="stylesheet" href="./styles/css/nationality-closed-state.css?v=1">
-    <link rel="stylesheet" href="./styles/css/nationality-scroll-size.css?v=1">
-    <link rel="stylesheet" href="./styles/css/nationality-foreign-test.css?v=1">
-    <link rel="stylesheet" href="./styles/css/nationality-grid.css?v=1">
-    <link rel="stylesheet" href="./styles/css/nationality-button-spacing.css?v=8">
-    <link rel="stylesheet" href="./styles/css/nationality-reset-icon.css?v=1">
-    <link rel="stylesheet" href="./styles/css/axes-filter-responsive.css?v=7">
-    <link rel="stylesheet" href="./styles/css/search-filter-svg.css?v=8">
-    <link rel="stylesheet" href="./styles/css/year-filter-svg.css?v=3">
-    <link rel="stylesheet" href="./styles/css/filter-counts.css?v=1">
-    <link rel="stylesheet" href="./styles/css/search-selection-back.css?v=3">
-    <link rel="stylesheet" href="./styles/css/filter-overflow-fix.css?v=1">
-    <link rel="stylesheet" href="./styles/css/person-card.css?v=1">
-    <link rel="icon" href="./assets/Adinkra-01.png" type="image/png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BLACKVIS</title>
+  <link rel="stylesheet" href="./styles/css/style.css?v=101">
+  <script src="./js/config.js?v=11"></script>
+  <script src="./js/analytics/pageviews.js?v=3"></script>
 </head>
-<body>
-
-    <nav class="top-nav">
-        <span class="nav-link" id="nav-home">Home</span>
-        <div class="nav-center">
-            <div class="nav-logo-flip" id="nav-logo">
-                <span class="nav-logo-text">BlackVis</span>
-                <img src="assets/Adinkra-01.png" alt="BlackVIS" class="nav-logo-img" width="36" height="36">
-            </div>
-        </div>
-        <span class="nav-link" id="nav-sobre">Sobre</span>
+<body class="home-page">
+  <header class="site-header">
+    <nav class="site-section-nav site-main-nav" aria-label="Navegação principal">
+      <a class="site-nav-symbol" href="#inicio" aria-label="Início">
+        <img data-home-adinkra="blackvis" alt="">
+      </a>
+      <a href="#sobre">Sobre</a><a href="#equipe">Equipe</a>
+      <a href="#publicacoes">Publicações</a>
+      <a href="#metodologia">Metodologia</a>
+      <a href="#fundamentos">Fundamentos</a>
     </nav>
+  </header>
 
-    <div id="content-wrapper">
-
-        <!-- Área do grafo -->
-        <div class="graph-area">
-            <button id="search-results-back" type="button" aria-label="Voltar aos resultados da pesquisa" hidden><img src="assets/icons/back-off.svg" alt="" width="64" height="64"></button>
-            <div class="grafico-container">
-                <svg id="grafico-d3"></svg>
-            </div>
+  <main id="inicio">
+    <section class="home-hero" aria-labelledby="home-title">
+      <h1 id="home-title" class="visually-hidden">BLACKVIS — Acervo de designers negros</h1>
+      <div class="home-symbols" aria-label="Adinkras dos eixos do design">
+        <img data-home-adinkra="Produto" alt="Adinkra do eixo Produto">
+        <img data-home-adinkra="Serviço" alt="Adinkra do eixo Serviço">
+        <img data-home-adinkra="blackvis" alt="Símbolo BlackVis">
+        <img data-home-adinkra="Teórico" alt="Adinkra do eixo Teórico">
+        <img data-home-adinkra="Comunicação" alt="Adinkra do eixo Comunicação">
+        <img data-home-adinkra="Interação" alt="Adinkra do eixo Interação">
+      </div>
+      <div class="home-hero-copy">
+        <div class="home-hero-heading"><strong>BLACKVIS</strong><span>ACERVO DE DESIGNERS NEGROS</span>
+          <p>Criado pelo Coletivo Negro de Design da ESDI/UERJ em parceria com MediaLAB UERJ.</p>
         </div>
-
-        <!-- Painel de informações — 30% -->
-        <div class="info-panel">
-            <div id="card" class="card">
-
-                <!-- Conteúdo: técnica ou área de design -->
-                <div id="card-tec-area" style="display:none"></div>
-
-                <!-- Conteúdo: perfil de pessoa -->
-                <div id="card-pessoa" style="display:none">
-                    <div class="card-p-top">
-                        <div class="card-p-foto"></div>
-                        <div class="card-p-summary">
-                        <h2 id="card-p-nome"></h2>
-                        <div id="card-p-tecnicas"></div>
-                        <div class="card-p-campos">
-                            <p class="card-campo">
-                                <span class="campo-label">Nascimento</span>
-                                <span id="card-p-nasc" class="campo-valor"></span>
-                            </p>
-                        </div>
-                        <div id="card-p-local" class="card-p-locations"></div>
-                        </div>
-                    </div>
-                    <p id="card-p-bio"></p>
-                    <section id="card-p-works" hidden aria-label="Obras">
-                        <h3>Obras</h3>
-                        <div class="card-p-work-list" aria-label="Galeria de obras"></div>
-                    </section>
-                    <a id="btn-link-externo" class="btn" style="display:none"></a>
-                </div>
-
-            </div>
+        <div>
+          <h2>Acervo de designers negros</h2>
+          <p>Blackvis é um acervo de designers negros criado pelo Coletivo Negro de Design da ESDI/UERJ. A plataforma apresenta perfis de designers negros com objetivo de proporcionar maior representatividade e valorizar a cultura afro-brasileira na historiografia e no ensino de design no Brasil.</p></div>
+        <div>
+          <h2>Visualização em rede</h2>
+          <p>Nesta visualização, encontramos todos os designers de nosso acervo organizados em uma rede que os conecta por eixo de atuação e técnicas de design. É possível filtrá-la por eixo, nacionalidade e ano de nascimento.</p>
+          <a class="home-access-link" href="./visualizacao.html" aria-label="Acesse a visualização">
+            ACESSE A VISUALIZAÇÃO
+          </a>
         </div>
+      </div>
+    </section>
 
+    <p class="home-statement">VISUALIZAÇÃO DE DADOS COMO FERRAMENTA DE PESQUISA</p>
+
+    <section class="home-section home-about" id="sobre" aria-labelledby="about-title">
+      <div class="home-section-label">
+        <h2 id="about-title">Humanidades digitais, protagonismo negro e design antirracista</h2>
+      </div>
+      <div class="home-about-grid">
+        <div>
+          <h3>BLACKVIS</h3>
+          <p>é uma <em>iniciativa do Coletivo Negro de Design</em> da Escola Superior de Desenho Industrial da Universidade do Estado do Rio de Janeiro (ESDI/UERJ) em parceria com o projeto de extensão MediaLAB UERJ.</p>
+          <div class="home-about-actions">
+            <a class="site-outline-link" href="mailto:blackvis@esdi.uerj.br?subject=Indica%C3%A7%C3%A3o%20de%20designer">INDIQUE NOVOS DESIGNERS</a>
+            <a class="site-outline-link" href="mailto:blackvis@esdi.uerj.br?subject=Solicita%C3%A7%C3%A3o%20de%20altera%C3%A7%C3%A3o%20ou%20remo%C3%A7%C3%A3o">SOLICITE ALTERAÇÃO OU REMOÇÃO</a>
+          </div>
+        </div>
+        <p>Nosso objetivo é contribuir para maior representatividade de designers negros e da cultura afro-brasileira na historiografia e no ensino de design no Brasil. Blackvis é um projeto de humanidades digitais que apresenta seu banco de dados em visualizações interativas. Buscamos reunir informações dispersas na internet com intuito de facilitar a pesquisa, consulta e análise dos perfis de designers negros em diversas frentes de atuação. Nossa intenção é que professores, pesquisadores, estudantes e profissionais de design consultem a plataforma ao buscar referências de designers negros.</p>
+        <div>
+          <h3>VALORES</h3>
+          <ul class="home-values">
+            <li><strong>Protagonismo</strong><span>iniciativa de estudantes para estudantes</span></li>
+            <li><strong>Conhecimento aberto</strong><span>plataforma visa agregar e compartilhar o conhecimento que já está fragmentado na internet</span></li>
+            <li><strong>Comunidade</strong><span>promoção de vínculos entre coletivos, designers negros e iniciativas de design antirracista</span></li>
+            <li><strong>Efetividade</strong><span>acompanhamento e avaliação do impacto no currículo de design</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section" id="equipe" aria-labelledby="team-title">
+      <div class="home-section-label">
+        <h2 id="team-title">Conheça nossa equipe</h2>
+      </div>
+      <div class="home-team-grid" id="team-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="home-partners" aria-labelledby="partners-title"><h2 id="partners-title">REALIZAÇÃO</h2><div class="home-partner-slots"><img src="assets/partners/cnd.svg" alt="Coletivo Negro de Design ESDI/UERJ"><img src="assets/partners/medialab.svg" alt="MediaLAB UERJ"><img src="assets/partners/esdi.svg" alt="ESDI"><img src="assets/partners/ppdesdi.svg" alt="PPDESDI"><img src="assets/partners/uerj.svg" alt="UERJ"></div></section>
+
+    <section class="home-section" id="publicacoes" aria-labelledby="publications-title">
+      <div class="home-section-label">
+        <h2 id="publications-title">Produção científica e<br> documentação acadêmica</h2>
+      </div>
+      <div class="home-publications" id="publications-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="home-section" id="metodologia" aria-labelledby="method-title">
+      <div class="home-section-label">
+        <h2 id="method-title">Como reunimos referências dispersas e<br> estruturamos uma base verificável, ética e colaborativa</h2>
+      </div>
+      <div class="home-method-text">
+        <p>O projeto Blackvis se inicia dentro da universidade como iniciativa de estudantes do Coletivo Negro de Design da ESDI e é formalizado como projeto de extensão e pesquisa sob coordenação dos discentes Larissa Lopes e Jésus Baro e da professora Barbara Castro.</p>
+        <p>Pela sua natureza colaborativa e de conhecimento aberto, compartilhamos neste documento aspectos metodológicos de como a base foi criada, considerando que é um processo contínuo e os critérios estão sujeitos a mudanças de acordo com o amadurecimento da pesquisa.</p>
+      </div>
+      <div class="home-reference-cards">
+        <article>
+          <h3>Como citar esse projeto</h3>
+          <button type="button" data-copy-citation aria-label="Copiar referência do projeto" title="Copiar referência"><img src="./assets/icons/home/copy.svg" alt=""></button>
+          <p class="home-citation">LOPES, L.; SANTOS, J.; ALVES, I.; COUTINHO, B.; GUILLEN, R.; OLIVEIRA, M. E.; CASTRO, B. <strong>Blackvis: Acervo de designers negros.</strong> Rio de Janeiro, 2026. Base de dados on-line.</p>
+          <p><strong>Disponível em:</strong><br><a href="https://www.blackvis.esdi.uerj.br">https://www.blackvis.esdi.uerj.br</a></p>
+        </article>
+        <article>
+          <h3>Como citar esse<br> documento</h3>
+          <button type="button" data-copy-citation aria-label="Copiar referência do documento" title="Copiar referência"><img src="./assets/icons/home/copy.svg" alt=""></button>
+          <button type="button" class="home-reference-download" aria-label="Documento ainda não disponível para baixar" title="Documento ainda não disponível para baixar" disabled><img src="./assets/icons/home/baixar.svg" alt=""></button>
+          <p class="home-citation">LOPES, L.; SANTOS, J.; CASTRO, B. <strong>Blackvis: Metodologia do acervo.</strong> Rio de Janeiro, 2026.</p>
+          <p><strong>Disponível em:</strong><br><a href="https://www.blackvis.esdi.uerj.br">https://www.blackvis.esdi.uerj.br</a></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="home-section" id="fundamentos" aria-labelledby="foundations-title">
+      <div class="home-section-label"><h2 id="foundations-title">Para além do acervo: bases teóricas para<br> uma educação antirracista no design</h2></div>
+      <div class="home-foundations-grid">
+        <div class="home-foundations-text">
+          <p>O projeto Blackvis é uma iniciativa com foco no ensino do design no Brasil. No entanto, para realização de uma verdadeira educação antirracista é preciso conhecer e estudar a teoria de questões étnico-raciais no Brasil.</p>
+          <p>Com intuito de facilitar a introdução ao campo de conhecimento reunimos algumas referências bibliográficas e conteúdos interessantes para professores e estudantes no início dessa jornada. Além disso, reunimos produções bibliográficas de autores negros sobre design.</p>
+        </div>
+        <article class="home-bibliography"><h3>Bibliografia</h3><button type="button" class="home-bibliography-download" aria-label="Planilha de bibliografia ainda não disponível para baixar" title="Planilha ainda não disponível" disabled><img src="./assets/icons/home/baixar.svg" alt=""></button><p><strong>Acesse nossa planilha:</strong></p><p class="home-bibliography-link">Referências bibliográficas</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="home-footer"><div class="home-footer-inner">
+    <div class="home-footer-identity">
+      <strong>BLACKVIS</strong>
+      <p>ACERVO DE DESIGNERS NEGROS</p>
+      <p>Criado pelo Coletivo Negro de Design da ESDI/UERJ em parceria com MediaLAB UERJ.</p>
     </div>
+    <div class="home-footer-contact">
+      <p>Visualização de dados como<br> ferramenta de pesquisa.</p>
+      <div class="home-footer-links">
+        <a href="https://www.instagram.com/_blackvis/" target="_blank" rel="noopener noreferrer">@_blackvis</a>
+        <a href="mailto:blackvis@esdi.uerj.br">blackvis@esdi.uerj.br</a>
+        <button type="button" data-open-cookie-settings>Preferências de privacidade</button>
+      </div>
+    </div>
+  </div></footer>
 
-    <footer class="bottom-bar menu" aria-label="Menu de filtros">
-        <button id="menu-help" class="menu-help" type="button" aria-label="Ajuda">?</button>
-
-        <section class="menu-section menu-nationality" aria-label="Filtro de nacionalidade">
-            <div class="menu-section-title">Nacionalidade <span id="nationality-count" class="menu-count">000</span></div>
-            <div class="nationality-filters">
-                <button class="nat-btn" data-value="Brasileira">
-                    <img src="assets/icons/iconBR.svg" class="nat-icon" alt="">
-                    <span>Brasileiro</span>
-                </button>
-                <button class="nat-btn" data-value="Estrangeira">
-                    <img src="assets/icons/iconEXT.svg" class="nat-icon" alt="">
-                    <span>Estrangeiro</span>
-                </button>
-                <button id="menu-reset" class="menu-reset" type="button" aria-label="Limpar filtros">
-                    <svg viewBox="0 0 40 30" aria-hidden="true" focusable="false">
-                        <rect class="reset-background" width="40" height="30" rx="15"/>
-                        <path class="reset-symbol" d="M27.5003 15C27.5014 15.9853 27.3078 16.9612 26.9304 17.8714C26.5531 18.7816 25.9995 19.6082 25.3015 20.3038C24.6061 21.001 23.7798 21.5539 22.87 21.9308C21.9603 22.3077 20.985 22.5012 20.0003 22.5C19.0152 22.5 18.0398 22.3059 17.1298 21.9288C16.2198 21.5518 15.393 20.9991 14.6965 20.3025C14.0127 19.6196 13.4673 18.8111 13.0903 17.9212C13.0376 17.8072 13.0084 17.6838 13.0043 17.5583C13.0002 17.4328 13.0214 17.3077 13.0666 17.1906C13.1118 17.0734 13.1801 16.9665 13.2674 16.8762C13.3547 16.786 13.4593 16.7142 13.5749 16.6651C13.6905 16.616 13.8147 16.5906 13.9403 16.5905C14.0659 16.5904 14.1902 16.6155 14.3059 16.6643C14.4216 16.7132 14.5263 16.7847 14.6138 16.8748C14.7013 16.9649 14.7698 17.0717 14.8153 17.1888C15.1015 17.86 15.5065 18.4625 16.0228 18.9762C16.5378 19.4937 17.1403 19.8987 17.8115 20.185C18.5052 20.4743 19.2493 20.6233 20.0009 20.6233C20.7525 20.6233 21.4966 20.4743 22.1903 20.185C22.8579 19.9018 23.4644 19.4922 23.9765 18.9787C24.4995 18.4565 24.9143 17.8363 25.1974 17.1536C25.4806 16.4709 25.6264 15.7391 25.6265 15C25.6276 14.2612 25.4824 13.5296 25.1995 12.8471C24.9165 12.1647 24.5013 11.545 23.9778 11.0237C23.4652 10.5091 22.8577 10.0986 22.189 9.815C21.4954 9.52568 20.7512 9.37672 19.9996 9.37672C19.2481 9.37672 18.5039 9.52568 17.8103 9.815C16.7971 10.2435 15.9318 10.9597 15.3215 11.875H17.8115C18.0602 11.875 18.2986 11.9738 18.4744 12.1496C18.6503 12.3254 18.749 12.5639 18.749 12.8125C18.749 13.0611 18.6503 13.2996 18.4744 13.4754C18.2986 13.6512 18.0602 13.75 17.8115 13.75H13.4365C13.1879 13.75 12.9494 13.6512 12.7736 13.4754C12.5978 13.2996 12.499 13.0611 12.499 12.8125V8.4375C12.499 8.18886 12.5978 7.9504 12.7736 7.77459C12.9494 7.59877 13.1879 7.5 13.4365 7.5C13.6852 7.5 13.9236 7.59877 14.0994 7.77459C14.2753 7.9504 14.374 8.18886 14.374 8.4375V10.04C14.4774 9.92167 14.5853 9.80708 14.6978 9.69625C15.3803 9.01255 16.1884 8.46714 17.0778 8.09C18.0026 7.70203 18.9955 7.50222 19.9984 7.50222C21.0013 7.50222 21.9942 7.70203 22.919 8.09C23.8098 8.46709 24.6193 9.01295 25.3028 9.6975C26.7089 11.1039 27.4989 13.0112 27.499 15H27.5003Z"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="location-filter-viewport">
-            <div class="location-filter-viewport">
-                <div id="location-filters" class="location-filters" hidden aria-live="polite"></div>
-                <div class="location-scrollbar" aria-hidden="true"><span class="location-scrollbar-thumb"></span></div>
-            </div>
-                <div class="location-scrollbar" aria-hidden="true"><span class="location-scrollbar-thumb"></span></div>
-            </div>
-        </section>
-
-        <section class="menu-section menu-axes" aria-label="Filtros por eixos do design">
-            <div class="menu-section-title">Eixos do Design <span id="axes-count" class="menu-count" aria-hidden="true"></span><button id="axes-reset" class="menu-reset" type="button" aria-label="Limpar filtros"></button></div>
-            <div class="bb-center">
-                <button class="category-btn" data-value="Comunicação" style="--cat-color: #628CD9"><span class="menu-count">0</span><img src="assets/icons/comunica/Adinkra_Comunicação.png" alt=""><b>comunicação</b></button>
-                <button class="category-btn" data-value="Produto" style="--cat-color: #FADA71"><span class="menu-count">0</span><img src="assets/icons/produ/Adinkra-05.png" alt=""><b>produto</b></button>
-                <button class="category-btn" data-value="Teórico" style="--cat-color: #56B250"><span class="menu-count">0</span><img src="assets/icons/teori/Adinkra_Teórico.png" alt=""><b>teórico</b></button>
-                <button class="category-btn" data-value="Interação" style="--cat-color: #E578BA"><span class="menu-count">0</span><img src="assets/icons/intera/Adinkra_Interação.png" alt=""><b>interação</b></button>
-                <button class="category-btn" data-value="Serviço" style="--cat-color: #E58967"><span class="menu-count">0</span><img src="assets/icons/servi/Adinkra_Serviço.png" alt=""><b>serviço</b></button>
-            </div>
-        </section>
-
-        <section class="menu-section menu-controls" aria-label="Busca e período">
-            <div class="search-wrapper">
-                <input type="search" id="search-input" placeholder="Pesquisa por nome" aria-label="Pesquisa por nome">
-                <span id="search-count" class="menu-count" aria-hidden="true"></span>
-                <button id="toggle-all-names" class="menu-icon-button" type="button" aria-label="Mostrar todos os nomes" aria-pressed="false">
-                    <img class="names-icon names-icon-off" src="assets/icons/ver-nomes-off.svg" alt="">
-                    <img class="names-icon names-icon-on" src="assets/icons/ver-nomes-on.svg" alt="">
-                </button>
-            </div>
-            <div class="year-section-title">
-                <span class="year-title-copy">Ano de nascimento <small id="year-range-description"></small></span>
-                <span id="year-count" class="menu-count">0</span>
-            </div>
-            <div class="year-period-filters" aria-label="Disponibilidade da data de nascimento">
-                <button class="year-period-btn" data-period="Sem dados" type="button">Sem dados</button>
-                <button class="year-period-btn" data-period="Com dados" type="button">Com dados</button>
-                <button class="year-period-btn active" data-period="Todos" type="button">Ver todos</button>
-                <button id="year-reset" class="menu-reset" type="button" aria-label="Limpar filtro de ano"></button>
-            </div>
-            <div id="year-slider">
-                <span id="value-min"></span>
-                <svg id="dual-slider"></svg>
-                <span id="value-max"></span>
-            </div>
-        </section>
-        <p class="bb-description" id="bb-description" hidden></p>
-    </footer>
-
-    <script src="https://d3js.org/d3.v7.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
-    <script src="js/base/core.js?v=2"></script>
-    <script src="js/base/utilities.js?v=1"></script>
-    <script src="js/config.js?v=4"></script>
-    <script src="js/core/globals.js?v=59"></script>
-    <script src="js/interface/card-scrollbar.js?v=1"></script>
-    <script src="js/interface/works.js?v=2"></script>
-    <script src="js/interface/interactions.js?v=120"></script>
-    <script src="js/interface/messages.js?v=1"></script>
-    <script src="js/graph/name-collision.js?v=7"></script>
-    <script src="js/graph/renderer.js?v=86"></script>
-    <script src="js/filters/engine.js?v=69"></script>
-
+  <dialog id="publication-dialog" class="publication-dialog" aria-labelledby="publication-dialog-title"><button type="button" id="publication-close" aria-label="Fechar vídeo">×</button><h2 id="publication-dialog-title">Apresentação BlackVis</h2><div id="publication-media"><p>O vídeo será disponibilizado aqui.</p></div></dialog>
+  <section id="cookie-banner" class="cookie-banner" role="dialog" aria-modal="true" aria-labelledby="cookie-banner-title" hidden>
+    <div class="cookie-banner-card">
+      <h2 id="cookie-banner-title">Olá!</h2>
+      <p class="cookie-banner-lead">Somos um projeto de extensão universitária.</p>
+      <p>Com sua autorização, usamos cookies para analisar acessos, cliques, tempo de navegação e localização aproximada. Essas informações ajudam a melhorar a plataforma, elaborar relatórios de impacto e apoiar a continuidade do projeto.</p>
+      <p>Você pode aceitar ou recusar os cookies de análise e alterar sua escolha a qualquer momento.</p>
+      <p class="cookie-banner-more">Saiba mais em: <a href="./aviso-de-privacidade.html">Preferências de privacidade</a></p>
+      <div class="cookie-banner-categories"><span>Cookies estritamente necessários</span><span>Cookies de análise (Google Analytics 4)</span></div>
+      <div class="cookie-banner-actions"><button id="cookie-reject" type="button">Recusar todos</button><button id="cookie-accept" type="button">Aceitar Todos</button></div>
+    </div>
+  </section>
+  <section id="cookie-settings" class="cookie-settings" role="dialog" aria-modal="true" aria-labelledby="cookie-settings-title" hidden>
+    <div class="cookie-settings-card">
+      <h2 id="cookie-settings-title">Configurar cookies</h2>
+      <p>Cookies de análise ajudam a entender acessos, cliques, tempo de navegação e localização aproximada.</p>
+      <label><input id="cookie-analytics-choice" type="checkbox"> Permitir cookies de análise</label>
+      <div class="cookie-settings-actions">
+        <button id="cookie-save" type="button">Salvar escolha</button>
+        <button id="cookie-settings-close" type="button">Voltar</button>
+      </div>
+      <a href="./aviso-de-privacidade.html">Aviso de Privacidade</a>
+    </div>
+  </section>
+  <script src="./js/analytics/consent.js?v=1"></script>
+  <script src="./js/pages/home/home-content.js?v=2"></script>
+  <script src="./js/pages/home/home.js?v=5"></script>
 </body>
 </html>

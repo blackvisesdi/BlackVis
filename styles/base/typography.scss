@@ -1,0 +1,27 @@
+// Tipografia e regras globais da aplicação.
+
+@use './colors' as *;
+
+@font-face {
+  font-family: "Inter";
+  src: url("../../assets/fonts/Inter_24pt-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+
+html { font-family: "Inter", sans-serif; }
+button, input, select, textarea { font-family: inherit; }
+
+// === BASE ===
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  color: $color-text-primary;       // texto padrão global
+  background-color: $color-bg-app;  // fundo preto da aplicação
+  overflow: hidden;
+}

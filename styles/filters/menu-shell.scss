@@ -1,0 +1,42 @@
+// === MENU DE FILTROS ===
+#content-wrapper { bottom: 210px; }
+
+.bottom-bar.menu {
+  width: min(100%, 1540px);
+  min-height: 196px;
+  padding: 0 28px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 58px;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: "Inter", sans-serif;
+}
+
+.menu-help, .menu-reset, .menu-icon-button {
+  border: 0;
+  cursor: pointer;
+  color: rgba(255,255,255,.45);
+  background: #252525;
+  transition: background .18s ease, color .18s ease;
+}
+
+.menu-help {
+  width: 50px; height: 50px; margin-top: 10px;
+  border-radius: 50%; font-size: 38px; line-height: 1; font-weight: 700;
+}
+
+.menu-section { min-width: 0; }
+.menu-section-title, .year-section-title {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 50px; padding: 0 12px; border-radius: 28px;
+  background: #242424; font-size: 16px; color: rgba(255,255,255,.75);
+  cursor: default;
+}
+
+.menu-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; height: 30px; padding: 0 11px; border-radius: 18px;
+  background: #333; color: rgba(255,255,255,.63); font-size: 14px;
+  font-weight: 400; line-height: 1;
+}

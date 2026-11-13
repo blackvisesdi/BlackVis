@@ -1,20 +1,27 @@
-/* GALERIA DO DRIVE — lista imagens das pastas cadastradas e repassa miniaturas.
+/* API BLACKVIS — dados e ícones do Drive; galeria de obras opcional.
  * A chave fica no ambiente do servidor. Nenhuma imagem é gravada em disco.
  * Somente pastas do banco são aceitas; cache de metadados dura cinco minutos.
  */
 const http = require('node:http');
 const crypto = require('node:crypto');
-const { readFile } = require('node:fs/promises');
+const { readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
 const cache = new Map();
 const techniqueIndexCache = { until: 0, files: new Map() };
 const techniqueContentCache = new Map();
+const adinkraIndexCache = { until: 0, files: new Map() };
+const homeAdinkraIndexCache = { until: 0, files: new Map() };
 const designersFile = process.env.DESIGNERS_DATA_FILE || path.join(__dirname, '../secrets/designers.json');
 const serviceAccountFile = process.env.GOOGLE_SERVICE_ACCOUNT_FILE || process.env.GOOGLE_APPLICATION_CREDENTIALS;
 const techniquesFolderId = process.env.TECHNIQUES_DRIVE_FOLDER_ID || '1jpMSbLnRn3p27HaIF_Ldy8x92fupFMWR';
+const adinkraFolderId = process.env.ADINKRA_DRIVE_FOLDER_ID || '1RK3j9CyRNffro78-tBJqaAdvWPr0dfyc';
+const homeAdinkraFolderId = process.env.HOME_ADINKRA_DRIVE_FOLDER_ID || '1JCGvWDHOJeUT_KBcHqTzdQx_nbr5Wr7U';
+// Lançamento sem obras: a API de galeria só volta com ativação explícita.
+const worksEnabled = process.env.WORKS_ENABLED === 'true';
 let serviceAccount;
 let accessToken;
 let accessTokenExpiresAt = 0;
+let accessTokenPromise;
 
 async function readDesigners() {
   return JSON.parse(await readFile(designersFile, 'utf8'));
@@ -70,6 +77,39 @@ function normalizeDriveName(value) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
+// Nomes históricos dos arquivos do Drive, diferentes dos rótulos da interface.
+const techniqueFileAliases = new Map(Object.entries({
+  'Direção de arte': 'DirecaoArte',
+  'Design de superfície': 'designSuperficie',
+  'Design de objetos industriais': 'designObjetos',
+  'Design de mobiliário': 'designMobiliario',
+  'Moda e têxtil': 'modaTextil',
+  'Prática 3D': 'praticas3d',
+  'Design de interiores': 'designInteriores',
+  'Design de adereços': 'designAderecos',
+  'UI Design de interface': 'desingInterface',
+  'UX Experiência do usuário': 'experienciaUsuario',
+  'CX Experiência do Cliente': 'BL__experienciaCliente',
+  'Design para Impacto Social': 'BL__impactoSocial',
+  'Branding': 'BL__branding',
+  'Curadoria': 'BL__curadoria',
+  'Economia criativa': 'BL__economiaCriativa',
+  'Educação': 'educacacao',
+  'Escrita e publicação': 'escritaPublicacao',
+  'Ativismo e justiça social': 'AtivismoJustica',
+  'Relações étnico-raciais': 'relacoesEtinico',
+  'Design e gênero': 'designGenero'
+}).map(([name, file]) => [normalizeDriveName(name), normalizeDriveName(file)]));
+
+const adinkraFileNames = new Map(Object.entries({
+  blackvis: '-blackvis-',
+  Comunicação: '-comunicação-',
+  Produto: '-produto-',
+  Teórico: '-teórico-',
+  Interação: '-interação-',
+  Serviço: '-serviços-'
+}).map(([name, file]) => [normalizeDriveName(name), normalizeDriveName(file)]));
+
 function base64Url(value) {
   return Buffer.from(value).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -81,35 +121,42 @@ async function getServiceAccount() {
 }
 
 async function getDriveHeaders() {
-  const account = await getServiceAccount();
-  if (!account) return {};
   if (accessToken && accessTokenExpiresAt > Date.now() + 60000) {
     return { Authorization: `Bearer ${accessToken}` };
   }
-  const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-  const payload = base64Url(JSON.stringify({
-    iss: account.client_email,
-    scope: 'https://www.googleapis.com/auth/drive.readonly',
-    aud: account.token_uri,
-    exp: Math.floor(Date.now() / 1000) + 3600,
-    iat: Math.floor(Date.now() / 1000)
-  }));
-  const signer = crypto.createSign('RSA-SHA256');
-  signer.update(`${header}.${payload}`);
-  const assertion = `${header}.${payload}.${base64Url(signer.sign(account.private_key))}`;
-  const tokenResponse = await fetch(account.token_uri, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion
-    }),
-    signal: AbortSignal.timeout(15000)
-  });
-  if (!tokenResponse.ok) throw fail(502, 'Não foi possível autenticar a conta de serviço do Google Drive.');
-  const token = await tokenResponse.json();
-  accessToken = token.access_token;
-  accessTokenExpiresAt = Date.now() + Number(token.expires_in || 3600) * 1000;
+  if (!accessTokenPromise) {
+    accessTokenPromise = (async () => {
+      const account = await getServiceAccount();
+      if (!account) return null;
+      const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+      const payload = base64Url(JSON.stringify({
+        iss: account.client_email,
+        scope: 'https://www.googleapis.com/auth/drive.readonly',
+        aud: account.token_uri,
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        iat: Math.floor(Date.now() / 1000)
+      }));
+      const signer = crypto.createSign('RSA-SHA256');
+      signer.update(`${header}.${payload}`);
+      const assertion = `${header}.${payload}.${base64Url(signer.sign(account.private_key))}`;
+      const tokenResponse = await fetch(account.token_uri, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+          assertion
+        }),
+        signal: AbortSignal.timeout(15000)
+      });
+      if (!tokenResponse.ok) throw fail(502, 'Não foi possível autenticar a conta de serviço do Google Drive.');
+      const token = await tokenResponse.json();
+      accessToken = token.access_token;
+      accessTokenExpiresAt = Date.now() + Number(token.expires_in || 3600) * 1000;
+      return accessToken;
+    })().finally(() => { accessTokenPromise = null; });
+  }
+  const token = await accessTokenPromise;
+  if (!token) return {};
   return { Authorization: `Bearer ${accessToken}` };
 }
 
@@ -158,7 +205,7 @@ async function listDriveChildren(parentId) {
     });
     const config = await getDriveRequestConfig(url);
     const response = await fetch(url, { ...config, signal: AbortSignal.timeout(15000) });
-    if (!response.ok) throw fail(502, 'Não foi possível listar a pasta de técnicas no Google Drive.');
+    if (!response.ok) throw fail(502, 'Não foi possível listar a pasta de ícones no Google Drive.');
     const body = await response.json();
     files.push(...(body.files || []));
     pageToken = body.nextPageToken;
@@ -182,7 +229,7 @@ async function techniqueFiles() {
         pendingFolders.push(file.id);
         continue;
       }
-      if (file.mimeType !== 'image/svg+xml' && !/\.svg$/i.test(file.name)) continue;
+      if (!['image/svg+xml', 'image/png'].includes(file.mimeType) && !/\.(svg|png)$/i.test(file.name)) continue;
       result.set(normalizeDriveName(file.name), file);
     }
   }
@@ -193,8 +240,50 @@ async function techniqueFiles() {
 
 async function readTechniqueIcon(name) {
   const files = await techniqueFiles();
-  const file = files.get(normalizeDriveName(name));
-  if (!file) throw fail(404, 'SVG da técnica não encontrado no Drive.');
+  const key = normalizeDriveName(name);
+  const file = files.get(key) || files.get(techniqueFileAliases.get(key));
+  if (!file) throw fail(404, 'Ícone da técnica não encontrado no Drive.');
+  return readDriveIcon(file);
+}
+
+async function adinkraFiles() {
+  if (adinkraIndexCache.until > Date.now()) return adinkraIndexCache.files;
+  const files = new Map();
+  for (const file of await listDriveChildren(adinkraFolderId)) {
+    if (file.mimeType === 'image/svg+xml') files.set(normalizeDriveName(file.name), file);
+  }
+  adinkraIndexCache.files = files;
+  adinkraIndexCache.until = Date.now() + 300000;
+  return files;
+}
+
+async function readAdinkraIcon(name) {
+  const expectedName = adinkraFileNames.get(normalizeDriveName(name));
+  if (!expectedName) throw fail(404, 'Adinkra não encontrado.');
+  const file = (await adinkraFiles()).get(expectedName);
+  if (!file) throw fail(404, 'Ícone do adinkra não encontrado no Drive.');
+  return readDriveIcon(file);
+}
+
+async function readHomeAdinkraIcon(name) {
+  if (homeAdinkraIndexCache.until <= Date.now()) {
+    const files = new Map();
+    for (const file of await listDriveChildren(homeAdinkraFolderId)) {
+      if (file.mimeType === 'image/png' || /\.png$/i.test(file.name)) {
+        files.set(normalizeDriveName(file.name), file);
+      }
+    }
+    homeAdinkraIndexCache.files = files;
+    homeAdinkraIndexCache.until = Date.now() + 300000;
+  }
+  const expected = normalizeDriveName(name);
+  const alias = expected === 'servico' ? 'servico' : expected;
+  const file = homeAdinkraIndexCache.files.get(alias);
+  if (!file) throw fail(404, 'Adinkra da página inicial não encontrado no Drive.');
+  return readDriveIcon(file);
+}
+
+async function readDriveIcon(file) {
   const saved = techniqueContentCache.get(file.id);
   if (saved && saved.until > Date.now()) return saved;
 
@@ -202,9 +291,12 @@ async function readTechniqueIcon(name) {
   url.searchParams.set('alt', 'media');
   const config = await getDriveRequestConfig(url);
   const response = await fetch(url, { ...config, signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw fail(502, 'Não foi possível carregar o SVG da técnica.');
+  if (!response.ok) throw fail(502, 'Não foi possível carregar o ícone no Google Drive.');
   const content = Buffer.from(await response.arrayBuffer());
-  const savedIcon = { content, until: Date.now() + 300000 };
+  const contentType = file.mimeType === 'image/png' || /\.png$/i.test(file.name)
+    ? 'image/png'
+    : 'image/svg+xml';
+  const savedIcon = { content, contentType, until: Date.now() + 300000 };
   techniqueContentCache.set(file.id, savedIcon);
   return savedIcon;
 }
@@ -222,6 +314,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/health') {
       await getDriveHeaders();
       const techniqueFilesFound = await techniqueFiles();
+      const adinkraFilesFound = await adinkraFiles();
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store');
       res.end(JSON.stringify({
@@ -229,28 +322,43 @@ const server = http.createServer(async (req, res) => {
         api: 'connected',
         drive: 'connected',
         techniquesFolder: Boolean(techniquesFolderId),
+        techniqueIcons: techniqueFilesFound.size,
         techniqueSvgs: techniqueFilesFound.size,
-        techniqueSvgsStatus: techniqueFilesFound.size > 0 ? 'connected' : 'empty'
+        techniqueSvgsStatus: techniqueFilesFound.size > 0 ? 'connected' : 'empty',
+        adinkraIcons: [...adinkraFileNames.values()].filter(name => adinkraFilesFound.has(name)).length
       }));
       return;
     }
     if (url.pathname === '/api/designers') {
       const designers = await readDesigners();
+      const dataFile = await stat(designersFile);
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store');
-      res.end(JSON.stringify({ designers: designers.map(publicDesigner) }));
+      res.end(JSON.stringify({ designers: designers.map(publicDesigner), lastUpdated: dataFile.mtime.toISOString() }));
       return;
     }
     if (url.pathname === '/api/techniques/icon') {
       const name = url.searchParams.get('name');
       if (!name) throw fail(400, 'Informe o nome da técnica.');
       const icon = await readTechniqueIcon(name);
-      res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+      res.setHeader('Content-Type', icon.contentType);
+      res.setHeader('Cache-Control', 'private, max-age=300');
+      res.end(icon.content);
+      return;
+    }
+    if (url.pathname === '/api/adinkras/icon') {
+      const name = url.searchParams.get('name');
+      if (!name) throw fail(400, 'Informe o nome do adinkra.');
+      const icon = url.searchParams.get('variant') === 'home'
+        ? await readHomeAdinkraIcon(name)
+        : await readAdinkraIcon(name);
+      res.setHeader('Content-Type', icon.contentType);
       res.setHeader('Cache-Control', 'private, max-age=300');
       res.end(icon.content);
       return;
     }
     if (url.pathname !== '/api/works' && url.pathname !== '/api/works/thumbnail') throw fail(404, 'Rota não encontrada.');
+    if (!worksEnabled) throw fail(404, 'A galeria de obras ainda não está disponível.');
     const folders = await registeredFolders();
     const personId = url.searchParams.get('person');
     const folder = folders.get(personId);
@@ -295,7 +403,7 @@ if (require.main === module) {
   const port = Number(process.env.PORT || process.env.WORKS_PORT || 5501);
   const host = process.env.WORKS_HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
   server.listen(port, host, () => {
-  console.log('Galeria de obras iniciada. Porta:', server.address().port);
+  console.log('API BlackVis iniciada. Porta:', server.address().port);
   });
 }
 module.exports = { server, folderFrom };

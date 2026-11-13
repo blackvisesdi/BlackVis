@@ -1,0 +1,128 @@
+/* Estiliza o painel de tutorial da visualização. */
+.tutorial-backdrop[hidden],
+.tutorial-panel[hidden] { display: none; }
+
+.tutorial-backdrop {
+  position: fixed;
+  top: 90px;
+  right: 0;
+  bottom: var(--filter-height, 240px);
+  left: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, .72);
+}
+
+.tutorial-panel {
+  position: fixed;
+  top: 90px;
+  left: 0;
+  bottom: var(--filter-height, 240px);
+  z-index: 41;
+  width: min(560px, 100vw);
+  height: auto;
+  padding: 20px 20px 36px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #0d0d0d;
+  color: #f2f2f2;
+  font-family: "Inter", sans-serif;
+  box-shadow: 16px 0 40px rgba(0, 0, 0, .4);
+  scrollbar-color: #777 #262626;
+  scrollbar-width: thin;
+}
+
+.tutorial-header {
+  position: sticky;
+  top: -20px;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 0 14px;
+  background: #0d0d0d;
+}
+
+.tutorial-header h2 {
+  margin: 0;
+  color: #f2f2f2;
+  font: 400 clamp(32px, 4vw, 42px)/1.1 "Inter", sans-serif;
+}
+
+.tutorial-close {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tutorial-close img { display: block; width: 34px; height: 34px; }
+.tutorial-close:focus-visible { outline: 2px solid #f04a49; outline-offset: 3px; border-radius: 50%; }
+
+.tutorial-intro {
+  max-width: 490px;
+  margin: 18px 0 28px;
+  font: 400 clamp(17px, 1.5vw, 20px)/1.35 "Inter", sans-serif;
+  text-wrap: pretty;
+}
+
+.tutorial-symbols {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  padding: 18px 12px 14px;
+  background: #fff;
+  color: #111;
+}
+
+.tutorial-symbols figure { min-width: 0; margin: 0; }
+.tutorial-symbols img { display: block; width: 48px; max-width: 100%; height: 48px; object-fit: contain; }
+.tutorial-symbols img:not([src]) { visibility: hidden; }
+.tutorial-symbols img[data-tutorial-icon="blackvis"] { filter: brightness(.65); }
+.tutorial-symbols figcaption { display: flex; flex-direction: column; gap: 2px; margin-top: 5px; overflow-wrap: anywhere; }
+.tutorial-symbols strong { font-size: 9px; line-height: 1.1; }
+.tutorial-symbols span { font-size: 8px; line-height: 1.15; }
+
+.tutorial-guide {
+  margin-top: 36px;
+  padding: 28px 26px 32px;
+  background: #303030;
+}
+
+.tutorial-guide h3 { margin: 0 0 24px; font: 700 24px/1.1 "Inter", sans-serif; }
+.tutorial-guide p { margin: 0 0 20px; font: 400 15px/1.45 "Inter", sans-serif; text-wrap: pretty; }
+.tutorial-guide p:last-child { margin-bottom: 0; }
+
+.tutorial-graph-example {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  margin: 8px 0 30px;
+}
+
+.tutorial-graph-example img { width: 56px; height: 56px; object-fit: contain; }
+.tutorial-graph-example img:not([src]) { visibility: hidden; }
+.tutorial-graph-example span { flex: 0 1 62px; border-top: 1px solid #3d6ecc; }
+.tutorial-graph-example b { display: grid; place-items: center; width: 86px; height: 86px; padding: 10px; border: 1px solid #3d6ecc; border-radius: 50%; background: #080808; text-align: center; font-size: 12px; font-weight: 400; }
+.tutorial-graph-example i { width: 13px; height: 13px; border-radius: 50%; background: #bcbcbc; }
+
+.tutorial-filter-example { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+.tutorial-filter-example span { padding: 6px 10px; border: 1px solid #888; border-radius: 999px; font-size: 12px; }
+
+@media (max-width: 560px) {
+  .tutorial-backdrop, .tutorial-panel { top: 60px; }
+  .tutorial-panel { padding: 20px 16px 28px; }
+  .tutorial-header { top: -20px; }
+  .tutorial-symbols { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 20px; }
+  .tutorial-intro { margin-top: 22px; }
+  .tutorial-guide { padding: 24px 20px; }
+}
+
+@media (min-width: 561px) and (max-width: 1200px) {
+  .tutorial-backdrop, .tutorial-panel { top: 68px; }
+}

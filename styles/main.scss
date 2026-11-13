@@ -1,20 +1,42 @@
-// PONTO DE ENTRADA DO SASS
-// Importa os módulos-fonte na ordem de dependência. O navegador consome styles/css,
-// que é a saída compilada vinculada pelo index.html.
-
-// Este ponto de entrada mantém a organização do projeto e pode ser compilado
-// como uma folha única quando uma etapa de build do Sass for adicionada.
+/*! Gerado pelo Sass. Edite os arquivos SCSS e execute npm run sass. */
+// Ponto de entrada único. A ordem dos módulos preserva a cascata da interface.
+// Edite os arquivos SCSS; styles/css/style.css é somente o resultado compilado.
 
 @use "base/colors";
 @use "base/variables";
 @use "base/reset";
 @use "layout/page";
 @use "layout/navigation";
-@use "base/style";
+@use "components/tutorial";
+@use "components/cookie-consent";
+@use "pages/privacy/privacy-page";
+@use "pages/home/home-page";
+@use "base/typography";
+@use "layout/filter-bar";
+@use "filters/controls-base";
+@use "filters/menu-shell";
+@use "filters/nationality/foundation" as nationality-foundation;
+@use "filters/axes/foundation" as axes-foundation;
+@use "filters/controls-menu";
+@use "layout/menu-responsive-base";
+@use "components/technique-card";
+@use "components/adinkra-card";
+@use "components/person-base";
 @use "components/buttons";
 @use "components/cards";
 @use "components/search-selection-back";
 @use "graph/states";
-
-// Filter styles remain separated by responsibility in styles/filters/.
-// They are linked individually in index.html to preserve the current cascade.
+@use "filters/nationality/variants";
+@use "filters/axes/responsive";
+@use "filters/search";
+@use "filters/year";
+@use "filters/counts";
+@use "layout/filter-overflow";
+@use "components/person-card-details";
+@use "layout/responsive-filters";
+@use "pages/home/home-revision";
+@use "layout/visualization-revision";
+@use "pages/home/home-fidelity";
+@use "components/cookie-modal";
+@use "pages/privacy/privacy-layout";
+@use "layout/updates-panel";
