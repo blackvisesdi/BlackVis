@@ -1,0 +1,559 @@
+// base
+/* Novo filtro de Nacionalidade — estados OFF, BR ON e EXT ON. */
+/* Base styles for nationality controls, locations, scrollbar, and selected states. */
+.menu-nationality {
+  width: 356px;
+}
+
+.menu-nationality .menu-section-title {
+  height: 51px;
+  padding: 0 11px;
+  border-radius: 24.5px;
+  background: #0d0d0d;
+  border: 1px solid #232323;
+}
+
+.menu-nationality .menu-count {
+  min-width: 57px;
+  height: 30px;
+  padding: 0 10px;
+  background: #0d0d0d;
+}
+
+.menu-nationality .nationality-filters {
+  height: 54px;
+  margin-top: 11px;
+  padding: 10px;
+  gap: 12px;
+  border-radius: 27px;
+  background: #0d0d0d;
+  border: 1px solid #232323;
+}
+
+.menu-nationality .nat-btn {
+  height: 34px;
+  padding: 0 10px;
+  gap: 7px;
+  border: 1px solid #232323;
+  border-radius: 17px;
+  background: #0d0d0d;
+  color: #757575;
+}
+
+.menu-nationality .nat-btn .nat-icon {
+  width: 41px;
+  height: 24px;
+  opacity: 1;
+}
+
+.menu-nationality .nat-btn[data-value=Brasileira].active {
+  height: 35px;
+  border: 0;
+  background: #232323;
+  color: #ccc;
+}
+
+.menu-nationality .nat-btn[data-value=Estrangeira].active {
+  height: 29px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #303030;
+}
+
+.menu-nationality .menu-reset {
+  width: 40px;
+  height: 30px;
+  flex: 0 0 40px;
+  border-radius: 15px;
+  background: #0d0d0d;
+  color: #757575;
+  font-size: 20px;
+}
+
+.menu-nationality .location-filters {
+  position: relative;
+  height: 104px;
+  max-height: 104px;
+  margin-top: 10px;
+  padding: 0 18px 0 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.menu-nationality .location-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.location-group {
+  margin: 0 0 10px;
+  display: block;
+}
+
+.location-group-button {
+  min-width: 0;
+  width: max-content;
+  height: 30px;
+  padding: 0 10px 0 13px;
+  gap: 10px;
+  border: 1.5px solid #232323;
+  border-radius: 15px;
+  background: #0d0d0d;
+  color: #757575;
+  font: 13px "Inter", sans-serif;
+}
+
+.location-group-button.active {
+  background: #232323;
+  border-color: #232323;
+  color: #ccc;
+}
+
+.location-group-button.expanded .location-chevron {
+  transform: translateY(1px) rotate(180deg);
+}
+
+.location-chevron {
+  font-size: 17px;
+  transition: transform 0.16s ease;
+}
+
+.location-options {
+  padding: 7px 10px 3px;
+  gap: 6px 12px;
+}
+
+.location-option {
+  font: 12px "Inter", sans-serif;
+  color: #757575;
+}
+
+.location-option.active {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.location-filters.is-foreign .location-group-button.active {
+  background: #fff;
+  border-color: #fff;
+  color: #303030;
+}
+
+.location-filters.is-foreign .location-option.active {
+  color: #fff;
+}
+
+.location-scrollbar {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8.37px;
+  height: 104px;
+  border-radius: 4.2px;
+  background: #1f1f1f;
+  pointer-events: none;
+}
+
+.location-filters.is-scrollable .location-scrollbar {
+  display: block;
+}
+
+.location-scrollbar-thumb {
+  display: block;
+  width: 100%;
+  min-height: 22.95px;
+  border-radius: 4.2px;
+  background: #ccc;
+  will-change: transform;
+}
+
+// fixes
+/* Correções de interação: lista fechada por padrão e rolagem fixa. */
+/* Mantém a rolagem dos locais fixa e evita vazamento dos controles. */
+.location-filter-viewport {
+  position: relative;
+  height: 104px;
+  margin-top: 10px;
+}
+
+.location-filter-viewport:has(#location-filters[hidden]) {
+  display: none;
+}
+
+.menu-nationality .location-filters {
+  height: 104px;
+  max-height: 104px;
+  margin-top: 0;
+  padding-right: 18px;
+}
+
+.location-filter-viewport .location-scrollbar {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8.37px;
+  height: 104px;
+  border-radius: 4.2px;
+  background: #1f1f1f;
+  pointer-events: none;
+}
+
+.location-filter-viewport.is-scrollable .location-scrollbar {
+  display: block;
+}
+
+.location-filter-viewport .location-scrollbar-thumb {
+  display: block;
+  width: 100%;
+  min-height: 12px;
+  border-radius: 4.2px;
+  background: #ccc;
+  will-change: transform;
+}
+
+.menu-nationality .nationality-filters {
+  min-width: 0;
+}
+
+.menu-nationality .nat-btn {
+  min-width: 0;
+  flex: 1 1 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.menu-nationality .nat-btn span {
+  white-space: nowrap;
+}
+
+.menu-nationality .menu-reset {
+  flex: 0 0 40px;
+  min-width: 40px;
+}
+
+@media (max-width: 420px) {
+  .menu-nationality {
+    width: 100%;
+  }
+  .menu-nationality .nationality-filters {
+    gap: 5px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .menu-nationality .nat-btn {
+    padding-left: 5px;
+    padding-right: 5px;
+    gap: 3px;
+    font-size: 12px;
+  }
+  .menu-nationality .nat-btn .nat-icon {
+    width: 34px;
+    flex: 0 0 34px;
+  }
+  .menu-nationality .menu-reset {
+    flex-basis: 34px;
+    min-width: 34px;
+    width: 34px;
+    font-size: 18px;
+  }
+}
+
+// closed-state
+/* Estado fechado: somente as cinco regiões/continentes, como no SVG Off. */
+/* Define a lista de locais fechada por padrão e seu comportamento responsivo. */
+.location-filter-viewport {
+  overflow: visible;
+}
+
+.menu-nationality .location-filters {
+  display: block !important;
+  height: 104px !important;
+  max-height: 104px !important;
+  overflow-y: auto !important;
+  padding: 0 18px 0 0 !important;
+}
+
+.location-options[hidden] {
+  display: none !important;
+}
+
+.menu-nationality .location-group {
+  display: block !important;
+  margin: 0 0 11.5px !important;
+}
+
+.menu-nationality .location-group-button {
+  height: 28.5px !important;
+  min-height: 28.5px !important;
+  padding: 0 10px 0 13px !important;
+  border: 1.5px solid #232323 !important;
+  border-radius: 14.25px !important;
+  background: #0d0d0d !important;
+  color: #757575 !important;
+  font: 12px "Inter", sans-serif !important;
+}
+
+.menu-nationality .location-group-button.active {
+  background: #232323 !important;
+  color: #ccc !important;
+}
+
+.location-filter-viewport .location-scrollbar {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  z-index: 2 !important;
+  height: 104px !important;
+  transform: none !important;
+}
+
+.location-filter-viewport .location-scrollbar-thumb {
+  min-height: 12px !important;
+  height: 12px !important;
+}
+
+.menu-nationality .nationality-filters {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+.menu-nationality .nat-btn {
+  min-width: 0 !important;
+  flex: 1 1 0 !important;
+}
+
+.menu-nationality .menu-reset {
+  display: block !important;
+  flex: 0 0 40px !important;
+  min-width: 40px !important;
+}
+
+@media (max-width: 560px) {
+  .menu-nationality {
+    width: 100% !important;
+  }
+  .menu-nationality .nationality-filters {
+    gap: 4px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+  .menu-nationality .nat-btn {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    gap: 2px !important;
+    font-size: 11px !important;
+  }
+  .menu-nationality .nat-btn .nat-icon {
+    width: 31px !important;
+    flex: 0 0 31px !important;
+  }
+  .menu-nationality .menu-reset {
+    width: 32px !important;
+    min-width: 32px !important;
+    flex-basis: 32px !important;
+    font-size: 17px !important;
+  }
+}
+
+// scroll-size
+/* A lista permanece dentro da altura original do Menu; só ela rola. */
+.location-filter-viewport {
+  height: 60px !important;
+}
+
+.menu-nationality .location-filters {
+  height: 60px !important;
+  max-height: 60px !important;
+}
+
+.location-filter-viewport .location-scrollbar {
+  height: 60px !important;
+}
+
+// foreign
+/* Teste solicitado: Estrangeiro usa o mesmo estado visual de Brasileiro. */
+.menu-nationality .nat-btn[data-value=Estrangeira].active {
+  height: 35px !important;
+  border: 0 !important;
+  background: #232323 !important;
+  color: #ccc !important;
+}
+
+.location-filters.is-foreign .location-group-button.active {
+  background: #232323 !important;
+  border-color: #232323 !important;
+  color: #ccc !important;
+}
+
+// grid
+/* Regiões e continentes fechados compartilham a mesma linha quando couberem. */
+.menu-nationality .location-filters {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-content: flex-start !important;
+  gap: 10px 8px !important;
+}
+
+.menu-nationality .location-group {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
+.menu-nationality .location-group:has(.location-options:not([hidden])) {
+  flex: 1 0 100% !important;
+}
+
+.menu-nationality .location-group:has(.location-options:not([hidden])) .location-options {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  padding-left: 10px !important;
+}
+
+// button-spacing
+/* Espaçamento do SVG Nacionalidade.svg (356 × 55). */
+/* Alinha os controles brasileiro, estrangeiro e limpar à referência SVG. */
+@media (max-width: 900px) {
+  .menu-nationality .nationality-filters {
+    width: calc(100% + 40px) !important;
+    min-width: calc(100% + 40px) !important;
+  }
+}
+@media (min-width: 421px) {
+  .menu-nationality .nationality-filters {
+    position: relative !important;
+    display: block !important;
+    height: 55px !important;
+    padding: 0 !important;
+  }
+  .menu-nationality .nat-btn {
+    position: absolute !important;
+    top: 10.5px !important;
+    min-width: 0 !important;
+    height: 34px !important;
+    padding: 0 10px !important;
+  }
+  .menu-nationality .nat-btn[data-value=Brasileira] {
+    left: 10.6045px !important;
+    width: 127.399px !important;
+  }
+  .menu-nationality .nat-btn[data-value=Estrangeira] {
+    left: 151.004px !important;
+    width: 141.393px !important;
+  }
+  .menu-nationality .menu-reset {
+    position: absolute !important;
+    top: 12.5px !important;
+    left: 305.896px !important;
+    width: 40px !important;
+    height: 30px !important;
+    min-width: 40px !important;
+    margin: 0 !important;
+  }
+  .menu-nationality .nat-btn.active {
+    top: 10px !important;
+  }
+}
+/* Em menus estreitos, o grupo se ajusta sem deixar o limpar escapar da barra. */
+@media (max-width: 420px) {
+  .menu-nationality .nationality-filters {
+    box-sizing: border-box !important;
+  }
+}
+/* Composição da referência Nacionalidade OFF.png em telas compactas. */
+@media (max-width: 840px) {
+  .menu-nationality {
+    width: 356px !important;
+    min-width: 356px !important;
+    flex: 0 0 356px !important;
+    margin-left: -20px !important;
+  }
+  .menu-nationality .menu-section-title {
+    width: 356px !important;
+    height: 52px !important;
+    box-sizing: border-box !important;
+  }
+  .menu-nationality .nationality-filters {
+    position: relative !important;
+    display: block !important;
+    width: 356px !important;
+    min-width: 356px !important;
+    height: 55px !important;
+    margin-top: 10px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    background: #0D0D0D !important;
+    border: 1px solid #232323 !important;
+    border-radius: 27.5px !important;
+  }
+  .menu-nationality .nat-btn {
+    position: absolute !important;
+    top: 10.5px !important;
+    height: 34px !important;
+    min-width: 0 !important;
+    padding: 0 10px !important;
+  }
+  .menu-nationality .nat-btn[data-value=Brasileira] {
+    left: 10.6045px !important;
+    width: 127.399px !important;
+  }
+  .menu-nationality .nat-btn[data-value=Estrangeira] {
+    left: 151.004px !important;
+    width: 141.393px !important;
+  }
+  .menu-nationality .menu-reset {
+    position: absolute !important;
+    top: 12.5px !important;
+    left: 305.896px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 30px !important;
+    margin: 0 !important;
+  }
+}
+/* A barra segue a largura exata do Nacionalidade OFF.svg. */
+.menu-nationality .nationality-filters {
+  width: 356px !important;
+  min-width: 356px !important;
+}
+
+.menu-nationality .menu-section-title {
+  width: 356px !important;
+  height: 52px !important;
+  box-sizing: border-box !important;
+}
+
+// reset-icon
+/* Estados visuais de limpar.svg e limpar off.svg. */
+.menu-reset {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  overflow: hidden;
+}
+
+.menu-reset svg {
+  display: block;
+  width: 40px;
+  height: 30px;
+}
+
+.menu-reset .reset-background {
+  fill: #0D0D0D;
+}
+
+.menu-reset .reset-symbol {
+  fill: #8C8787;
+}
+
+.menu-reset:active .reset-background {
+  fill: #303030;
+}
+
+.menu-reset:active .reset-symbol {
+  fill: #757575;
+}

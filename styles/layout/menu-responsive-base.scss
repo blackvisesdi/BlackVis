@@ -1,0 +1,12 @@
+/* Adapta o menu de filtros a telas menores. */
+@media (max-width: 1180px) {
+  #content-wrapper { bottom: 250px; }
+  .bottom-bar.menu { gap: 18px; transform: translateX(-50%) scale(.88); transform-origin: bottom center; width: 113%; }
+}
+
+@media (max-width: 840px) {
+  #content-wrapper { bottom: 0; }
+  .bottom-bar.menu { position: relative; left: auto; transform: none; width: 100%; height: auto; flex-wrap: wrap; padding: 20px; }
+  .menu-help { display: none; }
+  .menu-section, .menu-nationality, .menu-axes, .menu-controls { width: min(100%, 540px); }
+}

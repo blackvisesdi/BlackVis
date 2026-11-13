@@ -1,13 +1,14 @@
-/* DESENVOLVIMENTO LOCAL — inicia site e galeria em um único comando.
+/* DESENVOLVIMENTO LOCAL — inicia site e API em um único comando.
  * O .env é carregado pelo Node antes deste arquivo. A chave fica no servidor.
  * Ctrl+C encerra ambos; portas ocupadas são substituídas automaticamente por portas livres.
  */
 const path = require('node:path');
 const net = require('node:net');
 const readline = require('node:readline');
-const liveServer = require('live-server');
+const { startSite } = require('./local-site.cjs');
 const { server: works } = require('./works.cjs');
 let site;
+let stopWatching;
 let stopping = false;
 
 function portAvailable(port) {
@@ -48,7 +49,7 @@ function askPort(defaultPort) {
 function stop(code = 0) {
   if (stopping) return;
   stopping = true;
-  liveServer.shutdown();
+  stopWatching?.();
   site?.close();
   works.close();
   works.closeAllConnections?.();
@@ -72,7 +73,7 @@ works.on('error', startupError);
 (async () => {
   const worksPort = await findAvailablePort(5501);
   if (!worksPort) {
-    console.error('Não foi encontrada uma porta livre para a galeria.');
+    console.error('Não foi encontrada uma porta livre para a API.');
     stop(1);
     return;
   }
@@ -80,13 +81,13 @@ works.on('error', startupError);
   const apiBase = `http://127.0.0.1:${worksPort}`;
   console.log(`API do Drive: ${apiBase}`);
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_FILE && !process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.GOOGLE_DRIVE_API_KEY) {
-    console.warn('Configure a conta de serviço ou GOOGLE_DRIVE_API_KEY no .env para carregar as obras.');
+    console.warn('Configure a conta de serviço ou GOOGLE_DRIVE_API_KEY no .env para carregar os ícones do Drive.');
   } else {
     try {
       const health = await fetch(`${apiBase}/api/health`, { signal: AbortSignal.timeout(15000) });
       const body = await health.json();
       if (health.ok && body.drive === 'connected') {
-        console.log(`API conectada ao Google Drive. SVGs de técnicas encontrados: ${body.techniqueSvgs}.`);
+        console.log(`API conectada ao Google Drive. Ícones encontrados: ${body.techniqueIcons ?? body.techniqueSvgs} técnicas, ${body.adinkraIcons ?? 0} adinkras.`);
       } else {
         console.log('API iniciou, mas o Drive não foi autenticado.');
       }
@@ -102,11 +103,12 @@ works.on('error', startupError);
     return;
   }
   process.env.WORKS_ALLOWED_ORIGINS = `${process.env.WORKS_ALLOWED_ORIGINS || ''},http://127.0.0.1:${sitePort},http://localhost:${sitePort}`;
-  site = liveServer.start({
-    root: path.resolve(__dirname, '..'), host: '127.0.0.1', port: sitePort,
-    open: process.env.DEV_NO_OPEN === '1' ? false : '/index.html',
-    ignore: '.env,server/**,node_modules/**'
-  });
+  ({ server: site, stopWatching } = startSite({
+    root: path.resolve(__dirname, '..'),
+    host: '127.0.0.1',
+    port: sitePort,
+    open: process.env.DEV_NO_OPEN !== '1'
+  }));
   site.on('error', startupError);
   });
 })();

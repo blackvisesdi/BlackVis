@@ -1,0 +1,218 @@
+/* PERFIL DE PESSOA — referência Conteudo Perfil.svg.
+   Nome, etiquetas e biografia ocupam toda a largura do card. */
+.info-panel:has(#card-pessoa[style*=flex]) {
+  background: #0d0d0d;
+}
+
+/* Barra única para todos os cards, com as medidas e cores da nacionalidade. */
+.info-panel {
+  scrollbar-width: none;
+}
+
+.info-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.card-scrollbar {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  right: 3px;
+  width: 8.37px;
+  border-radius: 4.2px;
+  background: #1f1f1f;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.card-scrollbar[hidden] {
+  display: none;
+}
+
+.card-scrollbar span {
+  display: block;
+  width: 100%;
+  height: 12px;
+  border-radius: 4.2px;
+  background: #ccc;
+  will-change: transform;
+}
+
+.info-panel.is-open:has(#card-pessoa[style*=flex]) {
+  width: min(43vw, 645px);
+  min-width: 0;
+  max-width: 100%;
+}
+
+#card:has(#card-pessoa[style*=flex]) {
+  height: 100%;
+  padding: 30px 20px 24px;
+}
+
+#card-pessoa {
+  flex: 1 0 auto;
+  flex-direction: column;
+  color: #ccc;
+  font-family: "Inter", sans-serif;
+}
+
+#card-pessoa .card-p-top {
+  display: block;
+  margin-bottom: 30px;
+}
+
+#card-pessoa .card-p-summary {
+  min-width: 0;
+}
+
+#card-pessoa #card-p-nome {
+  font: italic 700 clamp(24px, 2.2vw, 32px)/1.15 "Inter", sans-serif;
+  font-synthesis: weight style;
+  color: #ccc !important;
+  margin: 0 0 20px;
+  overflow-wrap: anywhere;
+}
+
+#card-pessoa #card-p-tecnicas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+#card-pessoa .tec-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--technique-color);
+  border-radius: 20px;
+  padding: 5px 10px;
+  margin: 0;
+  max-width: 100%;
+}
+
+#card-pessoa .tec-names {
+  color: var(--technique-color);
+  font: 400 15px/1.2 "Inter", sans-serif;
+  overflow-wrap: anywhere;
+}
+
+#card-pessoa .tec-area-icon {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+}
+
+#card-pessoa .card-p-campos, #card-pessoa .card-p-locations {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+#card-pessoa .card-p-locations { margin-bottom: 0; }
+
+#card-pessoa .card-campo, #card-pessoa .profile-tag {
+  border: 1px solid #8c8787;
+  border-radius: 20px;
+  padding: 3px 10px;
+  color: #8c8787;
+  font: 400 15px/1.2 "Inter", sans-serif;
+}
+
+#card-pessoa .campo-label {
+  display: none;
+}
+
+#card-pessoa .campo-valor {
+  color: inherit;
+}
+
+#card-pessoa #card-p-bio {
+  font: 400 20px/1.2 "Inter", sans-serif;
+  color: #ccc;
+  margin: 0 0 20px;
+  white-space: pre-line;
+}
+
+@media (max-width: 800px) {
+  .info-panel.is-open:has(#card-pessoa[style*=flex]) { width: min(55vw, 500px); }
+  #card-pessoa #card-p-bio { font-size: 17px; line-height: 1.3; }
+}
+
+@media (max-width: 600px) {
+  .info-panel.is-open:has(#card-pessoa[style*=flex]) { width: min(100%, 360px); }
+  #card:has(#card-pessoa[style*=flex]) { padding: 20px 16px; }
+  #card-pessoa #card-p-nome { font-size: 25px; }
+  #card-pessoa .tec-names, #card-pessoa .card-campo, #card-pessoa .profile-tag { font-size: 12px; }
+  #card-pessoa #card-p-bio { font-size: 15px; }
+}
+
+#card-p-works h3 {
+  color: #8c8787;
+  font: 400 20px/1.3 "Inter", sans-serif;
+  margin: 0 0 16px;
+}
+
+/* A galeria cresce com as imagens; somente o painel do card possui rolagem. */
+#card-p-works .card-p-work-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#card-pessoa .card-social-links {
+  margin-bottom: 18px;
+}
+
+#card-pessoa:has(#card-p-works[hidden]) .card-social-links {
+  margin: auto 0 0;
+  padding-top: 20px;
+}
+
+/* Miniaturas lado a lado, sem legenda visível. */
+#card-p-works .person-work {
+  display: block;
+  min-width: 0;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+#card-p-works .person-work > span:not(.person-work-preview) {
+  display: none;
+}
+
+#card-p-works .card-p-work-list > p,
+#card-p-works .card-p-work-list > button {
+  grid-column: 1/-1;
+}
+
+#card-p-works .person-work-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  background: #191919;
+  color: #999;
+}
+
+#card-p-works .person-work img {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+}
+
+#card-p-works .person-work:focus-visible {
+  outline: 2px solid #ccc;
+  outline-offset: 2px;
+}
+
+#card-p-works [role=status] {
+  color: #aaa;
+  font-size: 12px;
+}

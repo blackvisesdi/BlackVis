@@ -151,11 +151,24 @@ const TECHNIQUE_BRIGHTNESS = 0.6;
 
 // Ícones das categorias (usados no filtro e nos nós do grafo)
 const CATEGORY_ICON_PATH = {
-  Comunicação: "./assets/icons/comunica/Adinkra_Comunicação.png",
-  Produto: "./assets/icons/produ/Adinkra-05.png",
-  Teórico: "./assets/icons/teori/Adinkra_Teórico.png",
-  Interação: "./assets/icons/intera/Adinkra_Interação.png",
-  Serviço: "./assets/icons/servi/Adinkra_Serviço.png",
+  Comunicação: null,
+  Produto: null,
+  Teórico: null,
+  Interação: null,
+  Serviço: null,
+};
+
+window.configureAdinkraIcons = function(base) {
+  const iconUrl = name => `${base}/api/adinkras/icon?name=${encodeURIComponent(name)}`;
+  for (const area of Object.keys(CATEGORY_ICON_PATH)) {
+    CATEGORY_ICON_PATH[area] = iconUrl(area);
+    const image = document.querySelector(`.category-btn[data-value="${area}"] img`);
+    if (image) image.src = CATEGORY_ICON_PATH[area];
+  }
+  const logo = document.querySelector('.nav-logo-img');
+  if (logo) logo.src = iconUrl('blackvis');
+  const favicon = document.querySelector('link[rel="icon"]');
+  if (favicon) favicon.href = iconUrl('blackvis');
 };
 
 const axisColorsNormalized = {};

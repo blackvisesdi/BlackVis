@@ -1,0 +1,32 @@
+/* Posiciona os controles do menu de filtros. */
+.menu-controls { width: 376px; }
+.menu-controls .search-wrapper {
+  width: 100%; height: 36px; padding: 0 8px 0 12px; gap: 8px;
+  border: 0; border-bottom: 1px solid rgba(255,255,255,.5); border-radius: 18px;
+  background: #242424;
+}
+.menu-controls #search-input { font: 19px "Inter", sans-serif; color: #fff; }
+.menu-controls .search-wrapper .menu-count { min-width: 30px; width: 30px; height: 30px; padding: 0; }
+.menu-controls .search-wrapper > #search-count { display: inline-flex !important; }
+.menu-icon-button { width: 36px; height: 30px; border-radius: 50%; font-size: 15px; display: grid; place-items: center; }
+.menu-icon-button svg { width: 18px; height: 18px; fill: none; stroke: rgba(255,255,255,.35); stroke-width: 1.8; stroke-linecap: round; }
+.menu-icon-button.has-query { background: #c5bec2; }
+.menu-icon-button.has-query svg { stroke: #fff; }
+.menu-icon-button.has-query .eye-slash { display: none; }
+.menu-icon-button.active { background: #c5bec2; }
+.menu-icon-button.active svg { stroke: #fff; }
+.menu-icon-button.active .eye-slash { display: none; }
+.menu-help:hover, .menu-reset:hover, .menu-icon-button:hover { background: #3a3a3a; color: #fff; }
+.menu-controls .year-section-title { margin-top: 38px; padding: 0 10px; height: 42px; background: #242424; border-radius: 22px; font-size: 19px; gap: 8px; }
+.year-title-copy { display: flex; align-items: center; gap: 5px; min-width: 0; }
+#year-range-description { display: block; max-width: 100px; color: rgba(255,255,255,.55); font: 10px/1.1 "Inter", sans-serif; }
+.year-section-title:has(#year-range-description:not(:empty)) { font-size: 16px; }
+.menu-info { width: 29px; height: 29px; flex: 0 0 29px; border: 0; border-radius: 50%; background: #3a3a3a; color: rgba(255,255,255,.65); font: italic 700 18px "Inter", sans-serif; cursor: pointer; }
+.menu-controls #year-slider { display: flex; align-items: center; gap: 0; margin-top: 7px; }
+.menu-controls #value-min, .menu-controls #value-max { display: none; }
+.menu-controls #dual-slider { width: 100%; height: 30px; margin: 0; overflow: visible; }
+.menu-controls .track-active { fill: url(#slider-track-active-gradient); stroke: none; filter: none; }
+.year-handle { cursor: ew-resize; }
+.year-handle rect { fill: #fff; filter: drop-shadow(0 1px 3px rgba(0,0,0,.3)); }
+.year-handle text { fill: #333; font: 15px "Inter", sans-serif; pointer-events: none; }
+.year-handle.is-dragging rect { fill: #e7e1e3; }

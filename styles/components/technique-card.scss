@@ -1,0 +1,90 @@
+/* Estiliza o card de informações das técnicas. */
+@use '../base/colors' as *;
+
+// === CARD: adinkra (símbolo decorativo no topo) ===
+.card-sobre-adinkra-titulo { margin-bottom: 12px !important; }
+
+.card-adinkra-nome-inline {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: $color-adinkra-nome;       // nome do adinkra em itálico (dourado)
+  font-style: italic;
+  margin: 0 0 6px 0;
+}
+
+// === CARD: técnica / área ===
+.card-ta-nome {
+  font-family: "Inter", sans-serif;
+
+  font-size: 29px;
+  font-weight: 700;
+  font-synthesis: none;
+  color: $color-text-primary;       // nome da técnica ou área
+  letter-spacing: -0.4px;
+  line-height: 1;
+  text-transform: none;
+  margin: 0 0 12px 0;
+}
+
+.card-desc {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: $color-text-secondary;     // descrição da técnica/área
+  line-height: 1.6;
+  margin: 0 0 14px 0;
+}
+
+.nao-exibir-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 9px;
+  padding: 3px 7px;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  margin-top: 0;
+  margin-bottom: 12px;
+  display: inline-flex;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+}
+
+// Grid de nomes (lista de designers no card de técnica/área)
+.names-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 12px;
+}
+
+.names-grid-item {
+  font-size: 10px;
+  color: $color-names-grid;         // nome de designer na lista
+  cursor: pointer;
+  line-height: 1.7;
+  transition: color 0.15s;
+
+  &:hover { color: $color-adinkra-nome; } // hover: dourado
+}
+
+// === CARD: área do design — cores de categoria ===
+#card-tec-area {
+  .card-ta-nome {
+    color: var(--cat-color-55);
+  }
+
+  .card-adinkra-nome-inline {
+    color: var(--cat-color-55);
+  }
+
+  .names-grid-item {
+    color: var(--cat-color-30);
+    &:hover { color: $color-text-primary; }
+  }
+}

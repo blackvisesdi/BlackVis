@@ -30,7 +30,7 @@ token.json
 service-account*.json
 
 # Build / SCSS map
-styles/style.css.map
+styles/css/*.map
 
 # Claude Code
 .claude/

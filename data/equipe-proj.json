@@ -1,0 +1,103 @@
+[
+  {
+    "nome": "Larissa Lopes",
+    "cargo": "Designer em formação pela ESDI/UERJ.",
+    "minibio": "Graduada em Administração (2021) e graduanda em Design pela ESDI/UERJ, é artesã e produtora audiovisual. Sua trajetória articula gestão, práticas artísticas e pesquisa, atuando como produtora e curadora em projetos que investigam as relações entre design, arte, memória e cultura.",
+    "tags": [
+      "IDEALIZAÇÃO",
+      "GESTÃO",
+      "PESQUISA"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Jésus Baro",
+    "cargo": "Designer em formação pela ESDI/UERJ.",
+    "minibio": "Atua nas interseções entre arte, tecnologia e design gráfico. Propondo um diálogo entre algoritmos e poesia visual sua prática envolve programação criativa, experimentação gráfica, audiovisual e design interativo expandindo a pesquisa sobre experiências sensoriais e ambientes multimídia.",
+    "tags": [
+      "IDEALIZAÇÃO",
+      "GESTÃO",
+      "DESIGN"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Barbara Castro",
+    "cargo": "Professora ESDI/UERJ e PPDESDI. Coordenadora MediaLAB UERJ.",
+    "minibio": "Pesquisa visualização de dados como meio de sensibilização social e ambiental. Desde 2024, estimulou que o projeto de pesquisa de designers negros se transformasse em uma plataforma de conhecimento aberto. Em 2025, passa a atuar como uma das gestoras de Blackvis com a estruturação de um projeto de extensão e pesquisa. ",
+    "tags": [
+      "IDEALIZAÇÃO",
+      "GESTÃO",
+      "PESQUISA"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Barbara Coutinho",
+    "cargo": "Designer em formação pela ESDI/UERJ.",
+    "minibio": "Graduanda em Designer...",
+    "tags": [
+      "PRODUÇÃO"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Maria Eduarda Araújo",
+    "cargo": "Designer em formação pela ESDI/UERJ.",
+    "minibio": "Artista visual carioca, graduanda em Design pela ESDI/UERJ. Possui experiência em projetos gráficos e editoriais, com passagens pela revista acadêmica Arcos Design e atualmente na Editora Globo, onde atua como estagiária de diagramação do jornal O Globo. Interessa-se por projetos que exploram diferentes linguagens artísticas e pelo design como ferramenta de expressão e reflexão crítica. ",
+    "tags": [
+      "IDEALIZAÇÃO",
+      "DESIGN",
+      "EGRESSO"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Izadora Alves",
+    "cargo": "Bolsista PROATEC, integrande do MediaLAB UERJ",
+    "minibio": "Desenvolvedora Full Stack graduada em Ciência da Computação com experiência em produtos digitais e pesquisa em realidade virtual. No BlackVis, é responsável pelo desenvolvimento da plataforma e de seu design system. Implementou a visualização interativa que conecta designers, técnicas e eixos do design, além dos filtros de pesquisa, das páginas responsivas e das integrações com as APIs que alimentam o acervo. Seu trabalho reúne desenvolvimento de interfaces e infraestrutura para tornar os dados mais fáceis de explorar e consultar.",
+    "tags": [
+      "DESENVOLVIMENTO"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Rafael Costa",
+    "cargo": "Professor ESDI/UERJ.
+",
+    "minibio": "Professor ESDI/UERJ...",
+    "tags": [
+      "PRODUÇÃO"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Mateus Diniz",
+    "cargo": "Bolsista do Blackvis pelo Edital Vivências, integrante do Coletivo Negro de Design da ESDI/UERJ e do MediaLAB UERJ e estudante de graduação em design pela ESDI/UERJ. ",
+    "minibio": "Artista gráfico com experiência em ilustração tradicional e digital, busca através do seu trabalho experimentações técnicas da cultura gráfica unindo os campos da ilustração, artes, design e tecnologia, com inclinação para estudo da cultura visual e design afro-brasileiro. Atualmente contribui elaborando o design e a comunicação com trabalhos gráficos no BlackVis.",
+    "tags": [
+      "COMUNICAÇÃO"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Rita Guillén",
+    "cargo": "Integrante do laboratório de Design-Ficção (DEMO) da ESDI/UERJ. Estudante de graduação em design da ESDI/UERJ.",
+    "minibio": "Graduanda em Design pela ESDI/UERJ, interessa-se por diferentes áreas, especialmente artesanato, arte e cultura criativa. Tem afinidade com projetos que articulam pesquisa, expressão artística e disseminação de conhecimentos.",
+    "tags": [
+      "PESQUISA",
+      "COMUNICAÇÃO"
+    ],
+    "foto": ""
+  },
+  {
+    "nome": "Alexandre Cantini",
+    "cargo": "Advogado.",
+    "minibio": "Advogado (OAB/RJ 182.083), designer e perito judicial em Propriedade Intelectual, com Doutorado e Mestrado em Design pela PUC-Rio. Atuo na interseção entre Direito, Design e Tecnologia.",
+    "tags": [
+      "DIREITO",
+      "COMUNICAÇÃO"
+    ],
+    "foto": ""
+  }
+]

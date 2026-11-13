@@ -6,6 +6,7 @@
   let pending;
   window.loadPersonWorks = async person => {
     pending?.abort();
+    if (!window.BLACKVIS_SHOW_WORKS) return;
     const controller = new AbortController();
     pending = controller;
     const section = document.getElementById('card-p-works');

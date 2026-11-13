@@ -1,0 +1,22 @@
+/* Define a estrutura base da página de privacidade. */
+.privacy-page { height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: auto; background: #000; color: #eee; font: 16px/1.4 "Inter", sans-serif; }
+.privacy-layout { max-width: 1800px; margin: auto; padding: 55px clamp(20px,5vw,100px) 80px; }
+.privacy-heading { display: flex; align-items: center; gap: 24px; }
+.privacy-heading span { font-size: 44px; line-height: 1; }
+.privacy-heading img { width: 52px; height: 52px; object-fit: contain; }
+.privacy-heading img:not([src]) { visibility: hidden; }
+.privacy-heading h1 { margin: 0; font-size: clamp(22px,2vw,34px); font-weight: 400; }
+.privacy-date { margin: 20px 0 65px; font-size: 23px; }
+.privacy-columns { display: grid; grid-template-columns: minmax(0,2.2fr) minmax(280px,1fr); align-items: start; gap: clamp(25px,4vw,80px); }
+.privacy-text, .privacy-about { border: 1px solid #aaa; border-radius: 28px; padding: clamp(24px,3vw,50px); }
+.privacy-text { max-height: min(630px,65vh); overflow-y: auto; scrollbar-color: #8c8787 #222; }
+.privacy-text h2 { margin: 0 0 10px; font-size: 20px; }
+.privacy-text h2:not(:first-child) { margin-top: 55px; }
+.privacy-text p, .privacy-text li { margin: 0; font-size: clamp(15px,1.2vw,20px); }
+.privacy-text ul { padding-left: 28px; }
+.privacy-page a { color: inherit; }
+.privacy-about { display: flex; flex-direction: column; min-height: 500px; }
+.privacy-about h2 { margin: 0 0 75px; text-align: right; font-size: 28px; }
+.privacy-about p { margin: 0 0 25px; font-size: clamp(16px,1.2vw,20px); }
+.privacy-about a { align-self: flex-start; margin-top: auto; padding: 8px 22px; border: 1px solid #888; border-radius: 20px; text-decoration: none; }
+@media (max-width: 800px) { .privacy-layout { padding-top: 35px; } .privacy-date { margin-bottom: 35px; font-size: 18px; } .privacy-columns { grid-template-columns: 1fr; } .privacy-text { max-height: none; } .privacy-about { min-height: 0; } .privacy-about h2 { margin-bottom: 28px; text-align: left; } }

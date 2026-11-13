@@ -1,0 +1,130 @@
+/* Organiza a barra inferior de filtros. */
+@use '../base/colors' as *;
+
+// === BOTTOM BAR ===
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1400px;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px 30px;
+  gap: 24px;
+  pointer-events: none;
+
+  > * { pointer-events: all; }
+}
+
+.bb-left {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 16px;
+  max-width: 280px;
+
+  .bb-description {
+    font-size: 10px;
+    color: $color-text-secondary;   // texto da legenda (Brasileiro / Estrangeiro)
+    line-height: 1.5;
+    margin: 0;
+    max-width: 160px;
+
+    strong {
+      font-weight: 700;
+      color: $color-text-primary;   // destaque no texto de legenda
+    }
+  }
+
+  .nationality-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .nat-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: normal;
+    padding: 2px 6px 2px 2px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+
+    .nat-icon {
+      width: 34px;
+      height: 24px;
+      flex-shrink: 0;
+      display: block;
+      object-fit: contain;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    &:hover {
+      color: rgba(255,255,255,0.75);
+      .nat-icon { opacity: 0.75; }
+    }
+
+    &.active {
+      color: #ffffff;
+      .nat-icon { opacity: 1; }
+    }
+  }
+}
+
+.bb-center {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex: 1;
+  justify-content: center;
+
+  .category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    padding: 0;
+
+    img {
+      width: 38px;
+      height: 38px;
+    }
+
+    span {
+      font-size: 10px;
+      color: $color-text-primary;   // rótulo do botão de categoria
+      text-transform: lowercase;
+    }
+
+    &:hover { opacity: 1; }
+
+    &.active {
+      opacity: 1;
+      span { color: var(--cat-color); } // cor dinâmica da categoria ativa (JS)
+    }
+  }
+}
+
+.bb-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 180px;
+}

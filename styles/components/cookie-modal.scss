@@ -1,0 +1,35 @@
+/* Modal central de cookies mostrado antes da escolha de análise. */
+.cookie-banner[hidden] { display: none; }
+.cookie-banner {
+  position: fixed; z-index: 100; inset: 0; max-width: none; margin: 0;
+  display: grid; place-items: center; align-content: center; justify-content: center;
+  width: 100vw; height: 100dvh; box-sizing: border-box; padding: 20px; border: 0; border-radius: 0;
+  background: rgba(0, 0, 0, .78); box-shadow: none; color: #f4f4f4;
+  font-family: "Montserrat BlackVis", "Inter", sans-serif;
+}
+.cookie-banner-card {
+  width: min(100%, 910px); max-height: calc(100dvh - 40px); overflow-y: auto;
+  padding: clamp(28px, 3.4vw, 50px); border: 2px solid #898989;
+  border-radius: 30px; background: #0d0d0d; box-shadow: 0 20px 70px #000b;
+}
+.cookie-banner h2 { margin: 0 0 12px; font-size: clamp(26px, 2vw, 34px); font-style: italic; font-weight: 700; }
+.cookie-banner p { max-width: 740px; margin: 0 0 24px; font-size: clamp(17px, 1.4vw, 24px); line-height: 1.25; }
+.cookie-banner .cookie-banner-lead { margin-bottom: 30px; font-size: clamp(21px, 1.8vw, 30px); }
+.cookie-banner .cookie-banner-more { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-bottom: 28px; }
+.cookie-banner-more a, .cookie-banner-actions button, .cookie-banner-categories span {
+  display: inline-block; padding: 8px 20px; border: 1px solid #888; border-radius: 14px;
+  background: #151515; color: #f4f4f4; font: inherit; text-decoration: none;
+}
+.cookie-banner-more a { font-size: clamp(15px, 1.3vw, 20px); }
+.cookie-banner-categories { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.cookie-banner-categories span { color: #999; font-size: clamp(15px, 1.3vw, 20px); }
+.cookie-banner .cookie-banner-actions { display: flex; justify-content: space-between; gap: 16px; margin-top: 20px; }
+.cookie-banner-actions button { cursor: pointer; font-weight: 700; font-size: clamp(16px, 1.3vw, 22px); }
+.cookie-banner-actions button:first-child { color: #999; }
+.cookie-banner #cookie-accept { background: #242424; border-color: #aaa; }
+.cookie-banner :is(button,a):is(:hover,:focus-visible) { border-color: #fff; color: #fff; }
+@media (max-width: 600px) {
+  .cookie-banner { inset: 0; max-height: none; overflow: visible; padding: 12px; }
+  .cookie-banner-card { max-height: calc(100dvh - 24px); padding: 24px; border-radius: 20px; }
+  .cookie-banner .cookie-banner-actions { flex-wrap: wrap; }
+}

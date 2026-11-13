@@ -1,0 +1,115 @@
+/* Define a aparência base do card de pessoa. */
+@use '../base/colors' as *;
+
+// === CARD: perfil pessoa ===
+#card-p-nome {
+  font-family: "Inter", sans-serif;
+  font-size: 29px;
+  font-weight: 400;
+  font-synthesis: none;
+  color: $color-adinkra-nome;       // nome do designer (dourado)
+  letter-spacing: -0.4px;
+  margin: 0 0 16px 0;
+  line-height: 1;
+}
+
+.card-p-top {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.card-p-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.card-campo {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  display: flex;
+  gap: 6px;
+}
+
+.campo-label { color: $color-text-dim; }    // rótulos: País, Período, Gênero…
+.campo-valor { color: $color-text-light; }  // valores dos campos
+
+#card-p-tecnicas { margin-bottom: 14px; }
+
+.tec-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tec-area-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.tec-names {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: $color-text-soft;          // nomes das técnicas no card de pessoa
+}
+
+#card-p-bio {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: $color-text-muted;         // mini-bio do designer
+  line-height: 1.65;
+  margin: 0 0 16px 0;
+}
+
+#btn-link-externo {
+  background-color: $color-btn-external;      // botão "Ver mais" (dourado)
+  color: #000;
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+  display: inline-block;
+
+  &:hover { background-color: $color-btn-external-hover; }
+}
+
+// === SOCIAL LINKS NO CARD ===
+.card-social-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 10px;
+
+  a {
+    font-family: "Inter", sans-serif;
+    font-size: 11px;
+    padding: 7px 11px;
+    border: 1px solid $color-social-border;        // borda dos links sociais
+    border-radius: 999px;
+    color: $color-social-text;                      // texto dos links sociais
+    text-decoration: none;
+    letter-spacing: 0.2px;
+    background: rgba(255, 255, 255, 0.03);
+    transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+
+    &:hover {
+      border-color: $color-social-hover-border;
+      color: $color-social-hover-text;
+      background: $color-social-hover-bg;
+    }
+  }
+}

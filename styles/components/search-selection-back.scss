@@ -8,7 +8,7 @@
 
 #search-results-back {
   position: absolute;
-  left: 24px;
+  left: calc(3vw - 5px);
   top: 62px;
   z-index: 20;
   width: 64px;
@@ -37,7 +37,13 @@
 
 @media (max-width: 840px) {
   #search-results-back {
-    left: 12px;
+    left: 8px;
     top: 12px;
+    width: 44px;
+    height: 44px;
   }
+}
+
+@media (min-width: 841px) and (max-width: 1200px) {
+  #search-results-back { left: 5px; }
 }

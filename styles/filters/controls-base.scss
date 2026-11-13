@@ -1,0 +1,51 @@
+/* Define os controles visuais compartilhados dos filtros. */
+@use '../base/colors' as *;
+
+// === SEARCH ===
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(to right, $color-search-bg-start, $color-search-bg-end);
+  border: 1px solid $color-search-border;
+  border-radius: 20px;
+  padding: 5px 12px;
+  width: 180px;
+}
+
+.search-icon-svg { flex-shrink: 0; }
+
+#search-input {
+  background: transparent;
+  border: none;
+  color: $color-search-input;
+  font-size: 12px;
+  width: 100%;
+  outline: none;
+
+  &::placeholder { color: $color-search-placeholder; }
+}
+
+// === YEAR SLIDER ===
+.bb-right #year-slider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+#dual-slider {
+  height: 30px;
+  width: 120px;
+}
+
+.track         { stroke: transparent; stroke-width: 0; }
+.track-active  { stroke: url(#slider-track-active-gradient); stroke-width: 3px; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.18)); }
+.track-gradient-bg { filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4)); }
+.handle {
+  stroke: $color-slider-handle-stroke; // borda da bolinha do slider
+  stroke-width: 1px;
+  fill: $color-slider-handle;          // bolinha branca do slider
+  cursor: ew-resize;
+  filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.55));
+}

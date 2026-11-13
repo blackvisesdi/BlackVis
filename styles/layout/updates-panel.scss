@@ -1,0 +1,32 @@
+/* Painel flutuante de dados, com modo reduzido e alça para arrastar. */
+.bottom-bar.menu .menu-tools .nav-updates {
+  box-sizing: border-box;
+  width: 341px;
+  height: 166px;
+  padding: 18px 20px;
+  background: rgba(34, 34, 34, .70);
+  backdrop-filter: none;
+  font-weight: 400;
+}
+.bottom-bar.menu .menu-tools .nav-updates-heading { cursor: grab; touch-action: none; user-select: none; font-size: 20px; font-weight: 400; }
+.bottom-bar.menu .menu-tools .nav-updates-heading:active { cursor: grabbing; }
+.bottom-bar.menu .menu-tools .nav-updates-minimize,
+.bottom-bar.menu .menu-tools .nav-updates-close {
+  order: 2; flex: 0 0 25px; width: 25px; height: 30px; padding: 0;
+  border: 0; background: transparent; color: #eee; cursor: pointer;
+}
+.bottom-bar.menu .menu-tools .nav-updates-minimize { margin-left: auto; font: 22px/.47 "Inter", sans-serif; }
+.bottom-bar.menu .menu-tools .nav-updates-close { flex-basis: 34px; width: 34px; height: 34px; margin-left: 0; }
+.bottom-bar.menu .menu-tools .nav-updates-close img { display: block; width: 34px; height: 34px; }
+.bottom-bar.menu .menu-tools .nav-updates p { margin: 10px 0 12px; font-size: 13px; line-height: 1.25; font-weight: 400; }
+.bottom-bar.menu .menu-tools .nav-updates #nav-updates-total { font-weight: 500; }
+.bottom-bar.menu .menu-tools .nav-updates-filtered { border-color: #8c8787; font-size: 14px; font-weight: 400; }
+.bottom-bar.menu .menu-tools .nav-updates-filtered span:first-child { font-size: 13px; font-weight: 500; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed { width: 250px; height: auto; min-height: 0; padding: 10px 12px; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed #nav-updates-details,
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed #nav-updates-title { display: none; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-heading { position: absolute; top: 0; right: 8px; height: 100%; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-filtered {
+  margin-right: 78px; border: 0; padding: 4px 0; cursor: grab; touch-action: none; user-select: none;
+}
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-filtered span { margin-left: 8px; }
