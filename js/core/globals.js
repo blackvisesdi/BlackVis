@@ -168,7 +168,7 @@ window.configureAdinkraIcons = function(base) {
   const logo = document.querySelector('.nav-logo-img');
   if (logo) logo.src = iconUrl('blackvis');
   const favicon = document.querySelector('link[rel="icon"]');
-  if (favicon) favicon.href = iconUrl('blackvis');
+  if (favicon) favicon.href = `${base}/api/adinkras/icon?variant=home&name=blackvis`;
 };
 
 const axisColorsNormalized = {};

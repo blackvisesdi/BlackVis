@@ -40,6 +40,15 @@
   });
   document.getElementById("cookie-save").addEventListener("click", () => select(choice.checked));
   document.getElementById("cookie-settings-close").addEventListener("click", closeSettings);
+  if (new URLSearchParams(window.location.search).has("cookies")) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("cookies");
+    history.replaceState(history.state, "", url);
+    banner.hidden = true;
+    settings.hidden = false;
+    choice.checked = firstChoice === "accepted";
+    requestAnimationFrame(() => choice.focus({ preventScroll: true }));
+  }
   settings.addEventListener("click", (event) => { if (event.target === settings) closeSettings(); });
   document.addEventListener("keydown", (event) => {
     if (!banner.hidden && settings.hidden && event.key === "Tab") {

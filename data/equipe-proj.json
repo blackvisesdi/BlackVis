@@ -54,7 +54,7 @@
   },
   {
     "nome": "Izadora Alves",
-    "cargo": "Bolsista PROATEC, integrande do MediaLAB UERJ",
+    "cargo": "Bolsista PROATEC, integrande do MediaLAB UERJ.",
     "minibio": "Desenvolvedora Full Stack graduada em Ciência da Computação com experiência em produtos digitais e pesquisa em realidade virtual. No BlackVis, é responsável pelo desenvolvimento da plataforma e de seu design system. Implementou a visualização interativa que conecta designers, técnicas e eixos do design, além dos filtros de pesquisa, das páginas responsivas e das integrações com as APIs que alimentam o acervo. Seu trabalho reúne desenvolvimento de interfaces e infraestrutura para tornar os dados mais fáceis de explorar e consultar.",
     "tags": [
       "DESENVOLVIMENTO"
@@ -63,8 +63,7 @@
   },
   {
     "nome": "Rafael Costa",
-    "cargo": "Professor ESDI/UERJ.
-",
+    "cargo": "Professor ESDI/UERJ.",
     "minibio": "Professor ESDI/UERJ...",
     "tags": [
       "PRODUÇÃO"

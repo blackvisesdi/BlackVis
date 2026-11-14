@@ -1,0 +1,38 @@
+// Padroniza as barras nativas com o trilho e o indicador do filtro de nacionalidade.
+:is(html, body, .privacy-page, .privacy-text-scroll, .tutorial-panel,
+    .cookie-banner-card, .cookie-settings-card, .legend-popup, .site-main-nav,
+    .bottom-bar.menu, .info-panel, .location-filters, .cookie-banner,
+    .nat-dropdown, .location-dropdown) {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #1f1f1f;
+}
+
+:is(html, body, .privacy-page, .privacy-text-scroll, .tutorial-panel,
+    .cookie-banner-card, .cookie-settings-card, .legend-popup, .site-main-nav,
+    .bottom-bar.menu, .info-panel, .location-filters, .cookie-banner,
+    .nat-dropdown, .location-dropdown)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+:is(html, body, .privacy-page, .privacy-text-scroll, .tutorial-panel,
+    .cookie-banner-card, .cookie-settings-card, .legend-popup, .site-main-nav,
+    .bottom-bar.menu, .info-panel, .location-filters, .cookie-banner,
+    .nat-dropdown, .location-dropdown)::-webkit-scrollbar-track {
+  border-radius: 4px;
+  background: #1f1f1f;
+}
+
+:is(html, body, .privacy-page, .privacy-text-scroll, .tutorial-panel,
+    .cookie-banner-card, .cookie-settings-card, .legend-popup, .site-main-nav,
+    .bottom-bar.menu, .info-panel, .location-filters, .cookie-banner,
+    .nat-dropdown, .location-dropdown)::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #ccc;
+}

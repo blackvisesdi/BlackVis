@@ -23,6 +23,7 @@ function setupTutorial() {
     if (panel.hidden) return;
     panel.hidden = true;
     backdrop.hidden = true;
+    document.body.classList.remove('tutorial-open');
     trigger.setAttribute('aria-expanded', 'false');
     trigger.focus({ preventScroll: true });
   }
@@ -33,6 +34,7 @@ function setupTutorial() {
     if (!document.getElementById('nav-updates')?.hidden) document.getElementById('nav-updates-close')?.click();
     backdrop.hidden = false;
     panel.hidden = false;
+    document.body.classList.add('tutorial-open');
     panel.scrollTop = 0;
     trigger.setAttribute('aria-expanded', 'true');
     closeButton.focus({ preventScroll: true });

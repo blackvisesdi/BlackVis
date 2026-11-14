@@ -8,36 +8,36 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 90px;
+  height: 68px;
   z-index: 20;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 3%;
+  padding: 0 16px;
   pointer-events: none;
 
   .nav-group {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 22px;
+    gap: 8px;
     pointer-events: auto;
   }
 
-  .nav-right { gap: 16px; }
+  .nav-right { gap: 8px; }
 
   .nav-link {
     pointer-events: all;
     display: grid;
     place-items: center;
-    width: 138px;
-    height: 44px;
+    width: 90px;
+    height: 34px;
     padding: 0 10px;
     border: 1px solid #292929;
     background: #0d0d0d;
     color: $color-nav-link-text;
     font-family: "Inter", sans-serif;
-    font-size: 28px;
+    font-size: 17px;
     font-weight: 400;
     text-decoration: none;
     border-radius: 999px;
@@ -48,21 +48,21 @@
     &.active { background: $color-nav-link-bg-active; color: $color-nav-link-text-active; }
   }
 
-  .nav-right .nav-link { width: 150px; }
+  .nav-right .nav-link { width: 96px; }
 
   .nav-icon {
     position: relative;
     display: block;
     flex: 0 0 auto;
-    width: 54px;
-    height: 54px;
+    width: 42px;
+    height: 42px;
     padding: 0;
     border: 0;
     background: none;
     cursor: pointer;
   }
 
-  .nav-info-toggle { width: 48px; height: 45px; }
+  .nav-info-toggle { width: 42px; height: 40px; }
   .nav-icon img { position: absolute; inset: 0; width: 100%; height: 100%; }
   .nav-icon-hover { opacity: 0; }
   .nav-icon:hover .nav-icon-default,
@@ -75,7 +75,7 @@
   .nav-updates[hidden] { display: none; }
   .nav-updates {
     position: absolute;
-    top: calc(100% + 23px);
+    top: calc(100% + 12px);
     right: 0;
     width: min(240px, calc(100vw - 24px));
     min-height: 162px;
@@ -111,10 +111,22 @@
   height: 36px;
   cursor: pointer;
 
-  .nav-logo-text { font-family: "Inter", sans-serif; font-size: 32px; font-weight: 400; color: #ccc; white-space: nowrap; line-height: 1; transition: opacity 0.18s ease; }
+  .nav-logo-text { font-family: "Inter", sans-serif; font-size: 20px; font-weight: 400; color: #ccc; white-space: nowrap; line-height: 1; transition: opacity 0.18s ease; }
   .nav-logo-img { position: absolute; width: 36px; height: 36px; opacity: 0; pointer-events: none; transition: opacity 0.18s ease; }
   &:hover .nav-logo-text { opacity: 0; }
   &:hover .nav-logo-img { opacity: 1; pointer-events: all; }
+}
+body.tutorial-open .nav-logo-flip .nav-logo-text { opacity: 0; }
+body.tutorial-open .nav-logo-flip .nav-logo-img { opacity: 1; pointer-events: all; }
+
+// Em telas largas, alinha os links externos aos limites da barra de filtros.
+@media (min-width: 1201px) {
+  .top-nav {
+    left: 50%;
+    width: min(100%, 1200px);
+    box-sizing: border-box;
+    transform: translateX(-50%);
+  }
 }
 
 @media (max-width: 1200px) {

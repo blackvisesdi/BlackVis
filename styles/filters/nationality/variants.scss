@@ -384,13 +384,51 @@
 }
 
 .location-filters.is-foreign .location-group-button.active {
-  background: #232323 !important;
-  border-color: #232323 !important;
-  color: #ccc !important;
+  background: #fff !important;
+  border-color: #fff !important;
+  color: #303030 !important;
 }
 
 // grid
 /* Regiões e continentes fechados compartilham a mesma linha quando couberem. */
+.location-group-header {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.menu-nationality .location-group-button.has-reset {
+  padding-right: 34px !important;
+}
+
+.location-group-reset {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #858585;
+  cursor: pointer;
+}
+
+.location-group-reset:hover,
+.location-group-reset:focus-visible { color: #fff; }
+.location-filters.is-foreign .location-group-button.active + .location-group-reset:is(:hover, :focus-visible) { color: #303030; }
+.location-group-reset svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .menu-nationality .location-filters {
   display: flex !important;
   flex-wrap: wrap !important;
