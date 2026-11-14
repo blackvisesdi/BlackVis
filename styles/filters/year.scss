@@ -65,6 +65,7 @@
 }
 
 .menu-controls .year-period-btn.active {
+  border-color: #8c8787;
   background: #8c8787;
   color: #fff;
 }
@@ -97,13 +98,21 @@
 }
 
 .menu-controls .year-handle rect {
-  fill: #0d0d0d !important;
-  stroke: #232323;
+  fill: #111 !important;
+  stroke: #292929;
   stroke-width: 1px;
+  filter: none;
 }
 
 .menu-controls .year-handle text {
-  fill: #ccc !important;
+  fill: #ddd !important;
+  font: 12px "Inter", sans-serif;
+}
+
+.menu-controls .track-gradient-bg {
+  stroke: #252525;
+  stroke-width: 1px;
+  filter: none;
 }
 
 @media (max-width: 840px) {

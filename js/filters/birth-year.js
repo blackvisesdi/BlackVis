@@ -10,7 +10,7 @@ function getBirthYear(node) {
 
 // ===== SLIDER =====
 
-const sliderMarginConfig = { top: 10, right: 10, bottom: 0, left: 10 };
+const sliderMarginConfig = { top: 0, right: 0, bottom: 0, left: 0 };
 const sliderWidthConfig = 300;
 
 let xSlider = d3
@@ -40,6 +40,7 @@ function initSlider(minYear, maxYear) {
 
   const sliderSvgEl = d3
     .select("#dual-slider")
+    .attr("preserveAspectRatio", "none")
     .attr("viewBox", `0 0 ${sliderWidth + sliderMarginConfig.left + sliderMarginConfig.right} 30`)
     .attr(
       "width",
@@ -57,9 +58,9 @@ function initSlider(minYear, maxYear) {
     .attr("y1", "0%")
     .attr("x2", "100%")
     .attr("y2", "0%");
-  bgGrad.append("stop").attr("offset", "6.25%").attr("stop-color", "#413F3F");
-  bgGrad.append("stop").attr("offset", "32.2115%").attr("stop-color", "#A7A1A1");
-  bgGrad.append("stop").attr("offset", "60.0962%").attr("stop-color", "#454343");
+  bgGrad.append("stop").attr("offset", "0%").attr("stop-color", "#3b3939");
+  bgGrad.append("stop").attr("offset", "50%").attr("stop-color", "#101010");
+  bgGrad.append("stop").attr("offset", "100%").attr("stop-color", "#3b3939");
 
   const activeGrad = defs
     .append("linearGradient")
@@ -68,9 +69,9 @@ function initSlider(minYear, maxYear) {
     .attr("y1", "0%")
     .attr("x2", "100%")
     .attr("y2", "0%");
-  activeGrad.append("stop").attr("offset", "6.25%").attr("stop-color", "#413F3F");
-  activeGrad.append("stop").attr("offset", "32.2115%").attr("stop-color", "#A7A1A1");
-  activeGrad.append("stop").attr("offset", "60.0962%").attr("stop-color", "#454343");
+  activeGrad.append("stop").attr("offset", "0%").attr("stop-color", "#3b3939");
+  activeGrad.append("stop").attr("offset", "50%").attr("stop-color", "#101010");
+  activeGrad.append("stop").attr("offset", "100%").attr("stop-color", "#3b3939");
 
   const sliderSvg = sliderSvgEl
     .append("g")
@@ -105,7 +106,7 @@ function initSlider(minYear, maxYear) {
 
   // Os próprios anos são as alças do controle — não há bolinhas separadas.
   const yearHandleX = (year) =>
-    Math.max(27, Math.min(sliderWidth - 27, xSlider(year)));
+    Math.max(24, Math.min(sliderWidth - 24, xSlider(year)));
   const makeYearHandle = (name, value, onDrag) => {
     const handle = g
       .append("g")
@@ -118,7 +119,7 @@ function initSlider(minYear, maxYear) {
           .on("drag", onDrag)
           .on("end", dragendedSlider)
       );
-    handle.append("rect").attr("x", -27).attr("y", -14).attr("width", 54).attr("height", 28).attr("rx", 14);
+    handle.append("rect").attr("x", -24).attr("y", -14).attr("width", 48).attr("height", 28).attr("rx", 14);
     handle.append("text").attr("text-anchor", "middle").attr("dy", ".35em").text(value);
     return handle;
   };

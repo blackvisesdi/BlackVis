@@ -13,11 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function fitTeamBios() {
     teamGrid.querySelectorAll('.home-team-info p').forEach((bio) => {
+      const info = bio.closest('.home-team-info');
+      const card = info?.closest('article');
+      if (!info || !card) return;
+      card.style.height = '';
+      info.style.height = '';
       bio.style.fontSize = '';
       let size = parseFloat(getComputedStyle(bio).fontSize);
-      while (bio.scrollHeight > bio.clientHeight + 1 && size > 10.5) {
-        size -= 0.5;
+      const minimumSize = 7.5;
+      while (bio.scrollHeight > bio.clientHeight + 1 && size > minimumSize) {
+        size = Math.max(minimumSize, size - 0.25);
         bio.style.fontSize = `${size}px`;
+      }
+      // Preserve o texto completo quando até a menor fonte não couber.
+      const overflow = bio.scrollHeight - bio.clientHeight;
+      if (overflow > 1 && getComputedStyle(info).overflow === 'hidden') {
+        const extraHeight = Math.ceil(overflow) + 4;
+        card.style.height = `${card.getBoundingClientRect().height + extraHeight}px`;
+        info.style.height = `${info.getBoundingClientRect().height + extraHeight}px`;
       }
     });
   }
@@ -30,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (person.foto) {
         photo.src = person.foto;
         photo.alt = `Foto de ${person.nome}`;
+        photo.width = 240;
+        photo.height = 310;
         photo.loading = 'lazy';
       } else {
         photo.setAttribute('aria-hidden', 'true');
@@ -146,6 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
       target.textContent = 'Não foi possível carregar este conteúdo.';
     }
   }
-  load('./data/equipe-proj.json', teamGrid, renderTeam);
+  load('./data/equipe-proj.json?v=2', teamGrid, renderTeam);
   load('./data/publicacoes.json', publicationsGrid, renderPublications);
 });

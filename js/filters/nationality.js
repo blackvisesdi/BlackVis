@@ -151,16 +151,23 @@ function renderLocationFilters() {
       const selectedGroup = selection.groups.has(group);
       const expanded = selection.expanded.has(group);
       item.innerHTML = `
-        <button class="location-group-button${selectedGroup ? " active" : ""}${expanded ? " expanded" : ""}" type="button" aria-expanded="${expanded}">
-          <span>${groupLabel}</span><span class="location-chevron">⌄</span>
-        </button>
+        <div class="location-group-header">
+          <button class="location-group-button${selectedGroup ? " active has-reset" : ""}${expanded ? " expanded" : ""}" type="button" aria-expanded="${expanded}">
+            <span>${groupLabel}</span><span class="location-chevron">⌄</span>
+          </button>
+          ${selectedGroup ? `<button class="location-group-reset" type="button" aria-label="Limpar filtro de ${groupLabel}" title="Limpar filtro de ${groupLabel}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 11a7 7 0 1 1-2.1-5M19 4v5h-5"/></svg></button>` : ""}
+        </div>
         <div class="location-options" ${expanded ? "" : "hidden"}></div>`;
+      const clearGroup = ({ keepExpanded = false } = {}) => {
+        selection.groups.delete(group);
+        if (!keepExpanded) selection.expanded.delete(group);
+        entries.forEach((entry) => selection.details.delete(entry));
+        syncLocationFilter(groupField, detailField);
+      };
       item.querySelector(".location-group-button").addEventListener("click", () => {
         closeCardForFilterChange();
         if (selectedGroup) {
-          selection.groups.delete(group);
-          selection.expanded.delete(group);
-          entries.forEach((entry) => selection.details.delete(entry));
+          clearGroup();
         } else {
           selection.groups.add(group);
           selection.expanded.add(group);
@@ -176,6 +183,13 @@ function renderLocationFilters() {
               renderLocationFilters();
               window.applyAllFilters();
             };
+        renderLocationFilters();
+        window.applyAllFilters();
+      });
+      item.querySelector(".location-group-reset")?.addEventListener("click", () => {
+        closeCardForFilterChange();
+        clearGroup({ keepExpanded: true });
+        window._lastFilterAction = null;
         renderLocationFilters();
         window.applyAllFilters();
       });

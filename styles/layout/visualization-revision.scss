@@ -17,6 +17,11 @@
 .bottom-bar.menu .menu-tools .menu-help,
 .bottom-bar.menu .menu-tools .nav-icon { position: relative; display: block; width: 54px; height: 54px; flex: 0 0 54px; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .bottom-bar.menu .menu-tools .menu-help img { width: 54px; height: 54px; }
+.bottom-bar.menu .menu-tools .menu-help:hover { filter: none; }
+.bottom-bar.menu .menu-tools .menu-help img { position: absolute; inset: 0; display: block; }
+.bottom-bar.menu .menu-tools .menu-help-hover { opacity: 0; filter: brightness(1.2); }
+.bottom-bar.menu .menu-tools .menu-help:is(:hover,:focus-visible) .menu-help-hover { opacity: 1; }
+.bottom-bar.menu .menu-tools .menu-help:is(:hover,:focus-visible) .menu-help-default { opacity: 0; }
 .bottom-bar.menu .menu-tools .nav-icon img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .bottom-bar.menu .menu-tools .nav-icon-hover { opacity: 0; }
 .bottom-bar.menu .menu-tools .nav-icon:is(:hover,:focus-visible,[aria-expanded="true"]) .nav-icon-hover { opacity: 1; }
@@ -46,13 +51,10 @@
 .bottom-bar.menu .menu-tools .nav-updates-filtered span { font-size: 16px; }
 .bottom-bar.menu #axes-count { display: none !important; }
 
-@media (min-width: 1901px) {
-  .bottom-bar.menu { grid-template-columns: 54px minmax(0, 400px) minmax(0, 584px) minmax(0, 585px); }
+@media (min-width: 1201px) {
+  .bottom-bar.menu { grid-template-columns: 50px minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr); }
 }
-@media (min-width: 1201px) and (max-width: 1900px) {
-  .bottom-bar.menu { grid-template-columns: 54px minmax(250px, 1fr) minmax(0, 584px) minmax(250px, 1fr); }
-}
-@media (max-width: 1900px) {
+@media screen {
   .bottom-bar.menu .menu-tools { gap: 7px; width: 44px; min-width: 44px; }
   .bottom-bar.menu .menu-tools .menu-help-slot { width: 44px; height: 44px; }
   .bottom-bar.menu .menu-tools .menu-help,

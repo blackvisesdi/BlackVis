@@ -123,13 +123,13 @@ function drawForceGraph(data, centerNodes = false) {
   if (simulation) simulation.stop();
 
   const graphAreaEl = document.querySelector(".graph-area");
-  let currentWidth = Math.min(graphAreaEl ? graphAreaEl.clientWidth : window.innerWidth, 2000);
-  let currentHeight = Math.min(graphAreaEl ? graphAreaEl.clientHeight : window.innerHeight, 1200);
+  let currentWidth = Math.max(1, graphAreaEl ? graphAreaEl.clientWidth : window.innerWidth);
+  let currentHeight = Math.max(1, graphAreaEl ? graphAreaEl.clientHeight : window.innerHeight);
 
   // Redimensiona a simulação existente sem perder o foco nem recriar os nós.
   window._resizeGraphViewport = function () {
-    const width = Math.max(1, Math.min(graphAreaEl.clientWidth, 2000));
-    const height = Math.max(1, Math.min(graphAreaEl.clientHeight, 1200));
+    const width = Math.max(1, graphAreaEl.clientWidth);
+    const height = Math.max(1, graphAreaEl.clientHeight);
     if (width === currentWidth && height === currentHeight) return;
     graphData.nodes.forEach((item) => {
       item.x *= width / currentWidth;
@@ -715,41 +715,62 @@ function drawForceGraph(data, centerNodes = false) {
 
     if (nodeData.isTechnique) {
       const svgSource = window.getIconPath(nodeData.Nome);
+      const techniqueArea = String(nodeData["Área do design"] || nodeAreaMap.get(nodeData.id) || "").split(",")[0].trim();
+      const techniqueBorderColor = CATEGORY_COLORS[techniqueArea] || getBaseColorForNode(nodeData);
       const shape = el.selectAll("circle.node-shape").data([nodeData]).join("circle").interrupt()
         .attr("r", r)
         .attr("class", "node-shape")
-        .attr("fill", svgSource && !nodeData.__iconReady ? "transparent" : getNodeFillColor(nodeData))
-        .attr("stroke", svgSource && !nodeData.__iconReady ? "transparent" : getNodeStrokeColor(nodeData))
-        .attr("stroke-width", 1.5);
-
-      el.style("visibility", svgSource && !nodeData.__iconReady ? "hidden" : "visible");
+        .attr("fill", svgSource ? "transparent" : "#0d0d0d")
+        .attr("stroke", "none");
 
       if (svgSource) {
         const icon = el.selectAll("image.node-icon-img").data([nodeData]).join("image").interrupt()
-          .attr("href", svgSource)
           .attr("class", "node-icon-img")
           .attr("width", r * 2)
           .attr("height", r * 2)
           .attr("x", -r)
-          .attr("y", -r)
-          .style("opacity", nodeData.__iconReady ? 1 : 0)
+          .attr("y", -r);
+        const imageElement = icon.node();
+        const isNewImage = imageElement.__blackvisIconSource !== svgSource;
+        if (isNewImage) {
+          imageElement.__blackvisIconSource = svgSource;
+          imageElement.__blackvisIconLoaded = false;
+          el.style("visibility", "hidden");
+          icon.style("opacity", 0);
+        } else if (imageElement.__blackvisIconLoaded) {
+          el.style("visibility", "visible");
+          icon.style("opacity", 1);
+        }
+        icon
           .on("load.technique-icon", function() {
-            nodeData.__iconReady = true;
-            shape.attr("fill", getNodeFillColor(nodeData)).attr("stroke", getNodeStrokeColor(nodeData));
+            if (this.__blackvisIconLoaded) return;
+            this.__blackvisIconLoaded = true;
             el.style("visibility", "visible");
-            d3.select(this).style("opacity", 1);
+            const duration = motionDuration ? 200 : 0;
+            const startRadius = r * 0.55;
+            d3.select(this).interrupt()
+              .attr("width", startRadius * 2).attr("height", startRadius * 2)
+              .attr("x", -startRadius).attr("y", -startRadius)
+              .style("opacity", 0.65)
+              .transition().duration(duration).ease(d3.easeCubicOut)
+              .attr("width", r * 2).attr("height", r * 2)
+              .attr("x", -r).attr("y", -r)
+              .style("opacity", 1);
           })
           .on("error.technique-icon", function() {
-            const localSource = iconTec[nodeData.Nome];
-            if (localSource && this.getAttribute("href") !== localSource) {
-              this.setAttribute("href", localSource);
-            } else {
-              nodeData.__iconReady = true;
-              shape.attr("fill", getNodeFillColor(nodeData)).attr("stroke", getNodeStrokeColor(nodeData));
+            shape.attr("fill", "#0d0d0d");
             el.style("visibility", "visible");
-            }
+            d3.select(this).style("visibility", "hidden");
           });
+        if (isNewImage) icon.attr("href", svgSource);
       }
+      el.selectAll("circle.node-technique-border").data([nodeData]).join("circle")
+        .attr("class", "node-technique-border")
+        .attr("r", r - 0.75)
+        .attr("fill", "none")
+        .attr("stroke", techniqueBorderColor)
+        .attr("stroke-width", 1.5)
+        .style("pointer-events", "none");
       return;
     }
 

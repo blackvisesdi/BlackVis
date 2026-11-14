@@ -15,18 +15,49 @@
   order: 2; flex: 0 0 25px; width: 25px; height: 30px; padding: 0;
   border: 0; background: transparent; color: #eee; cursor: pointer;
 }
-.bottom-bar.menu .menu-tools .nav-updates-minimize { margin-left: auto; font: 22px/.47 "Inter", sans-serif; }
+.bottom-bar.menu .menu-tools .nav-updates-minimize { display: grid; place-items: center; margin-left: auto; }
+.bottom-bar.menu .menu-tools .nav-updates-minimize img { display: block; width: 24px; height: 24px; }
+.bottom-bar.menu .menu-tools .nav-updates-minimize .nav-updates-expand-icon { display: none; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-minimize .nav-updates-collapse-icon { display: none; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-minimize .nav-updates-expand-icon { display: block; }
 .bottom-bar.menu .menu-tools .nav-updates-close { flex-basis: 34px; width: 34px; height: 34px; margin-left: 0; }
 .bottom-bar.menu .menu-tools .nav-updates-close img { display: block; width: 34px; height: 34px; }
 .bottom-bar.menu .menu-tools .nav-updates p { margin: 10px 0 12px; font-size: 13px; line-height: 1.25; font-weight: 400; }
 .bottom-bar.menu .menu-tools .nav-updates #nav-updates-total { font-weight: 500; }
 .bottom-bar.menu .menu-tools .nav-updates-filtered { border-color: #8c8787; font-size: 14px; font-weight: 400; }
 .bottom-bar.menu .menu-tools .nav-updates-filtered span:first-child { font-size: 13px; font-weight: 500; }
-.bottom-bar.menu .menu-tools .nav-updates.is-collapsed { width: 250px; height: auto; min-height: 0; padding: 10px 12px; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(341px, calc(100vw - 24px));
+  height: 74px;
+  min-height: 0;
+  padding: 20px;
+  background: rgba(35, 35, 35, .9);
+}
+// Hidden must still win after the compact panel sets display:flex.
+.bottom-bar.menu .menu-tools .nav-updates[hidden] { display: none !important; }
 .bottom-bar.menu .menu-tools .nav-updates.is-collapsed #nav-updates-details,
 .bottom-bar.menu .menu-tools .nav-updates.is-collapsed #nav-updates-title { display: none; }
-.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-heading { position: absolute; top: 0; right: 8px; height: 100%; }
-.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-filtered {
-  margin-right: 78px; border: 0; padding: 4px 0; cursor: grab; touch-action: none; user-select: none;
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-heading {
+  position: static;
+  order: 2;
+  flex: 0 0 auto;
+  gap: 18px;
+  height: 34px;
+  min-height: 0;
 }
-.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-filtered span { margin-left: 8px; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-minimize { margin-left: 0; }
+.bottom-bar.menu .menu-tools .nav-updates.is-collapsed .nav-updates-filtered {
+  order: 1;
+  flex: 1 1 200px;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid #aaa;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}

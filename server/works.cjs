@@ -13,7 +13,7 @@ const adinkraIndexCache = { until: 0, files: new Map() };
 const homeAdinkraIndexCache = { until: 0, files: new Map() };
 const designersFile = process.env.DESIGNERS_DATA_FILE || path.join(__dirname, '../secrets/designers.json');
 const serviceAccountFile = process.env.GOOGLE_SERVICE_ACCOUNT_FILE || process.env.GOOGLE_APPLICATION_CREDENTIALS;
-const techniquesFolderId = process.env.TECHNIQUES_DRIVE_FOLDER_ID || '1jpMSbLnRn3p27HaIF_Ldy8x92fupFMWR';
+const techniquesFolderId = process.env.TECHNIQUES_DRIVE_FOLDER_ID || '1NBPS662CZ3oGVWs0pPDUYUvOG915ofbU';
 const adinkraFolderId = process.env.ADINKRA_DRIVE_FOLDER_ID || '1RK3j9CyRNffro78-tBJqaAdvWPr0dfyc';
 const homeAdinkraFolderId = process.env.HOME_ADINKRA_DRIVE_FOLDER_ID || '1JCGvWDHOJeUT_KBcHqTzdQx_nbr5Wr7U';
 // Lançamento sem obras: a API de galeria só volta com ativação explícita.
