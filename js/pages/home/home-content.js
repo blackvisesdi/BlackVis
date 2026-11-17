@@ -35,17 +35,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function renderTeam(people) {
+  async function renderTeam(people) {
+    const apiBase = people.some(person => person.foto) ? await window.getBlackvisApiBase() : '';
     const cards = people.map((person) => {
       const card = document.createElement('article');
       const photo = person.foto ? document.createElement('img') : document.createElement('div');
       photo.className = 'home-team-photo';
       if (person.foto) {
-        photo.src = person.foto;
+        photo.src = `${apiBase}/api/team/photo?file=${encodeURIComponent(person.foto)}&v=2`;
         photo.alt = `Foto de ${person.nome}`;
         photo.width = 240;
         photo.height = 310;
         photo.loading = 'lazy';
+        photo.addEventListener('error', () => {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'home-team-photo';
+          placeholder.setAttribute('aria-hidden', 'true');
+          photo.replaceWith(placeholder);
+        }, { once: true });
       } else {
         photo.setAttribute('aria-hidden', 'true');
       }
@@ -155,12 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch(path);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      render(await response.json());
+      await render(await response.json());
     } catch (error) {
       console.error(`Não foi possível carregar ${path}:`, error);
       target.textContent = 'Não foi possível carregar este conteúdo.';
     }
   }
-  load('./data/equipe-proj.json?v=2', teamGrid, renderTeam);
+  load('./data/equipe-proj.json?v=4', teamGrid, renderTeam);
   load('./data/publicacoes.json', publicationsGrid, renderPublications);
 });

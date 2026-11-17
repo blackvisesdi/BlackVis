@@ -10,7 +10,6 @@ function updateFilteredPeopleCount(nodes, visibleIds = null) {
 function updateMenuCounts(nodes, links) {
   const people = nodes.filter((node) => !node.isCategory && !node.isTechnique);
   const peopleByAxis = new Map(VALID_CATEGORIES.map((axis) => [axis, new Set()]));
-  const techniquesByAxis = new Map(VALID_CATEGORIES.map((axis) => [axis, new Set()]));
   const axesByTechnique = new Map();
 
   links.forEach((link) => {
@@ -21,7 +20,6 @@ function updateMenuCounts(nodes, links) {
     const axis = source.startsWith("TEC_") ? target : source;
     if (!axesByTechnique.has(techniqueId)) axesByTechnique.set(techniqueId, new Set());
     axesByTechnique.get(techniqueId).add(axis);
-    if (techniquesByAxis.has(axis)) techniquesByAxis.get(axis).add(techniqueId);
   });
 
   links.forEach((link) => {
@@ -53,10 +51,8 @@ function updateMenuCounts(nodes, links) {
   document.getElementById("year-count").textContent = "0";
   document.querySelectorAll(".category-btn").forEach((button) => {
     const axis = button.dataset.value;
-    const selectedInMenu = window.selectedCategories?.has(axis);
-    const count = selectedInMenu
-      ? peopleByAxis.get(axis)?.size || 0
-      : techniquesByAxis.get(axis)?.size || 0;
+    // Uma pessoa pode ter várias técnicas no mesmo eixo; conta uma vez só.
+    const count = peopleByAxis.get(axis)?.size || 0;
     const countEl = button.querySelector(".menu-count");
     if (countEl) {
       countEl.textContent = count;

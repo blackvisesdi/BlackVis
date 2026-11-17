@@ -219,9 +219,19 @@ function setupYearPeriodControls() {
   }
   document.querySelectorAll(".year-period-btn").forEach((button) => {
     button.addEventListener("click", () => {
+      const previousPeriod = window.currentPeriod;
       closeCardForFilterChange();
       const period = button.dataset.period;
       window.currentPeriod = period === "Todos" ? "all" : period;
+      window._lastFilterAction = window.currentPeriod === "all" ? null : () => {
+        closeCardForFilterChange();
+        window.currentPeriod = previousPeriod;
+        document.querySelectorAll(".year-period-btn").forEach((item) => {
+          item.classList.toggle("active", item.dataset.period === (previousPeriod === "all" ? "Todos" : previousPeriod));
+        });
+        window._lastFilterAction = null;
+        window.applyAllFilters?.();
+      };
       document.querySelectorAll(".year-period-btn").forEach((item) => {
         item.classList.toggle("active", item === button);
       });

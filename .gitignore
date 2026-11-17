@@ -37,3 +37,4 @@ styles/css/*.map
 
 # Dados sensiveis
 .secrets/
+data/designers.json
