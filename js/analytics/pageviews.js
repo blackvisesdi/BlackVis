@@ -1,14 +1,15 @@
 // GA4 só é carregado após a autorização explícita para análise.
 (() => {
   const key = "blackvis-analytics-consent";
-  const measurementId = String(window.BLACKVIS_GA_MEASUREMENT_ID || "").trim();
+  const measurementIds = [...new Set((window.BLACKVIS_GA_MEASUREMENT_IDS || [])
+    .map(id => String(id).trim())
+    .filter(id => /^G-[A-Z0-9]+$/i.test(id)))];
   const publishedHosts = new Set([
     "blackvisesdi.github.io",
     "blackvis.esdi.uerj.br",
     "www.blackvis.esdi.uerj.br"
   ]);
-  const canMeasure = /^G-[A-Z0-9]+$/i.test(measurementId) &&
-    publishedHosts.has(location.hostname);
+  const canMeasure = measurementIds.length > 0 && publishedHosts.has(location.hostname);
   let enabled = false;
   let loaded = false;
 
@@ -17,7 +18,9 @@
   }
 
   function send(event, params) {
-    if (enabled && typeof window.gtag === "function") window.gtag("event", event, params);
+    if (enabled && typeof window.gtag === "function") {
+      window.gtag("event", event, { ...params, send_to: "blackvis" });
+    }
   }
 
   function start() {
@@ -32,16 +35,19 @@
       ad_personalization: "denied"
     });
     window.gtag("js", new Date());
-    // O evento explícito evita depender da visualização automática do config.
-    window.gtag("config", measurementId, { send_page_view: false });
+    // Cada destino participa do mesmo grupo, sem page_view automático duplicado.
+    measurementIds.forEach(id => window.gtag("config", id, {
+      groups: "blackvis",
+      send_page_view: false
+    }));
     const tag = document.createElement("script");
     tag.async = true;
-    tag.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+    tag.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementIds[0])}`;
     tag.addEventListener("load", () => {
       // Se a escolha foi revogada enquanto o script carregava, não há acesso a enviar.
       if (!enabled) return;
       window.gtag("event", "page_view", {
-        send_to: measurementId,
+        send_to: "blackvis",
         page_title: document.title,
         page_location: `${location.origin}${location.pathname}`
       });
@@ -53,12 +59,12 @@
     try { localStorage.setItem(key, accepted ? "accepted" : "rejected"); } catch { /* Escolha válida nesta página. */ }
     enabled = accepted && canMeasure;
     if (accepted) {
-      window[`ga-disable-${measurementId}`] = false;
+      measurementIds.forEach(id => { window[`ga-disable-${id}`] = false; });
       if (loaded) window.gtag("consent", "update", { analytics_storage: "granted" });
       else start();
     } else if (loaded) {
       window.gtag("consent", "update", { analytics_storage: "denied" });
-      window[`ga-disable-${measurementId}`] = true;
+      measurementIds.forEach(id => { window[`ga-disable-${id}`] = true; });
     }
     window.dispatchEvent(new CustomEvent("blackvis:consent-change", { detail: { accepted } }));
   }

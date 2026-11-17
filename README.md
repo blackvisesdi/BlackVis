@@ -42,11 +42,11 @@ Para recompilar os estilos sem iniciar o servidor, execute `npm run sass`. O `np
 
 As visualizações são acompanhadas de forma privada pelo Google Analytics 4. O contador não aparece no site e não precisa de armazenamento na API do Render.
 
-1. No [Google Analytics](https://support.google.com/analytics/answer/9304153), crie uma propriedade GA4 e um fluxo **Web** para o domínio publicado do BlackVis. Copie o ID de medição que começa com `G-`.
-2. Em `js/config.js`, coloque esse ID em `window.BLACKVIS_GA_MEASUREMENT_ID`. Não use chave de API nem senha.
-3. Publique o site e consulte a métrica **Visualizações** no painel do GA4. Cada carregamento da página publicada envia uma visualização; cliques nos filtros não geram outra visualização.
+1. No [Google Analytics](https://support.google.com/analytics/answer/14183469?hl=pt-BR), crie uma propriedade GA4 e um fluxo **Web** para cada conta que receberá os dados. Copie os IDs de medição que começam com `G-`.
+2. Em `js/config.js`, mantenha os IDs em `window.BLACKVIS_GA_MEASUREMENT_IDS`. Não use chave de API nem senha.
+3. Publique o site e consulte a métrica **Visualizações** em cada propriedade GA4. Cada carregamento da página publicada envia uma visualização para cada propriedade após o aceite dos cookies; cliques nos filtros não geram outra visualização.
 
-O rastreamento fica desligado em `localhost` e `127.0.0.1`. Se o ID estiver vazio, nenhum script de estatísticas é carregado. Bloqueadores de conteúdo e falhas de rede podem impedir algumas contagens.
+O rastreamento fica desligado em `localhost` e `127.0.0.1`. Se a lista de IDs estiver vazia, nenhum script de estatísticas é carregado. Bloqueadores de conteúdo e falhas de rede podem impedir algumas contagens.
 
 ## Galeria de obras
 
