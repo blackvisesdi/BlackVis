@@ -3,9 +3,9 @@
 // URL de produção; em localhost a API é descoberta nas portas locais.
 window.BLACKVIS_API_URL = "https://blackvis-api.onrender.com";
 
-// ID de medição público do fluxo Web no Google Analytics 4.
+// IDs públicos dos dois fluxos Web GA4 que recebem os mesmos eventos.
 // Nunca coloque credenciais aqui.
-window.BLACKVIS_GA_MEASUREMENT_ID = "G-83S2SDQKFX";
+window.BLACKVIS_GA_MEASUREMENT_IDS = ["G-83S2SDQKFX", "G-DBKNP7702J"];
 
 // Lançamento sem galeria de obras. Troque para true quando as obras estiverem prontas.
 window.BLACKVIS_SHOW_WORKS = false;
