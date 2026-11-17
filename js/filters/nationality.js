@@ -150,14 +150,39 @@ function renderLocationFilters() {
       item.className = "location-group";
       const selectedGroup = selection.groups.has(group);
       const expanded = selection.expanded.has(group);
-      item.innerHTML = `
-        <div class="location-group-header">
-          <button class="location-group-button${selectedGroup ? " active has-reset" : ""}${expanded ? " expanded" : ""}" type="button" aria-expanded="${expanded}">
-            <span>${groupLabel}</span><span class="location-chevron">⌄</span>
-          </button>
-          ${selectedGroup ? `<button class="location-group-reset" type="button" aria-label="Limpar filtro de ${groupLabel}" title="Limpar filtro de ${groupLabel}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 11a7 7 0 1 1-2.1-5M19 4v5h-5"/></svg></button>` : ""}
-        </div>
-        <div class="location-options" ${expanded ? "" : "hidden"}></div>`;
+      const header = document.createElement("div");
+      header.className = "location-group-header";
+      const groupButton = document.createElement("button");
+      groupButton.className = `location-group-button${selectedGroup ? " active has-reset" : ""}${expanded ? " expanded" : ""}`;
+      groupButton.type = "button";
+      groupButton.setAttribute("aria-expanded", String(expanded));
+      const label = document.createElement("span");
+      label.textContent = groupLabel;
+      const chevron = document.createElement("span");
+      chevron.className = "location-chevron";
+      chevron.textContent = "⌄";
+      groupButton.append(label, chevron);
+      header.append(groupButton);
+      if (selectedGroup) {
+        const resetButton = document.createElement("button");
+        resetButton.className = "location-group-reset";
+        resetButton.type = "button";
+        resetButton.setAttribute("aria-label", `Limpar filtro de ${groupLabel}`);
+        resetButton.title = `Limpar filtro de ${groupLabel}`;
+        const resetIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        resetIcon.setAttribute("viewBox", "0 0 24 24");
+        resetIcon.setAttribute("aria-hidden", "true");
+        resetIcon.setAttribute("focusable", "false");
+        const resetPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        resetPath.setAttribute("d", "M19 11a7 7 0 1 1-2.1-5M19 4v5h-5");
+        resetIcon.append(resetPath);
+        resetButton.append(resetIcon);
+        header.append(resetButton);
+      }
+      const options = document.createElement("div");
+      options.className = "location-options";
+      options.hidden = !expanded;
+      item.append(header, options);
       const clearGroup = ({ keepExpanded = false } = {}) => {
         selection.groups.delete(group);
         if (!keepExpanded) selection.expanded.delete(group);
@@ -193,7 +218,6 @@ function renderLocationFilters() {
         renderLocationFilters();
         window.applyAllFilters();
       });
-      const options = item.querySelector(".location-options");
       entries.forEach((entry) => {
         const button = document.createElement("button");
         const selectedDetail = selection.details.has(entry);
@@ -239,6 +263,7 @@ function setupNationalityFilter() {
       } else {
         window.selectedNationalities.add(val);
         window._lastFilterAction = () => {
+          if (activeNode?.isTechnique) closeCardForFilterChange();
           window.selectedNationalities.delete(val);
           window.currentNationality = window.selectedNationalities.size
             ? [...window.selectedNationalities][0]

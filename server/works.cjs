@@ -9,13 +9,24 @@ const path = require('node:path');
 const cache = new Map();
 const techniqueIndexCache = { until: 0, files: new Map() };
 const techniqueContentCache = new Map();
+const MAX_ICON_BYTES = 4 * 1024 * 1024;
+const MAX_THUMBNAIL_BYTES = 12 * 1024 * 1024;
+const MAX_ICON_CACHE_BYTES = 32 * 1024 * 1024;
+const MAX_ACTIVE_ICON_FETCHES = 6;
+const MAX_QUEUED_ICON_FETCHES = 100;
+let techniqueContentCacheBytes = 0;
+let activeIconFetches = 0;
+const iconFetchWaiters = [];
+const iconFetchesInFlight = new Map();
 const adinkraIndexCache = { until: 0, files: new Map() };
 const homeAdinkraIndexCache = { until: 0, files: new Map() };
+const teamPhotoIndexCache = { until: 0, files: new Map() };
 const designersFile = process.env.DESIGNERS_DATA_FILE || path.join(__dirname, '../secrets/designers.json');
 const serviceAccountFile = process.env.GOOGLE_SERVICE_ACCOUNT_FILE || process.env.GOOGLE_APPLICATION_CREDENTIALS;
 const techniquesFolderId = process.env.TECHNIQUES_DRIVE_FOLDER_ID || '1NBPS662CZ3oGVWs0pPDUYUvOG915ofbU';
 const adinkraFolderId = process.env.ADINKRA_DRIVE_FOLDER_ID || '1RK3j9CyRNffro78-tBJqaAdvWPr0dfyc';
 const homeAdinkraFolderId = process.env.HOME_ADINKRA_DRIVE_FOLDER_ID || '1JCGvWDHOJeUT_KBcHqTzdQx_nbr5Wr7U';
+const teamPhotoFolderId = process.env.TEAM_PHOTOS_DRIVE_FOLDER_ID || '19S3C214TNpSGUir_h4o8HhpPKb-PxHKU';
 // Lançamento sem obras: a API de galeria só volta com ativação explícita.
 const worksEnabled = process.env.WORKS_ENABLED === 'true';
 let serviceAccount;
@@ -200,7 +211,7 @@ async function listDriveChildren(parentId) {
     const url = new URL('https://www.googleapis.com/drive/v3/files');
     url.search = new URLSearchParams({
       q: `'${parentId}' in parents and trashed = false`,
-      fields: 'nextPageToken,files(id,name,mimeType,resourceKey)',
+      fields: 'nextPageToken,files(id,name,mimeType,size,resourceKey,shortcutDetails(targetId,targetMimeType,targetResourceKey))',
       pageSize: '100', orderBy: 'name', ...(pageToken ? { pageToken } : {})
     });
     const config = await getDriveRequestConfig(url);
@@ -283,25 +294,120 @@ async function readHomeAdinkraIcon(name) {
   return readDriveIcon(file);
 }
 
+// Entrega apenas retratos cadastrados no JSON da equipe e presentes na pasta aprovada.
+async function readTeamPhoto(name) {
+  if (!name || !/^[a-z0-9-]+\.(png|jpe?g|webp)$/i.test(name)) {
+    throw fail(404, 'Foto da equipe não encontrada.');
+  }
+  const team = JSON.parse(await readFile(path.join(__dirname, '../data/equipe-proj.json'), 'utf8'));
+  if (!team.some(person => person.foto === name)) throw fail(404, 'Foto da equipe não cadastrada.');
+  if (teamPhotoIndexCache.until <= Date.now()) {
+    const files = new Map();
+    for (const file of await listDriveChildren(teamPhotoFolderId)) {
+      const mimeType = file.mimeType === 'application/vnd.google-apps.shortcut'
+        ? file.shortcutDetails?.targetMimeType : file.mimeType;
+      if (/^image\/(png|jpeg|webp)$/.test(mimeType || '')) {
+        files.set(file.name.toLowerCase(), file);
+      }
+    }
+    teamPhotoIndexCache.files = files;
+    teamPhotoIndexCache.until = Date.now() + 300000;
+  }
+  const file = teamPhotoIndexCache.files.get(name.toLowerCase());
+  if (!file) throw fail(404, 'Foto da equipe não encontrada no Drive.');
+  const target = file.mimeType === 'application/vnd.google-apps.shortcut'
+    ? { id: file.shortcutDetails.targetId, name: file.name,
+        mimeType: file.shortcutDetails.targetMimeType,
+        resourceKey: file.shortcutDetails.targetResourceKey }
+    : file;
+  return readDriveIcon(target);
+}
+
+// Não permite que um arquivo remoto grande esgote a memória da API.
+async function readBoundedImage(response, limit) {
+  const declaredLength = Number(response.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > limit) {
+    await response.body?.cancel();
+    throw fail(502, 'Imagem acima do limite permitido.');
+  }
+  if (!response.body) throw fail(502, 'Imagem indisponível.');
+  const reader = response.body.getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > limit) {
+        await reader.cancel();
+        throw fail(502, 'Imagem acima do limite permitido.');
+      }
+      chunks.push(Buffer.from(value));
+    }
+    return Buffer.concat(chunks, size);
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+async function withIconFetchSlot(work) {
+  if (activeIconFetches >= MAX_ACTIVE_ICON_FETCHES) {
+    if (iconFetchWaiters.length >= MAX_QUEUED_ICON_FETCHES) {
+      throw fail(503, 'Muitas imagens em carregamento. Tente novamente.');
+    }
+    await new Promise(resolve => iconFetchWaiters.push(resolve));
+  } else {
+    activeIconFetches += 1;
+  }
+  try {
+    return await work();
+  } finally {
+    const next = iconFetchWaiters.shift();
+    if (next) next();
+    else activeIconFetches -= 1;
+  }
+}
+
 async function readDriveIcon(file) {
   const saved = techniqueContentCache.get(file.id);
   if (saved && saved.until > Date.now()) return saved;
+  if (iconFetchesInFlight.has(file.id)) return iconFetchesInFlight.get(file.id);
+  const pending = withIconFetchSlot(() => fetchDriveIcon(file));
+  iconFetchesInFlight.set(file.id, pending);
+  try {
+    return await pending;
+  } finally {
+    iconFetchesInFlight.delete(file.id);
+  }
+}
 
+async function fetchDriveIcon(file) {
   const url = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}`);
   url.searchParams.set('alt', 'media');
   const config = await getDriveRequestConfig(url);
+  if (file.resourceKey) config.headers['X-Goog-Drive-Resource-Keys'] = `${file.id}/${file.resourceKey}`;
   const response = await fetch(url, { ...config, signal: AbortSignal.timeout(15000) });
   if (!response.ok) throw fail(502, 'Não foi possível carregar o ícone no Google Drive.');
-  const content = Buffer.from(await response.arrayBuffer());
+  const content = await readBoundedImage(response, MAX_ICON_BYTES);
   const contentType = file.mimeType === 'image/png' || /\.png$/i.test(file.name)
-    ? 'image/png'
-    : 'image/svg+xml';
+    ? 'image/png' : file.mimeType === 'image/jpeg' || /\.jpe?g$/i.test(file.name)
+      ? 'image/jpeg' : file.mimeType === 'image/webp' || /\.webp$/i.test(file.name)
+        ? 'image/webp' : 'image/svg+xml';
   const savedIcon = { content, contentType, until: Date.now() + 300000 };
+  for (const [id, cached] of techniqueContentCache) {
+    if (cached.until <= Date.now() || techniqueContentCacheBytes + content.length > MAX_ICON_CACHE_BYTES) {
+      techniqueContentCache.delete(id);
+      techniqueContentCacheBytes -= cached.content.length;
+    }
+  }
   techniqueContentCache.set(file.id, savedIcon);
+  techniqueContentCacheBytes += content.length;
   return savedIcon;
 }
 const server = http.createServer(async (req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
   const origins = (process.env.WORKS_ALLOWED_ORIGINS || 'http://127.0.0.1:5500,http://localhost:5500').split(',');
   if (req.headers.origin && !origins.includes(req.headers.origin)) {
     res.writeHead(403).end(); return;
@@ -342,6 +448,10 @@ const server = http.createServer(async (req, res) => {
       if (!name) throw fail(400, 'Informe o nome da técnica.');
       const icon = await readTechniqueIcon(name);
       res.setHeader('Content-Type', icon.contentType);
+      if (icon.contentType === 'image/svg+xml') {
+        res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'none'; sandbox");
+        res.setHeader('X-Frame-Options', 'DENY');
+      }
       res.setHeader('Cache-Control', 'private, max-age=300');
       res.end(icon.content);
       return;
@@ -353,8 +463,19 @@ const server = http.createServer(async (req, res) => {
         ? await readHomeAdinkraIcon(name)
         : await readAdinkraIcon(name);
       res.setHeader('Content-Type', icon.contentType);
+      if (icon.contentType === 'image/svg+xml') {
+        res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'none'; sandbox");
+        res.setHeader('X-Frame-Options', 'DENY');
+      }
       res.setHeader('Cache-Control', 'private, max-age=300');
       res.end(icon.content);
+      return;
+    }
+    if (url.pathname === '/api/team/photo') {
+      const photo = await readTeamPhoto(url.searchParams.get('file'));
+      res.setHeader('Content-Type', photo.contentType);
+      res.setHeader('Cache-Control', 'no-store');
+      res.end(photo.content);
       return;
     }
     if (url.pathname !== '/api/works' && url.pathname !== '/api/works/thumbnail') throw fail(404, 'Rota não encontrada.');
@@ -385,7 +506,7 @@ const server = http.createServer(async (req, res) => {
       }
       res.setHeader('Content-Type', type);
       res.setHeader('Cache-Control', 'private, max-age=300');
-      res.end(Buffer.from(await image.arrayBuffer()));
+      res.end(await readBoundedImage(image, MAX_THUMBNAIL_BYTES));
       return;
     }
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -399,6 +520,9 @@ const server = http.createServer(async (req, res) => {
     res.end(JSON.stringify({ error: error.status ? error.message : 'Não foi possível carregar as obras. Tente novamente.' }));
   }
 });
+server.requestTimeout = 15000;
+server.headersTimeout = 10000;
+server.keepAliveTimeout = 5000;
 if (require.main === module) {
   const port = Number(process.env.PORT || process.env.WORKS_PORT || 5501);
   const host = process.env.WORKS_HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
@@ -406,4 +530,4 @@ if (require.main === module) {
   console.log('API BlackVis iniciada. Porta:', server.address().port);
   });
 }
-module.exports = { server, folderFrom };
+module.exports = { server, folderFrom, readBoundedImage, withIconFetchSlot, listDriveChildren };

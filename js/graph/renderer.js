@@ -128,8 +128,12 @@ function drawForceGraph(data, centerNodes = false) {
 
   // Redimensiona a simulação existente sem perder o foco nem recriar os nós.
   window._resizeGraphViewport = function () {
-    const width = Math.max(1, graphAreaEl.clientWidth);
-    const height = Math.max(1, graphAreaEl.clientHeight);
+    // Ao trocar de aba, alguns navegadores reportam tamanho zero por um
+    // instante. Escalar as posições com esse valor desmonta o foco atual.
+    if (document.hidden) return;
+    const width = graphAreaEl.clientWidth;
+    const height = graphAreaEl.clientHeight;
+    if (width < 64 || height < 64) return;
     if (width === currentWidth && height === currentHeight) return;
     graphData.nodes.forEach((item) => {
       item.x *= width / currentWidth;

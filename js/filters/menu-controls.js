@@ -1,8 +1,26 @@
-// Uma mudança explícita de filtro encerra o perfil anterior, sem apagar a pesquisa.
-function closeCardForFilterChange() {
+// Ao mudar um filtro, restaura o último perfil ou a técnica de onde ele foi aberto.
+function closeCardForFilterChange({ preserveTechnique = true } = {}) {
   const input = document.getElementById("search-input");
   const selectedAreaId = activeNode?.isCategory &&
     window.selectedCategories?.has(activeNode.id) ? activeNode.id : null;
+  // O card é recriado após o filtro: guarda a opção de exibir nomes,
+  // inclusive quando o período intermediário não tem designers.
+  if (selectedAreaId) {
+    window._pendingAreaShowNames = (
+      window.DBG_ALL_NAMES_VISIBLE || window._pendingAreaShowNames === selectedAreaId
+    ) ? selectedAreaId : null;
+  } else {
+    window._pendingAreaShowNames = null;
+  }
+  const selectedTechniqueId = preserveTechnique && activeNode?.isTechnique ? activeNode.id : null;
+  const selectedPersonId = preserveTechnique && activeNode &&
+    !activeNode.isCategory && !activeNode.isTechnique ? activeNode.id : null;
+  const previousFocus = selectedPersonId ? window._focusNavigationHistory?.at(-1) : null;
+  const previousTechniqueId = previousFocus &&
+    !previousFocus.isCategory && allNodeById.get(previousFocus.id)?.isTechnique
+    ? previousFocus.id : null;
+  const returnToAreaId = selectedTechniqueId ? window._returnToAreaCardId : null;
+  const personReturnToAreaId = selectedPersonId ? window._returnToAreaCardId : null;
   if (window._searchProfileActive && input) input.value = window._searchProfileTerm || input.value;
   window._searchProfileActive = false;
   window._searchProfileTerm = "";
@@ -10,8 +28,14 @@ function closeCardForFilterChange() {
   window._returnToAreaCardId = null;
   // Evita reiniciar/desfocar a simulação quando nenhum card está aberto.
   if (activeNode || document.querySelector('.info-panel')?.classList.contains('is-open')) {
-    focusNode(null, null, { closeCard: true });
+    focusNode(null, null, { closeCard: true, preserveHistory: Boolean(selectedPersonId) });
   }
+  window._pendingPersonCard = selectedPersonId
+    ? { id: selectedPersonId, previousTechniqueId, returnToAreaId: personReturnToAreaId }
+    : null;
+  window._pendingTechniqueCard = selectedTechniqueId
+    ? { id: selectedTechniqueId, returnToAreaId }
+    : null;
   // O filtro altera as pessoas do eixo, mas a escolha do eixo continua ativa.
   // O motor reabre o card após montar o grafo com os resultados atualizados.
   if (selectedAreaId) {
@@ -76,6 +100,7 @@ function setupMenuControls() {
     // card. Sem isso, o próximo clique combinava filtro de área com destaque
     // manual e fazia conexões de outras áreas reaparecerem.
     if (leavingAdinkraCard) {
+      window._pendingAreaShowNames = null;
       window.currentCategory = "all";
       window.selectedCategories?.clear();
       window.selectedCategoryHighlights?.clear();
@@ -101,7 +126,8 @@ function setupMenuControls() {
   if (axesReset && nationalityReset) {
     axesReset.innerHTML = nationalityReset.innerHTML;
     axesReset.addEventListener("click", () => {
-      closeCardForFilterChange();
+      closeCardForFilterChange({ preserveTechnique: false });
+      window._pendingAreaShowNames = null;
       window.selectedCategories?.clear();
       window.selectedCategoryHighlights?.clear();
       window.currentCategory = "all";

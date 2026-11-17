@@ -165,6 +165,18 @@ function applyAllFilters(centerNodes = false) {
   const isNameSearch = searchTerm !== "";
   const selectedCats = window.selectedCategories;
   const areaFilterActive = !!(selectedCats && selectedCats.size > 0);
+  const focusedTechniqueId = window._pendingTechniqueCard?.id ||
+    window._pendingPersonCard?.previousTechniqueId || null;
+  const peopleInFocusedTechnique = new Set();
+  if (focusedTechniqueId) {
+    allLinks.forEach((link) => {
+      if (link.type !== "person-technique-link") return;
+      const source = typeof link.source === "object" ? link.source.id : link.source;
+      const target = typeof link.target === "object" ? link.target.id : link.target;
+      if (source === focusedTechniqueId) peopleInFocusedTechnique.add(target);
+      if (target === focusedTechniqueId) peopleInFocusedTechnique.add(source);
+    });
+  }
 
   // Usa as ligações reais pessoa → técnica → eixo nos dois modos de busca.
   const techsInCategories = areaFilterActive
@@ -307,10 +319,13 @@ function applyAllFilters(centerNodes = false) {
       // real com esse conjunto. Isso evita eixos/tecnicas vazios e faz
       // o clique no adinkra e no Menu operarem sobre a mesma rede.
       const visiblePeople = allNodes.filter(
-        (node) => !node.isCategory && !node.isTechnique && personMatchesActiveFilters(node)
+        (node) => !node.isCategory && !node.isTechnique &&
+          (!focusedTechniqueId || peopleInFocusedTechnique.has(node.id)) &&
+          personMatchesActiveFilters(node)
       );
       const hasActivePeopleFilter = Boolean(
         isNameSearch ||
+        focusedTechniqueId ||
         areaFilterActive ||
         window.selectedNationalities?.size ||
         window.locationFilter ||
@@ -333,10 +348,11 @@ function applyAllFilters(centerNodes = false) {
         const source = typeof link.source === "object" ? link.source.id : link.source;
         const target = typeof link.target === "object" ? link.target.id : link.target;
         if (link.type === "person-technique-link") {
+          if (focusedTechniqueId && source !== focusedTechniqueId && target !== focusedTechniqueId) return;
           if (visibleIds.has(source)) visibleTechniqueIds.add(target);
           if (visibleIds.has(target)) visibleTechniqueIds.add(source);
         }
-        if (link.type === "person-category-fallback-link") {
+        if (!focusedTechniqueId && link.type === "person-category-fallback-link") {
           const sourceNode = allNodeById.get(source);
           const targetNode = allNodeById.get(target);
           const categoryId = sourceNode?.isCategory
@@ -352,6 +368,9 @@ function applyAllFilters(centerNodes = false) {
         }
       });
 
+      if (focusedTechniqueId && allNodeById.has(focusedTechniqueId)) {
+        visibleTechniqueIds.add(focusedTechniqueId);
+      }
       visibleTechniqueIds.forEach((id) => visibleIds.add(id));
       allLinks.forEach((link) => {
         if (link.type !== "technique-category-link") return;
@@ -367,6 +386,14 @@ function applyAllFilters(centerNodes = false) {
           if (visibleTechniqueIds.has(target)) visibleIds.add(source);
         }
       });
+
+      // Mesmo sem pessoas no período escolhido, o adinkra selecionado
+      // precisa continuar no grafo para seu card permanecer aberto.
+      if (areaFilterActive) {
+        selectedCats.forEach((id) => {
+          if (allNodeById.get(id)?.isCategory) visibleIds.add(id);
+        });
+      }
 
       filteredNodes = allNodes.filter((node) => visibleIds.has(node.id));
 
@@ -402,6 +429,8 @@ function applyAllFilters(centerNodes = false) {
     filteredNodes = filteredNodes.filter(
       (d) =>
         connectedIds.has(d.id) ||
+        (d.isCategory && selectedCats?.has(d.id)) ||
+        (focusedTechniqueId && d.id === focusedTechniqueId) ||
         neverConnectedIds.has(d.id) ||
         keptByCategory.has(d.id)
     );
@@ -428,6 +457,45 @@ function applyAllFilters(centerNodes = false) {
     isNameSearch || centerNodes
   );
 
+  // O filtro reconstrói os nós do grafo; o perfil aberto deve acompanhar
+  // essa reconstrução enquanto a pessoa ainda pertence ao resultado.
+  const pendingPerson = window._pendingPersonCard;
+  window._pendingPersonCard = null;
+  if (pendingPerson && typeof focusNode === "function") {
+    const personNode = graphData.nodes.find((node) =>
+      !node.isCategory && !node.isTechnique && node.id === pendingPerson.id
+    );
+    if (personNode) {
+      focusNode(null, personNode, { restoreHistory: true });
+      window._returnToAreaCardId = pendingPerson.returnToAreaId;
+    } else if (pendingPerson.previousTechniqueId) {
+      const techniqueNode = graphData.nodes.find((node) =>
+        node.isTechnique && node.id === pendingPerson.previousTechniqueId
+      );
+      if (techniqueNode) {
+        if (window._focusNavigationHistory?.at(-1)?.id === techniqueNode.id) {
+          window._focusNavigationHistory.pop();
+        }
+        focusNode(null, techniqueNode, { restoreHistory: true });
+        window._returnToAreaCardId = pendingPerson.returnToAreaId;
+      }
+    }
+  }
+
+  // A mudança de nacionalidade/período reconstrói o grafo. Reabre a
+  // técnica anterior no novo conjunto, sem voltar ao eixo inteiro.
+  const pendingTechnique = window._pendingTechniqueCard;
+  window._pendingTechniqueCard = null;
+  if (pendingTechnique && typeof focusNode === "function") {
+    const techniqueNode = graphData.nodes.find((node) =>
+      node.isTechnique && node.id === pendingTechnique.id
+    );
+    if (techniqueNode) {
+      focusNode(null, techniqueNode, { restoreHistory: true });
+      window._returnToAreaCardId = pendingTechnique.returnToAreaId;
+    }
+  }
+
   if (
     isNameSearch &&
     window._searchMatched &&
@@ -450,6 +518,13 @@ function applyAllFilters(centerNodes = false) {
     );
     if (areaNode) {
       focusNode(null, areaNode, { areaFromFilter: true });
+      if (window._pendingAreaShowNames === areaNode.id) {
+        const namesToggle = document.querySelector("#card-tec-area .adinkra-names-toggle");
+        if (namesToggle) {
+          namesToggle.click();
+          window._pendingAreaShowNames = null;
+        }
+      }
     }
     window._pendingAreaCard = null;
   }

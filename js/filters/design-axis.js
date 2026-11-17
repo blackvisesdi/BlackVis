@@ -14,6 +14,9 @@ window.selectCategoryFilter = function (categoryValue, openCard = true) {
     window.selectedCategoryHighlights.clear();
 
   const isSameCategory = window.currentCategory === categoryValue;
+  if (isSameCategory || window._pendingAreaShowNames !== categoryValue) {
+    window._pendingAreaShowNames = null;
+  }
 
   if (window.selectedCategories) {
     window.selectedCategories.clear();

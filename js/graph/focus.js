@@ -2,14 +2,34 @@
 const cardPanel = document.querySelector(".info-panel");
 if (cardPanel) {
   new ResizeObserver(() => {
+    if (document.hidden) return;
     const graphArea = document.querySelector(".graph-area");
     if (!graphArea) return;
+    if (cardPanel.classList.contains("is-open") && cardPanel.getBoundingClientRect().width < 1) return;
     const reserved = cardPanel.classList.contains("is-open")
       ? cardPanel.getBoundingClientRect().width + 12 : 0;
     graphArea.style.right = `${reserved}px`;
     window._resizeGraphViewport?.();
   }).observe(cardPanel);
 }
+
+// Retoma o arranjo do perfil ao voltar de um link aberto em outra aba.
+// Mantém o card e o histórico de navegação intactos.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  requestAnimationFrame(() => {
+    const graphArea = document.querySelector(".graph-area");
+    if (!graphArea || graphArea.clientWidth < 64 || graphArea.clientHeight < 64) return;
+    window._resizeGraphViewport?.();
+    if (!activeNode || !simulation || !graphData.nodes.some(node => node.id === activeNode.id)) return;
+    const width = graphArea.clientWidth;
+    const height = graphArea.clientHeight;
+    activeNode.fx = activeNode.x = activeNode.isCategory || activeNode.isTechnique
+      ? width / 2 : width * 0.36;
+    activeNode.fy = activeNode.y = height * 0.5;
+    _applyBouquetForce(activeNode, null, width, height);
+  });
+});
 
 function _showCard() {
   const panel = document.querySelector(".info-panel");
@@ -868,9 +888,9 @@ function focusNode(event, d, options = {}) {
   const svgW = +viewBox[2] || window.innerWidth;
   const svgH = +viewBox[3] || window.innerHeight;
 
-  // Pessoa fica à esquerda para abrir espaço para técnicas e adinkras.
-  // Técnicas e adinkras continuam centrados na área do grafo.
-  d.fx = d.isCategory || d.isTechnique ? svgW * 0.42 : svgW * 0.36;
+  // Técnicas e adinkras ficam no centro da área útil do grafo.
+  // Pessoas ficam à esquerda para abrir espaço para suas conexões.
+  d.fx = d.isCategory || d.isTechnique ? svgW / 2 : svgW * 0.36;
   d.fy = svgH * 0.5;
   d.x = d.fx;
   d.y = d.fy;

@@ -1,4 +1,49 @@
-// Apresenta o perfil da pessoa selecionada no grafo.
+// Apresenta o perfil da pessoa e ajusta minibios longas à altura do painel.
+let personBioFitFrame = 0;
+
+function fitPersonBioToPanel() {
+  const panel = document.querySelector(".info-panel");
+  const personCard = document.getElementById("card-pessoa");
+  const bio = document.getElementById("card-p-bio");
+  if (!panel?.classList.contains("is-open") || personCard?.style.display !== "flex" ||
+      !bio?.textContent || panel.clientWidth < 200 || panel.clientHeight < 100) return;
+
+  // Recomeça do tamanho definido no SCSS para não deixar uma biografia curta
+  // pequena só porque o perfil anterior tinha mais texto.
+  bio.style.fontSize = "";
+  const normalSize = parseFloat(getComputedStyle(bio).fontSize);
+  const fits = (size) => {
+    bio.style.fontSize = `${size}px`;
+    return panel.scrollHeight <= panel.clientHeight + 1;
+  };
+  if (fits(normalSize)) {
+    bio.style.fontSize = "";
+    return;
+  }
+
+  const minimumSize = 10;
+  if (!fits(minimumSize)) return; // Evita ocultar texto ilegível; a rolagem permanece disponível.
+  let low = minimumSize;
+  let high = normalSize;
+  for (let step = 0; step < 8; step++) {
+    const middle = (low + high) / 2;
+    if (fits(middle)) low = middle;
+    else high = middle;
+  }
+  bio.style.fontSize = `${Math.floor(low * 10) / 10}px`;
+}
+
+function schedulePersonBioFit() {
+  cancelAnimationFrame(personBioFitFrame);
+  personBioFitFrame = requestAnimationFrame(fitPersonBioToPanel);
+}
+
+const personPanel = document.querySelector(".info-panel");
+if (personPanel && typeof ResizeObserver !== "undefined") {
+  new ResizeObserver(schedulePersonBioFit).observe(personPanel);
+}
+document.fonts?.ready.then(schedulePersonBioFit);
+
 function exibirPerfil(designerData) {
   const personCard = document.getElementById("card-pessoa");
   document.getElementById("card-tec-area").style.display = "none";
@@ -174,4 +219,5 @@ function exibirPerfil(designerData) {
 
     bioEl.insertAdjacentElement("afterend", socialWrap);
   }
+  schedulePersonBioFit();
 }

@@ -150,11 +150,13 @@ function exibirListaPessoas(nodeData, designers) {
           )
         : Math.max(minDim * BOUQUET_RADIUS_RATIO, BOUQUET_RADIUS_MIN_PX);
       const R2 = Math.max(minDim * 0.14, 70);
+      activeNode.fx = activeNode.x = svgW / 2;
+      activeNode.fy = activeNode.y = svgH / 2;
       simulation.force(
         "focus-bouquet",
-        _radialFocusForce(activeNode, R1, R2, showNames ? 1.4 : 1.6)
+        _radialFocusForce(activeNode, R1, R2, 0.42)
       );
-      simulation.alpha(0.48).restart();
+      simulation.alpha(0.16).restart();
       clearTimeout(window.__bouquetCool);
       window.__bouquetCool = setTimeout(() => {
         if (simulation) simulation.alphaTarget(0);
