@@ -3,6 +3,8 @@
 Visualização interativa de designers negros e suas áreas de atuação, construída com D3.js.
 O BlackVis é uma visualização interativa de designers negros, suas áreas de atuação, técnicas e conexões.
 
+Para manutenção, atualização dos dados, acessos e publicação do site/API, consulte o [Manual do Projeto](docs/MANUAL_DO_PROJETO.md).
+
 ## Requisitos
 
 - Node.js 22 ou superior

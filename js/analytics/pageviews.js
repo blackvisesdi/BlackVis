@@ -2,8 +2,13 @@
 (() => {
   const key = "blackvis-analytics-consent";
   const measurementId = String(window.BLACKVIS_GA_MEASUREMENT_ID || "").trim();
+  const publishedHosts = new Set([
+    "blackvisesdi.github.io",
+    "blackvis.esdi.uerj.br",
+    "www.blackvis.esdi.uerj.br"
+  ]);
   const canMeasure = /^G-[A-Z0-9]+$/i.test(measurementId) &&
-    !["localhost", "127.0.0.1"].includes(location.hostname);
+    publishedHosts.has(location.hostname);
   let enabled = false;
   let loaded = false;
 
@@ -27,10 +32,20 @@
       ad_personalization: "denied"
     });
     window.gtag("js", new Date());
-    window.gtag("config", measurementId);
+    // O evento explícito evita depender da visualização automática do config.
+    window.gtag("config", measurementId, { send_page_view: false });
     const tag = document.createElement("script");
     tag.async = true;
     tag.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+    tag.addEventListener("load", () => {
+      // Se a escolha foi revogada enquanto o script carregava, não há acesso a enviar.
+      if (!enabled) return;
+      window.gtag("event", "page_view", {
+        send_to: measurementId,
+        page_title: document.title,
+        page_location: `${location.origin}${location.pathname}`
+      });
+    }, { once: true });
     document.head.append(tag);
   }
 
