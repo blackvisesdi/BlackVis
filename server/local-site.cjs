@@ -64,6 +64,15 @@ function startSite({ root, host, port, open }) {
       req.on('close', () => clients.delete(res));
       return;
     }
+    if (pathname === '/__reload.js') {
+      res.writeHead(200, {
+        'Content-Type': 'text/javascript; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff'
+      });
+      res.end('new EventSource("/__reload").onmessage = () => location.reload();');
+      return;
+    }
 
     const relative = pathname === '/' ? 'index.html' : pathname.slice(1);
     const segments = relative.split(/[\\/]/);
@@ -79,7 +88,7 @@ function startSite({ root, host, port, open }) {
     try {
       let content = await readFile(file);
       if (path.extname(file).toLowerCase() === '.html') {
-        const reloadScript = '<script>new EventSource("/__reload").onmessage = () => location.reload()</script>';
+        const reloadScript = '<script src="/__reload.js"></script>';
         content = Buffer.from(content.toString('utf8').replace('</body>', `${reloadScript}</body>`));
       }
       res.writeHead(200, {
