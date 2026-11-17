@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
       info.style.height = '';
       bio.style.fontSize = '';
       let size = parseFloat(getComputedStyle(bio).fontSize);
-      const minimumSize = 7.5;
+      const minimumSize = 11;
       while (bio.scrollHeight > bio.clientHeight + 1 && size > minimumSize) {
         size = Math.max(minimumSize, size - 0.25);
         bio.style.fontSize = `${size}px`;

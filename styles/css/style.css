@@ -5599,14 +5599,14 @@ body.legend-open .bottom-bar.menu .menu-help {
 }
 
 .home-page .home-team-info em {
-  font-size: clamp(12px, 0.86vw, 17px);
-  line-height: 1.15;
+  font-size: clamp(11px, 0.72vw, 13px);
+  line-height: 1.12;
 }
 
 .home-page .home-team-info p {
   flex: 1 1 auto;
   min-height: 0;
-  margin: 12px 0 6px;
+  margin: 8px 0 6px;
   overflow: hidden;
   color: #e8e8e8;
   font-size: clamp(13px, 0.9vw, 17px);
