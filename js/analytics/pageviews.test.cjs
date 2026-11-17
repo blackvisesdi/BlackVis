@@ -30,7 +30,7 @@ function openPage(hostname, savedChoice = null) {
     addEventListener() {}
   };
   const window = {
-    BLACKVIS_GA_MEASUREMENT_ID: 'G-83S2SDQKFX',
+    BLACKVIS_GA_MEASUREMENT_IDS: ['G-83S2SDQKFX', 'G-DBKNP7702J'],
     dispatchEvent() {}
   };
   const localStorage = {
@@ -56,7 +56,12 @@ test('não carrega a tag antes do aceite', () => {
   const pageViews = page.commands().filter(command => command[1] === 'page_view');
   assert.equal(pageViews.length, 1);
   assert.equal(pageViews[0][2].page_location, 'https://blackvisesdi.github.io/BlackVis/index.html');
-  assert.equal(page.commands().find(command => command[0] === 'config')[2].send_page_view, false);
+  assert.equal(pageViews[0][2].send_to, 'blackvis');
+  const configs = page.commands().filter(command => command[0] === 'config');
+  assert.deepEqual(Array.from(configs, command => command[1]), ['G-83S2SDQKFX', 'G-DBKNP7702J']);
+  assert.ok(configs.every(command => command[2].send_page_view === false && command[2].groups === 'blackvis'));
+  page.window.blackvisAnalytics.send('interface_click', { interface_area: 'filtros' });
+  assert.equal(page.commands().find(command => command[1] === 'interface_click')[2].send_to, 'blackvis');
 });
 
 test('aceite salvo conta uma visualização no domínio institucional', () => {
@@ -72,6 +77,8 @@ test('revogar o aceite enquanto a tag carrega impede a visualização', () => {
   page.window.blackvisAnalytics.setChoice(false);
   page.scripts[0].fire('load');
   assert.equal(page.commands().filter(command => command[1] === 'page_view').length, 0);
+  assert.equal(page.window['ga-disable-G-83S2SDQKFX'], true);
+  assert.equal(page.window['ga-disable-G-DBKNP7702J'], true);
 });
 
 test('recusa e hospedagem local ou não autorizada não carregam a tag', () => {

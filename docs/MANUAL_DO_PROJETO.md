@@ -18,13 +18,13 @@ Navegador (index.html / visualizacao.html / aviso-de-privacidade.html)
 - **Visualização:** D3.js desenha o grafo. Filtros, cards e pop-ups ficam em módulos de `js/` carregados na ordem indicada em `visualizacao.html`.
 - **API:** `server/works.cjs` entrega designers, imagens e estado do Drive. O navegador recebe somente os campos públicos dos designers.
 - **Estilos:** a fonte de edição é SCSS. `styles/css/style.css` é gerado pelo Sass e precisa acompanhar o deploy.
-- **Estatísticas:** Google Analytics 4 é carregado conforme a escolha de cookies. O ID público está em `js/config.js`; credenciais nunca ficam ali.
+- **Estatísticas:** Google Analytics 4 é carregado conforme a escolha de cookies. Os IDs públicos estão em `js/config.js`; credenciais nunca ficam ali.
 
 ### Conferir os acessos no Google Analytics
 
-O mesmo ID de medição GA4, `G-83S2SDQKFX`, é usado em `blackvisesdi.github.io/BlackVis` e `blackvis.esdi.uerj.br` (e na variante `www`). `js/analytics/pageviews.js` envia **um `page_view` por abertura de página** após o visitante aceitar a análise; `index.html`, `visualizacao.html` e `aviso-de-privacidade.html` carregam esse módulo. A recusa impede o carregamento da tag. O hostname fica em `page_location`, permitindo separar os dois endereços nos relatórios. Localhost e outras hospedagens não enviam dados.
+Os IDs `G-83S2SDQKFX` e `G-DBKNP7702J` recebem os mesmos eventos em `blackvisesdi.github.io/BlackVis` e `blackvis.esdi.uerj.br` (e na variante `www`). `js/analytics/pageviews.js` envia **uma visualização a cada propriedade por abertura de página** após o visitante aceitar a análise; `index.html`, `visualizacao.html` e `aviso-de-privacidade.html` carregam esse módulo. A recusa impede o carregamento da tag. O hostname fica em `page_location`, permitindo separar os dois endereços nos relatórios. Localhost e outras hospedagens não enviam dados.
 
-Para validar uma publicação, abra cada domínio em uma janela limpa, aceite os cookies e confira na aba Network do navegador a carga de `gtag/js?id=G-83S2SDQKFX` e o envio de `page_view` para o Google Analytics. Em seguida, verifique **Tempo real** ou **DebugView** na propriedade correta do GA4. Repita com recusa: não deve carregar a tag. Bloqueadores de rastreamento podem impedir a contagem. Se o mesmo visitante navegar entre os dois domínios e for necessário manter uma sessão única, configure **medição entre domínios** no fluxo Web do GA4; o código das páginas sozinho não liga as sessões. Consulte a [orientação oficial do Google](https://support.google.com/analytics/answer/10071811).
+Para validar uma publicação, abra cada domínio em uma janela limpa, aceite os cookies e confira na aba Network do navegador a carga de `gtag/js?id=G-83S2SDQKFX` e o envio de `page_view` para **ambos os IDs**. Em seguida, verifique **Tempo real** ou **DebugView** nas duas propriedades GA4. Repita com recusa: não deve carregar a tag. Bloqueadores de rastreamento podem impedir a contagem. Se o mesmo visitante navegar entre os dois domínios e for necessário manter uma sessão única, configure **medição entre domínios** em cada fluxo Web; o código das páginas sozinho não liga as sessões. Consulte a [orientação oficial do Google](https://support.google.com/analytics/answer/10071811).
 
 ## 2. Arquivos e pastas
 
