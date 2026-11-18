@@ -69,8 +69,8 @@
 .home-page .home-team-photo { flex: 0 0 170px; width: 170px; height: 220px; min-height: 0; aspect-ratio: 24 / 31; align-self: flex-start; object-fit: cover; background: #d2d2d4; }
 .home-page .home-team-info { height: 220px; overflow: hidden; }
 .home-page .home-team-info h3 { margin: 0 0 2px; font-size: clamp(17px, 1.15vw, 22px); font-weight: 600; line-height: 1.1; }
-.home-page .home-team-info em { font-size: clamp(12px, .86vw, 17px); line-height: 1.15; }
-.home-page .home-team-info p { flex: 1 1 auto; min-height: 0; margin: 12px 0 6px; overflow: hidden; color: #e8e8e8; font-size: clamp(13px, .9vw, 17px); line-height: 1.18; }
+.home-page .home-team-info em { font-size: clamp(11px, .72vw, 13px); line-height: 1.12; }
+.home-page .home-team-info p { flex: 1 1 auto; min-height: 0; margin: 8px 0 6px; overflow: hidden; color: #e8e8e8; font-size: clamp(13px, .9vw, 17px); line-height: 1.18; }
 .home-page .home-team-tags { flex: 0 0 auto; gap: 6px; margin-top: 0; padding-bottom: 1px; }
 .home-page .home-team-tags span { color: #b5b5b5; font-size: clamp(10px, .72vw, 14px); padding: 4px 9px; }
 .home-page .home-team-tags span[data-tag="idealizacao"] { color: #cf76af; }
@@ -81,6 +81,10 @@
 .home-page .home-team-tags span[data-tag="desenvolvimento"] { color: #68a5eb; }
 .home-page .home-team-tags span[data-tag="comunicacao"] { color: #e48383; }
 .home-page .home-team-tags span[data-tag="direito"] { color: #83bdd6; }
+
+@media (min-width: 1101px) and (max-width: 1360px) {
+  .home-page .home-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 .home-page #publicacoes .home-section-label h2,
 .home-page #metodologia .home-section-label h2,
