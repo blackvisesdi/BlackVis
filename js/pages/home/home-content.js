@@ -12,26 +12,37 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function fitTeamBios() {
-    teamGrid.querySelectorAll('.home-team-info p').forEach((bio) => {
-      const info = bio.closest('.home-team-info');
-      const card = info?.closest('article');
-      if (!info || !card) return;
+    const cards = [...teamGrid.querySelectorAll('article')];
+    cards.forEach((card) => {
       card.style.height = '';
-      info.style.height = '';
-      bio.style.fontSize = '';
+      card.querySelector('.home-team-info').style.height = '';
+      card.querySelector('.home-team-photo').style.height = '';
+      card.querySelector('.home-team-info p').style.fontSize = '';
+    });
+    if (matchMedia('(max-width: 600px)').matches) return;
+
+    const rows = new Map();
+    const positions = new Map();
+    cards.forEach((card) => {
+      const bio = card.querySelector('.home-team-info p');
       let size = parseFloat(getComputedStyle(bio).fontSize);
       const minimumSize = 11;
       while (bio.scrollHeight > bio.clientHeight + 1 && size > minimumSize) {
         size = Math.max(minimumSize, size - 0.25);
         bio.style.fontSize = `${size}px`;
       }
-      // Preserve o texto completo quando até a menor fonte não couber.
+      const row = card.offsetTop;
       const overflow = bio.scrollHeight - bio.clientHeight;
-      if (overflow > 1 && getComputedStyle(info).overflow === 'hidden') {
-        const extraHeight = Math.ceil(overflow) + 4;
-        card.style.height = `${card.getBoundingClientRect().height + extraHeight}px`;
-        info.style.height = `${info.getBoundingClientRect().height + extraHeight}px`;
-      }
+      const neededHeight = Math.ceil(card.getBoundingClientRect().height +
+        (overflow > 1 ? overflow + 4 : 0));
+      positions.set(card, row);
+      rows.set(row, Math.max(rows.get(row) || 0, neededHeight));
+    });
+    cards.forEach((card) => {
+      const height = `${rows.get(positions.get(card))}px`;
+      card.style.height = height;
+      card.querySelector('.home-team-info').style.height = height;
+      card.querySelector('.home-team-photo').style.height = height;
     });
   }
 

@@ -5658,6 +5658,11 @@ body.legend-open .bottom-bar.menu .menu-help {
   color: #83bdd6;
 }
 
+@media (min-width: 1101px) and (max-width: 1360px) {
+  .home-page .home-team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .home-page #publicacoes .home-section-label h2,
 .home-page #metodologia .home-section-label h2,
 .home-page #fundamentos .home-section-label h2 {

@@ -82,6 +82,10 @@
 .home-page .home-team-tags span[data-tag="comunicacao"] { color: #e48383; }
 .home-page .home-team-tags span[data-tag="direito"] { color: #83bdd6; }
 
+@media (min-width: 1101px) and (max-width: 1360px) {
+  .home-page .home-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .home-page #publicacoes .home-section-label h2,
 .home-page #metodologia .home-section-label h2,
 .home-page #fundamentos .home-section-label h2 { max-width: 1000px; font-size: clamp(28px, 1.8vw, 36px); line-height: 1.15; }
