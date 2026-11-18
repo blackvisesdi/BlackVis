@@ -179,6 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
       target.textContent = 'Não foi possível carregar este conteúdo.';
     }
   }
-  load('./data/equipe-proj.json?v=4', teamGrid, renderTeam);
+  load('./data/equipe-proj.json?v=5', teamGrid, renderTeam);
   load('./data/publicacoes.json', publicationsGrid, renderPublications);
 });
